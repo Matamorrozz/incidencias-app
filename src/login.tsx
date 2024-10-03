@@ -39,7 +39,7 @@ const Login: React.FC = () => {
           </h1>
         </MDBCol>
 
-        <MDBCol md='6' className='d-flex flex-column justify-content-center align-items-start'>
+        <MDBCol md='6' className='d-flex flex-column justify-content-center align-items-start' style={{textAlign: "justify"}}>
           <p className='text-start' style={{ color: 'hsl(218, 81%, 85%)', maxWidth: '400px' }}>
             Sistema de gestión de incidencias que te ayuda a organizar y seguir el progreso de tus reportes de manera eficiente y sencilla.
           </p>
