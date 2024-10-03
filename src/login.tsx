@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { auth } from "./firebaseConfig"; // Asegúrate de tener este archivo configurado correctamente
 
 const Login: React.FC = () => {
@@ -7,15 +7,28 @@ const Login: React.FC = () => {
   const [password, setPassword] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
 
+  // Proveedor de Google
+  const googleProvider = new GoogleAuthProvider();
+
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null); // Limpia el error previo
     try {
-      // Inicia sesión con Firebase Authentication
+      // Inicia sesión con Firebase Authentication usando email y contraseña
       await signInWithEmailAndPassword(auth, email, password);
     } catch (err: any) {
-      // Captura y muestra cualquier error
-      setError(err.message);
+      setError(err.message); // Captura y muestra cualquier error
+    }
+  };
+
+  // Iniciar sesión con Google
+  const handleGoogleLogin = async () => {
+    setError(null); // Limpia el error previo
+    try {
+      // Inicia sesión con Firebase usando Google
+      await signInWithPopup(auth, googleProvider);
+    } catch (err: any) {
+      setError(err.message); // Captura y muestra cualquier error
     }
   };
 
@@ -44,6 +57,11 @@ const Login: React.FC = () => {
         </div>
         <button type="submit">Login</button>
       </form>
+
+      {/* Botón para iniciar sesión con Google */}
+      <div style={{ marginTop: "20px" }}>
+        <button onClick={handleGoogleLogin}>Login with Google</button>
+      </div>
     </div>
   );
 };
