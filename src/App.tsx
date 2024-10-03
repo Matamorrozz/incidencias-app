@@ -1,6 +1,8 @@
 import { GitHubBanner, Refine } from "@refinedev/core";
 import { DevtoolsPanel, DevtoolsProvider } from "@refinedev/devtools";
 import { RefineKbar, RefineKbarProvider } from "@refinedev/kbar";
+import { Image } from "antd";
+
 import {
   ErrorComponent,
   ThemedLayoutV2,
@@ -25,13 +27,13 @@ import {
   BlogPostEdit,
   BlogPostList,
   BlogPostShow,
-} from "./pages/blog-posts";
-import {
-  CategoryCreate,
-  CategoryEdit,
-  CategoryList,
-  CategoryShow,
-} from "./pages/categories";
+} from "./pages/incidencias";
+// import {
+//   CategoryCreate,
+//   CategoryEdit,
+//   CategoryList,
+//   CategoryShow,
+// } from "./pages/categories";
 
 // Importaciones para Firebase
 import { useEffect, useState } from "react";
@@ -63,6 +65,19 @@ function App() {
     return <div>Cargando...</div>;
   }
 
+  const LogoTitle = () => (
+    <div style={{ display: "flex", alignItems: "center", padding: "10px" }}>
+      <Image
+        src="/ar_logo.png" // Cambia esta ruta a la ruta de tu logo
+        alt="Logo"
+        width={150} // Ajusta el tamaño del logo si es necesario
+        preview={false} // Para evitar la vista previa de la imagen en Ant Design
+      />
+     
+    </div>
+  );
+
+
   return (
     <BrowserRouter>
       <RefineKbarProvider>
@@ -72,30 +87,30 @@ function App() {
               {authenticated ? (
                 // Si el usuario está autenticado, renderiza Refine
                 <Refine
-                  dataProvider={dataProvider("https://api.fake-rest.refine.dev")}
+                  dataProvider={dataProvider("https://desarrollotecnologicoar.com/api3")}
                   notificationProvider={useNotificationProvider}
                   routerProvider={routerBindings}
                   resources={[
                     {
-                      name: "blog_posts",
-                      list: "/blog-posts",
-                      create: "/blog-posts/create",
-                      edit: "/blog-posts/edit/:id",
-                      show: "/blog-posts/show/:id",
+                      name: "incidencias",
+                      list: "/incidencias",
+                      create: "/incidencias/create",
+                      edit: "/incidencias/edit/:id",
+                      show: "/incidencias/show/:id",
                       meta: {
                         canDelete: true,
                       },
                     },
-                    {
-                      name: "categories",
-                      list: "/categories",
-                      create: "/categories/create",
-                      edit: "/categories/edit/:id",
-                      show: "/categories/show/:id",
-                      meta: {
-                        canDelete: true,
-                      },
-                    },
+                    // {
+                    //   name: "categories",
+                    //   list: "/categories",
+                    //   create: "/categories/create",
+                    //   edit: "/categories/edit/:id",
+                    //   show: "/categories/show/:id",
+                    //   meta: {
+                    //     canDelete: true,
+                    //   },
+                    // },
                   ]}
                   options={{
                     syncWithLocation: true,
@@ -109,7 +124,7 @@ function App() {
                       element={
                         <ThemedLayoutV2
                           Header={() => <Header sticky />}
-                          Sider={(props) => <ThemedSiderV2 {...props} fixed />}
+                          Title={() => <LogoTitle />} // Aquí pasamos el logo en el título
                         >
                           <Outlet />
                         </ThemedLayoutV2>
@@ -119,18 +134,18 @@ function App() {
                         index
                         element={<NavigateToResource resource="blog_posts" />}
                       />
-                      <Route path="/blog-posts">
+                      <Route path="/incidencias">
                         <Route index element={<BlogPostList />} />
                         <Route path="create" element={<BlogPostCreate />} />
                         <Route path="edit/:id" element={<BlogPostEdit />} />
                         <Route path="show/:id" element={<BlogPostShow />} />
                       </Route>
-                      <Route path="/categories">
+                      {/* <Route path="/categories">
                         <Route index element={<CategoryList />} />
                         <Route path="create" element={<CategoryCreate />} />
                         <Route path="edit/:id" element={<CategoryEdit />} />
                         <Route path="show/:id" element={<CategoryShow />} />
-                      </Route>
+                      </Route> */}
                       <Route path="*" element={<ErrorComponent />} />
                     </Route>
                   </Routes>

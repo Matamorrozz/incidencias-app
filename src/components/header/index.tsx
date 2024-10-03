@@ -19,7 +19,6 @@ const { useToken } = theme;
 type IUser = {
   name: string | null;
   email: string | null;
-  avatar?: string;
 };
 
 export const Header: React.FC<RefineThemedLayoutV2HeaderProps> = ({
@@ -37,7 +36,6 @@ export const Header: React.FC<RefineThemedLayoutV2HeaderProps> = ({
         setUser({
           name: currentUser.displayName,
           email: currentUser.email,
-          avatar: currentUser.photoURL || undefined,
         });
       } else {
         // Si no hay usuario autenticado, establecemos el estado como null
@@ -68,10 +66,25 @@ export const Header: React.FC<RefineThemedLayoutV2HeaderProps> = ({
   const handleLogout = async () => {
     try {
       await signOut(auth); // Cierra sesión en Firebase
-      window.location.reload(); // Opcional: Recargar la página para redirigir a la pantalla de login
+      // window.location.reload(); // Opcional: Recargar la página para redirigir a la pantalla de login
     } catch (error) {
       console.error("Error al cerrar sesión:", error);
     }
+  };
+
+  // Generar un color aleatorio para el avatar
+  const generateRandomColor = () => {
+    const letters = "0123456789ABCDEF";
+    let color = "#";
+    for (let i = 0; i < 6; i++) {
+      color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+  };
+
+  // Obtener la primera letra del nombre del usuario
+  const getUserInitial = (name: string | null) => {
+    return name ? name.charAt(0).toUpperCase() : "";
   };
 
   return (
@@ -86,12 +99,19 @@ export const Header: React.FC<RefineThemedLayoutV2HeaderProps> = ({
         <Space style={{ marginLeft: "8px" }} size="middle">
           {/* Mostrar el nombre del usuario */}
           {user?.name && <Text strong>{user.name}</Text>}
-          
+
           {/* Mostrar el correo del usuario */}
           {user?.email && <Text>{user.email}</Text>}
-          
-          {/* Mostrar avatar si está disponible */}
-          {user?.avatar && <Avatar src={user?.avatar} alt={user?.name || ""} />}
+
+          {/* Mostrar avatar con la primera letra del nombre y fondo aleatorio */}
+          <Avatar
+            style={{
+              backgroundColor: generateRandomColor(),
+              color: "white",
+            }}
+          >
+            {getUserInitial(user?.name || null)}
+          </Avatar>
 
           {/* Botón para cerrar sesión */}
           <Button type="primary" onClick={handleLogout}>

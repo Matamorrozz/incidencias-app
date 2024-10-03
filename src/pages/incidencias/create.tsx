@@ -1,22 +1,16 @@
-import { Edit, useForm, useSelect } from "@refinedev/antd";
+import { Create, useForm, useSelect } from "@refinedev/antd";
 import MDEditor from "@uiw/react-md-editor";
 import { Form, Input, Select } from "antd";
 
-export const BlogPostEdit = () => {
-  const { formProps, saveButtonProps, queryResult, formLoading } = useForm({});
-
-  const blogPostsData = queryResult?.data?.data;
+export const BlogPostCreate = () => {
+  const { formProps, saveButtonProps } = useForm({});
 
   const { selectProps: categorySelectProps } = useSelect({
     resource: "categories",
-    defaultValue: blogPostsData?.category,
-    queryOptions: {
-      enabled: !!blogPostsData?.category,
-    },
   });
 
   return (
-    <Edit saveButtonProps={saveButtonProps} isLoading={formLoading}>
+    <Create saveButtonProps={saveButtonProps}>
       <Form {...formProps} layout="vertical">
         <Form.Item
           label={"Title"}
@@ -40,18 +34,7 @@ export const BlogPostEdit = () => {
         >
           <MDEditor data-color-mode="light" />
         </Form.Item>
-        <Form.Item
-          label={"Category"}
-          name={["category", "id"]}
-          initialValue={formProps?.initialValues?.category?.id}
-          rules={[
-            {
-              required: true,
-            },
-          ]}
-        >
-          <Select {...categorySelectProps} />
-        </Form.Item>
+        
         <Form.Item
           label={"Status"}
           name={["status"]}
@@ -73,6 +56,6 @@ export const BlogPostEdit = () => {
           />
         </Form.Item>
       </Form>
-    </Edit>
+    </Create>
   );
 };
