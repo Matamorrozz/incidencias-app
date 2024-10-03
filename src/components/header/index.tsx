@@ -37,7 +37,7 @@ export const Header: React.FC<RefineThemedLayoutV2HeaderProps> = ({
         setUser({
           name: currentUser.displayName,
           email: currentUser.email,
-          avatar: currentUser.photoURL,
+          avatar: currentUser.photoURL || undefined,
         });
       } else {
         // Si no hay usuario autenticado, establecemos el estado como null
