@@ -2,15 +2,40 @@ import { Create, useForm } from "@refinedev/antd";
 import { Form, Input, Select, DatePicker } from "antd";
 import dayjs from "dayjs";  // Asegúrate de tener instalada esta librería para formatear las fechas
 
+// Definir los tipos para los valores del formulario
+type FormValues = {
+    persona_emisor: string;
+    nombre_emisor: string;
+    jefe_inmediato: string;
+    tipo_registro: string;
+    fecha_permiso: any; // Puedes cambiar a un tipo más específico si lo prefieres
+    info_registro: string;
+    status_acta: string;
+    area: string;
+};
+
 export const BlogPostCreate = () => {
-  const { formProps, saveButtonProps } = useForm({
-    // Aquí puedes configurar si quieres manejar alguna lógica adicional
-    // como predefinir valores o modificar el comportamiento del submit
-  });
+  // Especificamos que el hook useForm va a manejar FormValues
+  const { formProps, saveButtonProps } = useForm<FormValues>();
+
+  const handleFinish = (values: FormValues) => {
+    // Verificamos si fecha_permiso es un objeto de Dayjs y lo convertimos a formato "YYYY-MM-DD"
+    if (values.fecha_permiso && dayjs.isDayjs(values.fecha_permiso)) {
+      values.fecha_permiso = dayjs(values.fecha_permiso).format("YYYY-MM-DD");
+    }
+
+    // Log para ver los datos que se envían
+    console.log("Datos enviados a la API:", values);
+
+    // Verificamos si formProps.onFinish existe antes de llamarlo
+    if (formProps.onFinish) {
+      formProps.onFinish(values);
+    }
+  };
 
   return (
     <Create saveButtonProps={saveButtonProps}>
-      <Form {...formProps} layout="vertical">
+      <Form<FormValues> {...formProps} layout="vertical" onFinish={handleFinish}>
         <Form.Item
           label={"Persona Emisor"}
           name={["persona_emisor"]}
@@ -106,6 +131,26 @@ export const BlogPostCreate = () => {
               { value: "Favor de emitir", label: "Favor de emitir" },
               { value: "Emitida y firmada", label: "Emitida y firmada" },
               { value: "Pendiente de envío", label: "Pendiente de envío" },
+            ]}
+            style={{ width: 200 }}
+          />
+        </Form.Item>
+
+        <Form.Item
+          label={"Área"}
+          name={["area"]}
+          rules={[
+            {
+              required: true,
+              message: "El campo Área es obligatorio",
+            },
+          ]}
+        >
+          <Select
+            options={[
+              { value: "RRHH", label: "Recursos Humanos" },
+              { value: "IT", label: "Tecnología de la Información" },
+              { value: "Finanzas", label: "Finanzas" },
             ]}
             style={{ width: 200 }}
           />

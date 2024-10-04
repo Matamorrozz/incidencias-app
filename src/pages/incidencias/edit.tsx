@@ -95,6 +95,25 @@ export const BlogPostEdit = () => {
             style={{ width: 200 }}
           />
         </Form.Item>
+        <Form.Item
+          label={"Área"}
+          name={["area"]}
+          rules={[
+            {
+              required: true,
+              message: "El campo Área es obligatorio",
+            },
+          ]}
+        >
+          <Select
+            options={[
+              { value: "RRHH", label: "Recursos Humanos" },
+              { value: "IT", label: "Tecnología de la Información" },
+              { value: "Finanzas", label: "Finanzas" },
+            ]}
+            style={{ width: 200 }}
+          />
+        </Form.Item>
       </Form>
     </Edit>
   );

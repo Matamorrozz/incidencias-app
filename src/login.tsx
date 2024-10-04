@@ -23,12 +23,8 @@ const Login: React.FC = () => {
 
   return (
     <MDBContainer fluid className='background-radial-gradient overflow-hidden d-flex justify-content-center align-items-center vh-100'>
-      {/* Logo en la parte superior */}
-
-
       <MDBRow className='w-100 align-items-center justify-content-center'>
         <MDBCol className='d-flex justify-content-center'>
-          {/* Logo cargado desde public */}
           <img src="/ar_logo.png" alt="Logo" style={{ maxWidth: '25%', height: 'auto' }} />
         </MDBCol>
         <br />
@@ -39,7 +35,7 @@ const Login: React.FC = () => {
           </h1>
         </MDBCol>
 
-        <MDBCol md='6' className='d-flex flex-column justify-content-center align-items-start' style={{textAlign: "justify"}}>
+        <MDBCol md='6' className='d-flex flex-column justify-content-center align-items-start' style={{ textAlign: "justify" }}>
           <p className='text-start' style={{ color: 'hsl(218, 81%, 85%)', maxWidth: '400px' }}>
             Sistema de gestión de incidencias que te ayuda a organizar y seguir el progreso de tus reportes de manera eficiente y sencilla.
           </p>
@@ -56,12 +52,15 @@ const Login: React.FC = () => {
             style={{
               backgroundColor: '#4285F4',
               color: 'white',
-              padding: '10px 20px',
+              padding: '10px 40px',  // Aumenté el padding
               borderRadius: '25px',
               fontSize: '16px',
-              fontWeight: 'bold'
+              fontWeight: 'bold',
+              width: '100%',  // Ajusté el ancho para que sea adecuado
+              maxWidth: '250px',  // El ancho máximo que puede tener
+              height: '50px'      // Altura del botón
             }}
-            className="d-flex align-items-center"
+            className="d-flex align-items-center justify-content-center"
           >
             <MDBIcon fab icon='google' size="lg" className="me-2" /> Iniciar con Google
           </MDBBtn>
