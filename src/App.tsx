@@ -2,6 +2,10 @@ import { GitHubBanner, Refine } from "@refinedev/core";
 import { DevtoolsPanel, DevtoolsProvider } from "@refinedev/devtools";
 import { RefineKbar, RefineKbarProvider } from "@refinedev/kbar";
 import { Image } from "antd";
+import { useContext } from "react";
+import { Dashboard } from "./components/dashboard";
+import { BarChartOutlined, LineChartOutlined } from "@ant-design/icons";
+
 
 import {
   ErrorComponent,
@@ -10,6 +14,8 @@ import {
   useNotificationProvider,
 } from "@refinedev/antd";
 import "@refinedev/antd/dist/reset.css";
+
+import {ColorModeContext} from "./contexts/color-mode"
 
 import routerBindings, {
   DocumentTitleHandler,
@@ -65,18 +71,21 @@ function App() {
     return <div>Cargando...</div>;
   }
 
-  const LogoTitle = () => (
-    <div style={{ display: "flex", alignItems: "center", padding: "10px" }}>
-      <Image
-        src="/ar_logo.png" // Cambia esta ruta a la ruta de tu logo
-        alt="Logo"
-        width={150} // Ajusta el tamaño del logo si es necesario
-        preview={false} // Para evitar la vista previa de la imagen en Ant Design
-      />
-     
-    </div>
-  );
-
+  const LogoTitle = () => {
+    const { mode } = useContext(ColorModeContext); // Obtiene el modo de color
+    const modeImage = mode === "dark" ? "/ar_logo.png" : "LOGO_ASIAROBOTICA.png"; // Define la imagen según el modo
+  
+    return (
+      <div style={{ display: "flex", alignItems: "center", padding: "10px" }}>
+        <Image
+          src={modeImage} // Cambia la imagen según el tema
+          alt="Logo"
+          width={150} // Ajusta el tamaño del logo si es necesario
+          preview={false} // Evita la vista previa de la imagen en Ant Design
+        />
+      </div>
+    );
+  };
 
   return (
     <BrowserRouter>
@@ -90,6 +99,8 @@ function App() {
                   dataProvider={dataProvider("https://desarrollotecnologicoar.com/api3")}
                   notificationProvider={useNotificationProvider}
                   routerProvider={routerBindings}
+                  // Sider={CustomSider}
+                  
                   resources={[
                     {
                       name: "incidencias",
@@ -101,16 +112,17 @@ function App() {
                         canDelete: true,
                       },
                     },
-                    // {
-                    //   name: "categories",
-                    //   list: "/categories",
-                    //   create: "/categories/create",
-                    //   edit: "/categories/edit/:id",
-                    //   show: "/categories/show/:id",
-                    //   meta: {
-                    //     canDelete: true,
-                    //   },
-                    // },
+                    {
+                      name: "dashboard", 
+                      list: "/dashboard", 
+                      meta: {
+                          label: "Panel de control",
+                          icon: <BarChartOutlined />,
+
+                      },
+                    },
+
+
                   ]}
                   options={{
                     syncWithLocation: true,
@@ -147,6 +159,7 @@ function App() {
                         <Route path="show/:id" element={<CategoryShow />} />
                       </Route> */}
                       <Route path="*" element={<ErrorComponent />} />
+                      <Route path="/dashboard" element={<Dashboard />} />
                     </Route>
                   </Routes>
 
