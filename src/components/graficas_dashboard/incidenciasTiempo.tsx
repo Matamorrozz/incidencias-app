@@ -5,6 +5,7 @@ import { List, Spin, Table, Row, Col } from "@pankod/refine-antd";
 
 interface IncidenciasGraficaProps {
     agrupacion: 'dia' | 'semana' | 'mes';
+    dates: [string | null, string | null];
 }
 
 interface TiempoIncidencias {
@@ -12,14 +13,20 @@ interface TiempoIncidencias {
     value: number; // El número de incidencias
 }
 
-export const IncidenciasPorTiempoList: React.FC<IncidenciasGraficaProps> = ({ agrupacion }) => {
+export const IncidenciasPorTiempoList: React.FC<IncidenciasGraficaProps> = ({ agrupacion, dates }) => {
     const [data, setData] = useState<TiempoIncidencias[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const url = `https://www.desarrollotecnologicoar.com/api3/incidencias_fechas?agrupacion=${agrupacion}`;
+                let url = `https://www.desarrollotecnologicoar.com/api3/incidencias_fechas?agrupacion=${agrupacion}`;
+
+                const [startDate, endDate] = dates;
+                if (startDate && endDate) {
+                    url += `&startDate=${startDate}&endDate=${endDate}`;
+                }
+
                 const response = await axios.get(url);
 
                 // Ajustamos los datos para que se puedan usar en el gráfico de líneas
@@ -37,7 +44,7 @@ export const IncidenciasPorTiempoList: React.FC<IncidenciasGraficaProps> = ({ ag
         };
 
         fetchData();
-    }, [agrupacion]);
+    }, [agrupacion, dates]);
 
     // Configurar las columnas de la tabla
     const columns = [

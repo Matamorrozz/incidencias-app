@@ -69,7 +69,7 @@ export const Dashboard: React.FC = () => {
                             <Option value="semana">Semana</Option>
                             <Option value="mes">Mes</Option>
                         </Select>
-                        <IncidenciasPorTiempoList agrupacion={agrupacion} />
+                        <IncidenciasPorTiempoList agrupacion={agrupacion} dates={dates} />
                     </Card>
                 </Col>
 
