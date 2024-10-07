@@ -1,33 +1,30 @@
 import { Create, useForm } from "@refinedev/antd";
 import { Form, Input, Select, DatePicker } from "antd";
-import dayjs from "dayjs";  // Asegúrate de tener instalada esta librería para formatear las fechas
+import dayjs from "dayjs";
+import { FormInstance } from "antd";  // Asegúrate de importar FormInstance
 
-// Definir los tipos para los valores del formulario
 type FormValues = {
     persona_emisor: string;
     nombre_emisor: string;
     jefe_inmediato: string;
     tipo_registro: string;
-    fecha_permiso: any; // Puedes cambiar a un tipo más específico si lo prefieres
+    fecha_permiso: any;
     info_registro: string;
     status_acta: string;
     area: string;
 };
 
 export const BlogPostCreate = () => {
-  // Especificamos que el hook useForm va a manejar FormValues
-  const { formProps, saveButtonProps } = useForm<FormValues>();
+  // Aseguramos que el hook useForm esté tipado correctamente
+  const { formProps, saveButtonProps, form } = useForm<FormValues>();
 
   const handleFinish = (values: FormValues) => {
-    // Verificamos si fecha_permiso es un objeto de Dayjs y lo convertimos a formato "YYYY-MM-DD"
     if (values.fecha_permiso && dayjs.isDayjs(values.fecha_permiso)) {
       values.fecha_permiso = dayjs(values.fecha_permiso).format("YYYY-MM-DD");
     }
 
-    // Log para ver los datos que se envían
     console.log("Datos enviados a la API:", values);
 
-    // Verificamos si formProps.onFinish existe antes de llamarlo
     if (formProps.onFinish) {
       formProps.onFinish(values);
     }
@@ -35,98 +32,68 @@ export const BlogPostCreate = () => {
 
   return (
     <Create saveButtonProps={saveButtonProps}>
-      <Form<FormValues> {...formProps} layout="vertical" onFinish={handleFinish}>
+      <Form<FormValues>
+        {...formProps}
+        form={form as unknown as FormInstance<FormValues>}  // Vinculamos el FormInstance a los tipos correctos
+        layout="vertical"
+        onFinish={handleFinish}
+      >
         <Form.Item
-          label={"Persona Emisor"}
-          name={["persona_emisor"]}
-          rules={[
-            {
-              required: true,
-              message: "El campo Persona Emisor es obligatorio",
-            },
-          ]}
+          label="Persona Emisor"
+          name="persona_emisor"
+          rules={[{ required: true, message: "El campo Persona Emisor es obligatorio" }]}
         >
           <Input />
         </Form.Item>
 
         <Form.Item
-          label={"Nombre Emisor"}
-          name={["nombre_emisor"]}
-          rules={[
-            {
-              required: true,
-              message: "El campo Nombre Emisor es obligatorio",
-            },
-          ]}
+          label="Nombre Emisor"
+          name="nombre_emisor"
+          rules={[{ required: true, message: "El campo Nombre Emisor es obligatorio" }]}
         >
           <Input />
         </Form.Item>
 
         <Form.Item
-          label={"Jefe Inmediato"}
-          name={["jefe_inmediato"]}
-          rules={[
-            {
-              required: true,
-              message: "El campo Jefe Inmediato es obligatorio",
-            },
-          ]}
+          label="Jefe Inmediato"
+          name="jefe_inmediato"
+          rules={[{ required: true, message: "El campo Jefe Inmediato es obligatorio" }]}
         >
           <Input />
         </Form.Item>
 
         <Form.Item
-          label={"Tipo de Registro"}
-          name={["tipo_registro"]}
-          rules={[
-            {
-              required: true,
-              message: "El campo Tipo de Registro es obligatorio",
-            },
-          ]}
+          label="Tipo de Registro"
+          name="tipo_registro"
+          rules={[{ required: true, message: "El campo Tipo de Registro es obligatorio" }]}
         >
           <Input />
         </Form.Item>
 
         <Form.Item
-          label={"Fecha de Permiso"}
-          name={["fecha_permiso"]}
-          rules={[
-            {
-              required: true,
-              message: "El campo Fecha de Permiso es obligatorio",
-            },
-          ]}
+          label="Fecha de Permiso"
+          name="fecha_permiso"
+          rules={[{ required: true, message: "El campo Fecha de Permiso es obligatorio" }]}
         >
-          <DatePicker style={{ width: '100%' }} />
+          <DatePicker style={{ width: "100%" }} />
         </Form.Item>
 
         <Form.Item
-          label={"Información del Registro"}
+          label="Información del Registro"
           name="info_registro"
-          rules={[
-            {
-              required: true,
-              message: "El campo Información del Registro es obligatorio",
-            },
-          ]}
+          rules={[{ required: true, message: "El campo Información del Registro es obligatorio" }]}
         >
           <Input.TextArea rows={4} />
         </Form.Item>
 
         <Form.Item
-          label={"Status del Acta"}
-          name={["status_acta"]}
-          initialValue={"Favor de emitir"}
-          rules={[
-            {
-              required: true,
-              message: "El campo Status del Acta es obligatorio",
-            },
-          ]}
+          label="Status del Acta"
+          name="status_acta"
+          initialValue="Favor de emitir"
+          rules={[{ required: true, message: "El campo Status del Acta es obligatorio" }]}
         >
           <Select
-            defaultValue={"Favor de emitir"}
+            defaultValue="Favor de emitir"
             options={[
               { value: "Favor de emitir", label: "Favor de emitir" },
               { value: "Emitida y firmada", label: "Emitida y firmada" },
@@ -137,14 +104,9 @@ export const BlogPostCreate = () => {
         </Form.Item>
 
         <Form.Item
-          label={"Área"}
-          name={["area"]}
-          rules={[
-            {
-              required: true,
-              message: "El campo Área es obligatorio",
-            },
-          ]}
+          label="Área"
+          name="area"
+          rules={[{ required: true, message: "El campo Área es obligatorio" }]}
         >
           <Select
             options={[
