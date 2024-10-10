@@ -6,7 +6,7 @@ import { useContext } from "react";
 import { Dashboard } from "./components/dashboard";
 import { BarChartOutlined, LineChartOutlined } from "@ant-design/icons";
 
-
+import HomePage from "./components/inicio";
 import {
   ErrorComponent,
   ThemedLayoutV2,
@@ -156,6 +156,8 @@ function App() {
                         </ThemedLayoutV2>
                       }
                     >
+
+                      <Route index element={<HomePage />} />
                       <Route
                         index
                         element={<NavigateToResource resource="blog_posts" />}
