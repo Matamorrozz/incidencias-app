@@ -17,7 +17,7 @@ const getCurrentUserEmail = () => {
   return "sebastian quijas"; // Reemplaza esto con la lógica real
 };
 
-export const BlogPostList = () => {
+export const personaEmiteList = () => {
   const { tableProps } = useTable({
     syncWithLocation: true,
   });
@@ -43,7 +43,7 @@ export const BlogPostList = () => {
 
       // Si no es developer, mostrar solo los registros de la persona logueada
       return item.persona_emisor.toLowerCase() === "gerardo reynoso lópez";
-      // return item.persona_emisor.toLowerCase() === currentUserEmail.toLowerCase();
+      // return item.persona_emisor.toLowerCase() === currentUserEmail.toLowerCase();Gerardo Reynoso López
     })
     ?.filter((item: any) =>
       item.persona_emisor.toLowerCase().includes(searchText) ||
