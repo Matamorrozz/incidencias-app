@@ -6,7 +6,7 @@ import { useContext } from "react";
 import { Dashboard } from "./components/dashboard";
 import { BarChartOutlined, LineChartOutlined } from "@ant-design/icons";
 
-
+import HomePage from "./components/inicio";
 import {
   ErrorComponent,
   ThemedLayoutV2,
@@ -15,7 +15,7 @@ import {
 } from "@refinedev/antd";
 import "@refinedev/antd/dist/reset.css";
 
-import {ColorModeContext} from "./contexts/color-mode"
+import { ColorModeContext } from "./contexts/color-mode"
 
 import routerBindings, {
   DocumentTitleHandler,
@@ -74,7 +74,7 @@ function App() {
   const LogoTitle = () => {
     const { mode } = useContext(ColorModeContext); // Obtiene el modo de color
     const modeImage = mode === "dark" ? "/ar_logo.png" : "LOGO_ASIAROBOTICA.png"; // Define la imagen según el modo
-  
+
     return (
       <div style={{ display: "flex", alignItems: "center", padding: "10px" }}>
         <Image
@@ -100,7 +100,7 @@ function App() {
                   notificationProvider={useNotificationProvider}
                   routerProvider={routerBindings}
                   // Sider={CustomSider}
-                  
+
                   resources={[
                     {
                       name: "incidencias",
@@ -113,11 +113,11 @@ function App() {
                       },
                     },
                     {
-                      name: "dashboard", 
-                      list: "/dashboard", 
+                      name: "dashboard",
+                      list: "/dashboard",
                       meta: {
-                          label: "Panel de control",
-                          icon: <BarChartOutlined />,
+                        label: "Panel de control",
+                        icon: <BarChartOutlined />,
 
                       },
                     },
@@ -142,6 +142,8 @@ function App() {
                         </ThemedLayoutV2>
                       }
                     >
+
+                      <Route index element={<HomePage />} />
                       <Route
                         index
                         element={<NavigateToResource resource="blog_posts" />}

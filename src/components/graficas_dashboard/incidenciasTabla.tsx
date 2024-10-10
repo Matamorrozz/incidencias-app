@@ -30,7 +30,7 @@ const PiezasTable: React.FC<PiezasTableProps> = ({ selectedArea, selectedFecha, 
 
                 // Filtrar por fecha si se ha seleccionado una
                 if (selectedFecha) {
-                    filteredData = filteredData.filter((incidencia: any) => incidencia.fecha_permiso === selectedFecha.toLowerCase());
+                    filteredData = filteredData.filter((incidencia: any) => incidencia.marca_temporal === selectedFecha.toLowerCase());
                 }
 
                 // Filtrar por rango de fechas si se han seleccionado
