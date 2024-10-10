@@ -125,16 +125,16 @@ function App() {
 
                       },
                     },
-                    {
-                      name: "persona emite reporte",
-                      list: "/personaEmite",
-                      create: "/personaEmite/create",
-                      edit: "/personaEmite/edit/:id",
-                      show: "/personaEmite/show/:id",
-                      meta: {
-                        canDelete: true,
-                      },
-                    },
+                    // {
+                    //   name: "persona emite reporte",
+                    //   list: "/personaEmite",
+                    //   create: "/personaEmite/create",
+                    //   edit: "/personaEmite/edit/:id",
+                    //   show: "/personaEmite/show/:id",
+                    //   meta: {
+                    //     canDelete: true,
+                    //   },
+                    // },
 
 
                   ]}
