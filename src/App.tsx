@@ -28,18 +28,22 @@ import { BrowserRouter, Outlet, Route, Routes } from "react-router-dom";
 import { Header } from "./components/header";
 import { ColorModeContextProvider } from "./contexts/color-mode";
 
+
+
 import {
   BlogPostCreate,
   BlogPostEdit,
   BlogPostList,
   BlogPostShow,
 } from "./pages/incidencias";
+
 // import {
-//   CategoryCreate,
-//   CategoryEdit,
-//   CategoryList,
-//   CategoryShow,
-// } from "./pages/categories";
+//   personaEmiteCreate,
+//   personaEmiteEdit,
+//   personaEmiteList,
+//   personaEmiteShow,
+// } from "./pages/persona_emite_reporte";
+
 
 // Importaciones para Firebase
 import { useEffect, useState } from "react";
@@ -134,6 +138,16 @@ function App() {
 
                       },
                     },
+                    // {
+                    //   name: "persona emite reporte",
+                    //   list: "/personaEmite",
+                    //   create: "/personaEmite/create",
+                    //   edit: "/personaEmite/edit/:id",
+                    //   show: "/personaEmite/show/:id",
+                    //   meta: {
+                    //     canDelete: true,
+                    //   },
+                    // },
 
 
                   ]}
@@ -167,6 +181,12 @@ function App() {
                         <Route path="edit/:id" element={<BlogPostEdit />} />
                         <Route path="show/:id" element={<BlogPostShow />} />
                       </Route>
+                      {/* <Route path="/personaEmite">
+                        <Route index element={<personaEmiteList />} />
+                        <Route path="create" element={<personaEmiteCreate />} />
+                        <Route path="edit/:id" element={<personaEmiteEdit />} />
+                        <Route path="show/:id" element={<personaEmiteShow />} />
+                      </Route> */}
                       {/* <Route path="/categories">
                         <Route index element={<CategoryList />} />
                         <Route path="create" element={<CategoryCreate />} />
