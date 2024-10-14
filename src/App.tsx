@@ -4,8 +4,8 @@ import { RefineKbar, RefineKbarProvider } from "@refinedev/kbar";
 import { Image } from "antd";
 import { useContext } from "react";
 import { Dashboard } from "./components/dashboard";
-import { BarChartOutlined, LineChartOutlined } from "@ant-design/icons";
-
+import { BarChartOutlined, LineChartOutlined, UserAddOutlined } from "@ant-design/icons";
+import { Link } from "react-router-dom";
 import HomePage from "./components/inicio";
 import {
   ErrorComponent,
@@ -46,6 +46,7 @@ import { useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./firebaseConfig"; // Asegúrate de que tu archivo firebaseConfig.js esté bien configurado
 import Login from "./login"; // El componente de Login que creaste
+import UserCreate from "./components/alta_usuarios/users_form";
 
 function App() {
   const [authenticated, setAuthenticated] = useState(false); // Estado de autenticación
@@ -77,12 +78,15 @@ function App() {
 
     return (
       <div style={{ display: "flex", alignItems: "center", padding: "10px" }}>
-        <Image
-          src={modeImage} // Cambia la imagen según el tema
-          alt="Logo"
-          width={150} // Ajusta el tamaño del logo si es necesario
-          preview={false} // Evita la vista previa de la imagen en Ant Design
-        />
+        <Link to="/">
+          <Image
+            src={modeImage} // Cambia la imagen según el tema
+            alt="Logo"
+            width={150} // Ajusta el tamaño del logo si es necesario
+            preview={false} // Evita la vista previa de la imagen en Ant Design
+            style={{ cursor: "pointer" }} // Cambia el cursor al pasar por encima
+          />
+        </Link>
       </div>
     );
   };
@@ -118,6 +122,15 @@ function App() {
                       meta: {
                         label: "Panel de control",
                         icon: <BarChartOutlined />,
+
+                      },
+                    },
+                    {
+                      name: "user_form",
+                      list: "/user_form",
+                      meta: {
+                        label: "Alta de usuarios",
+                        icon: <UserAddOutlined />,
 
                       },
                     },
@@ -162,6 +175,7 @@ function App() {
                       </Route> */}
                       <Route path="*" element={<ErrorComponent />} />
                       <Route path="/dashboard" element={<Dashboard />} />
+                      <Route path="/user_form" element={<UserCreate />} />
                     </Route>
                   </Routes>
 
