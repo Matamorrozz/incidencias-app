@@ -1,9 +1,8 @@
-// Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";  // Importa el módulo de autenticación
-import { getAnalytics } from "firebase/analytics";
+import { getAuth } from "firebase/auth";
+import { getAnalytics, isSupported } from "firebase/analytics";
+import { getFirestore } from "firebase/firestore";
 
-// Tu configuración de Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyDArlaidbMgHfMvy4U6HcaNS3B9j59pN60",
   authDomain: "incidencias-a781e.firebaseapp.com",
@@ -17,6 +16,8 @@ const firebaseConfig = {
 // Inicializa Firebase
 const app = initializeApp(firebaseConfig);
 
-// Inicializa Firebase Authentication y Analytics
-export const auth = getAuth(app);  // Exporta la instancia de auth
-const analytics = getAnalytics(app);
+// Inicializa Authentication
+export const auth = getAuth(app);
+
+// Inicializa Firestore
+export const db = getFirestore(app);

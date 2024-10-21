@@ -1,23 +1,33 @@
 import React, { useState } from 'react';
-import { MDBBtn, MDBContainer, MDBRow, MDBCol, MDBIcon } from 'mdb-react-ui-kit';
-import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import { auth } from './firebaseConfig'; // Asegúrate de que este archivo esté correctamente configurado
-import './Login.css'; // Asegúrate de que el path es correcto
+import { MDBBtn, MDBContainer, MDBRow, MDBCol, MDBIcon, MDBInput } from 'mdb-react-ui-kit';
+import { GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from './firebaseConfig';
+import './Login.css';
 
 const Login: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
+  const [email, setEmail] = useState<string>(''); 
+  const [password, setPassword] = useState<string>(''); 
 
-  // Proveedor de Google
   const googleProvider = new GoogleAuthProvider();
 
-  // Iniciar sesión con Google
   const handleGoogleLogin = async () => {
-    setError(null); // Limpia el error previo
+    setError(null); 
     try {
-      // Inicia sesión con Firebase usando Google
-      await signInWithPopup(auth, googleProvider);
+      await signInWithPopup(auth, googleProvider); 
     } catch (err: any) {
-      setError(err.message); // Captura y muestra cualquier error
+      setError(err.message); 
+    }
+  };
+
+  const handleEmailPasswordLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    console.log("Email:", email, "Password:", password);
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch (err: any) {
+      setError(err.message); 
     }
   };
 
@@ -27,7 +37,6 @@ const Login: React.FC = () => {
         <MDBCol className='d-flex justify-content-center'>
           <img src="/ar_logo.png" alt="Logo" style={{ maxWidth: '25%', height: 'auto' }} />
         </MDBCol>
-        <br />
 
         <MDBCol md='6' className='d-flex flex-column justify-content-center align-items-start'>
           <h1 className="my-3 display-4 fw-bold text-start" style={{ color: 'hsl(218, 81%, 95%)' }}>
@@ -40,25 +49,65 @@ const Login: React.FC = () => {
             Sistema de gestión de incidencias que te ayuda a organizar y seguir el progreso de tus reportes de manera eficiente y sencilla.
           </p>
         </MDBCol>
-        <br />
 
-        {/* Columna para el botón */}
-        <MDBCol md='4' className='d-flex justify-content-center'>
-          {/* Mostrar errores si los hay */}
+        <MDBCol md='6' className='d-flex flex-column justify-content-center align-items-start' style={{ textAlign: "justify" }}>
           {error && <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
 
+          {/* Formulario alineado verticalmente */}
+          <form onSubmit={handleEmailPasswordLogin} className="w-100 d-flex flex-column align-items-center">
+            <MDBInput
+              label='Correo Electrónico'
+              id='email'
+              type='email'
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className='mb-3'
+              style={{ maxWidth: '300px', color: 'black' }}
+            />
+
+            <MDBInput
+              label='Contraseña'
+              id='password'
+              type='password'
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className='mb-4'
+              style={{ maxWidth: '300px', color: 'black' }}
+            />
+
+            <MDBBtn
+              type="submit"
+              style={{
+                backgroundColor: '#0d6efd',
+                color: 'white',
+                padding: '10px 40px',
+                borderRadius: '25px',
+                fontSize: '16px',
+                fontWeight: 'bold',
+                width: '100%',
+                maxWidth: '300px',
+                height: '50px',
+                marginBottom: '10px'
+              }}
+              className="d-flex align-items-center justify-content-center"
+            >
+              Iniciar Sesión
+            </MDBBtn>
+          </form>
+          </MDBCol>
+          <MDBCol md='6' className='d-flex flex-column justify-content-center align-items-start' style={{ textAlign: "justify" }}>
           <MDBBtn
             onClick={handleGoogleLogin}
             style={{
               backgroundColor: '#4285F4',
               color: 'white',
-              padding: '10px 40px',  // Aumenté el padding
+              padding: '10px 40px',
               borderRadius: '25px',
               fontSize: '16px',
               fontWeight: 'bold',
-              width: '100%',  // Ajusté el ancho para que sea adecuado
-              maxWidth: '250px',  // El ancho máximo que puede tener
-              height: '50px'      // Altura del botón
+              width: '100%',
+              maxWidth: '300px',
+              height: '50px'
             }}
             className="d-flex align-items-center justify-content-center"
           >

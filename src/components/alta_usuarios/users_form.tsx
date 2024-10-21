@@ -1,74 +1,128 @@
-import React from 'react';
-import { Form, Input, Select, Button } from "antd";
+import React, { useEffect, useState } from 'react';
+import { Form, Input, Button, message, Table } from "antd"; // Importamos `Table`
 import { Create, useForm } from "@refinedev/antd";
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { auth, db } from '../../firebaseConfig'; // Firebase config
+import { collection, getDocs, doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { useNavigate } from 'react-router-dom';
 
 const UserCreate: React.FC = () => {
-    const { formProps, saveButtonProps } = useForm();
+    const { formProps, saveButtonProps, form } = useForm();
+    const navigate = useNavigate();
+    const [usuarios, setUsuarios] = useState<any[]>([]); // Estado para almacenar usuarios
 
-    // Opciones para el dropdown de "fila"
-    const filaOptions = [
-        { label: 'Calidad', value: 'calidad' },
-        { label: 'Procesos', value: 'procesos' },
-        { label: 'Producción', value: 'producción' },
-        { label: 'Desarrollo Tecnológico', value: 'desarrollo_tecnologico' },
-        { label: 'Contabilidad', value: 'contabilidad' },
-        { label: 'Reparaciones', value: 'reparaciones' },
-    ];
-
-    // Función que se ejecuta al enviar el formulario
+    // Función para registrar un usuario
     const onFinish = async (values: any) => {
         try {
-            // Acomodar los valores según sea necesario
-            const formattedValues = {
-                usuario: values.usuario,
-                contraseña: values.contraseña,  // Si el backend espera "password" en vez de "contraseña"
-                nombre: values.nombre,
-                apellido_paterno: values.apellido_paterno,
-                apellido_materno: values.apellido_materno,
-                fila: values.fila,
-            };
+            console.log('Datos enviados:', values);
 
-            // Imprime los datos formateados que vas a enviar
-            console.log('Datos enviados:', formattedValues);
+            const userCredential = await createUserWithEmailAndPassword(
+                auth,
+                values.correo,
+                values.contraseña
+            );
 
-            const response = await fetch('https://desarrollotecnologicoar.com/api3/incidencias_usuarios', {
-                method: 'POST',  // Cambiar a PUT si es necesario
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formattedValues),  // Enviar los datos del formulario como JSON
+            const user = userCredential.user;
+            console.log('Usuario registrado con éxito:', user);
+
+            // Guardar en Firestore
+            await setDoc(doc(db, 'usuarios', user.uid), {
+                nombre: values.nombreCompleto,
+                apellido_paterno: values.apellidoPaterno,
+                apellido_materno: values.apellidoMaterno,
+                area: values.areaTrabajo,
+                contraseña: values.contraseña,
+                correo: values.correo,
+                fecha_creado: serverTimestamp(),
             });
 
-            if (!response.ok) {
-                const errorResponse = await response.text(); // Captura el error devuelto por el servidor
-                throw new Error(errorResponse || 'Error al registrar usuario');
-            }
+            console.log('Información guardada en Firestore.');
 
-            const result = await response.json();
-            console.log('Usuario registrado con éxito:', result);
-        } catch (error: unknown) {  // El tipo de error se marca como 'unknown'
-            // Verifica si el error es una instancia de Error
+            message.success('Usuario registrado exitosamente.');
+            form.resetFields(); // Limpiar formulario tras envío exitoso
+            fetchUsuarios(); // Refrescar tabla tras registrar usuario
+
+        } catch (error: unknown) {
             if (error instanceof Error) {
                 console.error('Error al registrar el usuario:', error.message);
+                message.error('Error al registrar el usuario. Intenta de nuevo.');
             } else {
                 console.error('Error inesperado:', error);
+                message.error('Ocurrió un error inesperado.');
             }
         }
     };
 
+    // Función para obtener usuarios de Firestore
+    const fetchUsuarios = async () => {
+        try {
+            const querySnapshot = await getDocs(collection(db, 'usuarios'));
+            const usuariosData = querySnapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data(),
+            }));
+            setUsuarios(usuariosData);
+        } catch (error) {
+            console.error('Error al obtener los usuarios:', error);
+            message.error('Error al cargar los usuarios.');
+        }
+    };
+
+    // Cargar usuarios y resetear formulario al montar el componente
+    useEffect(() => {
+        fetchUsuarios();
+        form.resetFields();
+    }, [form]);
+
+    // Definición de las columnas de la tabla
+    const columns = [
+        {
+            title: 'Correo',
+            dataIndex: 'correo',
+            key: 'correo',
+        },
+        {
+            title: 'Nombre Completo',
+            dataIndex: 'nombre',
+            key: 'nombre',
+        },
+        {
+            title: 'Apellido Paterno',
+            dataIndex: 'apellido_paterno',
+            key: 'apellido_paterno',
+        },
+        {
+            title: 'Apellido Materno',
+            dataIndex: 'apellido_materno',
+            key: 'apellido_materno',
+        },
+        {
+            title: 'Área de Trabajo',
+            dataIndex: 'area',
+            key: 'area',
+        },
+        {
+            title: 'Fecha Creado',
+            dataIndex: 'fecha_creado',
+            key: 'fecha_creado',
+            render: (text: any) => text?.toDate().toLocaleString(), // Mostrar timestamp como fecha legible
+        },
+    ];
+
     return (
         <Create saveButtonProps={saveButtonProps}>
             <Form {...formProps} layout="vertical" onFinish={onFinish}>
-                {/* Campo de usuario */}
                 <Form.Item
-                    label="Usuario"
-                    name="usuario"
-                    rules={[{ required: true, message: 'Por favor, ingresa un usuario' }]}
+                    label="Correo Electrónico"
+                    name="correo"
+                    rules={[
+                        { required: true, message: 'Por favor, ingresa un correo electrónico' },
+                        { type: 'email', message: 'Por favor, ingresa un correo válido' }
+                    ]}
                 >
-                    <Input placeholder="Usuario" />
+                    <Input placeholder="Correo Electrónico" />
                 </Form.Item>
 
-                {/* Campo de contraseña */}
                 <Form.Item
                     label="Contraseña"
                     name="contraseña"
@@ -77,52 +131,52 @@ const UserCreate: React.FC = () => {
                     <Input.Password placeholder="Contraseña" />
                 </Form.Item>
 
-                {/* Campo de nombre */}
                 <Form.Item
-                    label="Nombre"
-                    name="nombre"
-                    rules={[{ required: true, message: 'Por favor, ingresa un nombre' }]}
+                    label="Nombre Completo"
+                    name="nombreCompleto"
+                    rules={[{ required: true, message: 'Por favor, ingresa el nombre completo' }]}
                 >
-                    <Input placeholder="Nombre" />
+                    <Input placeholder="Nombre Completo" />
                 </Form.Item>
 
-                {/* Campo de apellido paterno */}
                 <Form.Item
                     label="Apellido Paterno"
-                    name="apellido_paterno"
+                    name="apellidoPaterno"
                     rules={[{ required: true, message: 'Por favor, ingresa el apellido paterno' }]}
                 >
                     <Input placeholder="Apellido Paterno" />
                 </Form.Item>
 
-                {/* Campo de apellido materno */}
                 <Form.Item
                     label="Apellido Materno"
-                    name="apellido_materno"
+                    name="apellidoMaterno"
                     rules={[{ required: true, message: 'Por favor, ingresa el apellido materno' }]}
                 >
                     <Input placeholder="Apellido Materno" />
                 </Form.Item>
 
-                {/* Campo de fila (lista desplegable) */}
                 <Form.Item
-                    label="Fila"
-                    name="fila"
-                    rules={[{ required: true, message: 'Por favor, selecciona una fila' }]}
+                    label="Área de Trabajo"
+                    name="areaTrabajo"
+                    rules={[{ required: true, message: 'Por favor, ingresa el área de trabajo' }]}
                 >
-                    <Select
-                        placeholder="Selecciona una fila"
-                        options={filaOptions}   // Pasar las opciones aquí
-                    />
+                    <Input placeholder="Área de Trabajo" />
                 </Form.Item>
 
-                {/* Botón de enviar */}
                 <Form.Item>
                     <Button type="primary" htmlType="submit">
                         Registrar Usuario
                     </Button>
                 </Form.Item>
             </Form>
+
+            {/* Tabla de usuarios */}
+            <Table 
+                dataSource={usuarios} 
+                columns={columns} 
+                rowKey="id" 
+                pagination={{ pageSize: 5 }} 
+            />
         </Create>
     );
 };

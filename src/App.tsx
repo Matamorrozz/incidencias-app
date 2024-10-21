@@ -6,7 +6,7 @@ import { useContext } from "react";
 import { Dashboard } from "./components/dashboard";
 import { BarChartOutlined, LineChartOutlined, UserAddOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
-import HomePage from "./components/inicio";
+import HomePage from "./inicio/inicio";
 import {
   ErrorComponent,
   ThemedLayoutV2,
@@ -51,18 +51,22 @@ import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./firebaseConfig"; // Asegúrate de que tu archivo firebaseConfig.js esté bien configurado
 import Login from "./login"; // El componente de Login que creaste
 import UserCreate from "./components/alta_usuarios/users_form";
+import { CreatePermit } from "./inicio/new_permit";
 
 function App() {
   const [authenticated, setAuthenticated] = useState(false); // Estado de autenticación
   const [loading, setLoading] = useState(true); // Para mostrar un estado de carga
+  const [userEmail, setuserEmail] = useState<string | null>(null);
 
   useEffect(() => {
     // Verifica el estado de autenticación de Firebase
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        setAuthenticated(true); // Si el usuario está autenticado
+        setAuthenticated(true);
+        setuserEmail(user.email); // Si el usuario está autenticado
       } else {
-        setAuthenticated(false); // Si no hay usuario
+        setAuthenticated(false); 
+        setuserEmail(null);// Si no hay usuario
       }
       setLoading(false); // Finaliza la carga
     });
@@ -95,6 +99,31 @@ function App() {
     );
   };
 
+  const resources = 
+  userEmail === "bernardo.ramirez@asiarobotica.com" || 
+  userEmail === "developer@asiarobotica.com"
+    ? [
+        {
+          name: "incidencias",
+          list: "/incidencias",
+          create: "/incidencias/create",
+          edit: "/incidencias/edit/:id",
+          show: "/incidencias/show/:id",
+          meta: { canDelete: true },
+        },
+        {
+          name: "dashboard",
+          list: "/dashboard",
+          meta: { label: "Panel de control", icon: <BarChartOutlined /> },
+        },
+        {
+          name: "user_form",
+          list: "/user_form",
+          meta: { label: "Alta de usuarios", icon: <UserAddOutlined /> },
+        },
+      ]
+    : [];
+
   return (
     <BrowserRouter>
       <RefineKbarProvider>
@@ -109,48 +138,7 @@ function App() {
                   routerProvider={routerBindings}
                   // Sider={CustomSider}
 
-                  resources={[
-                    {
-                      name: "incidencias",
-                      list: "/incidencias",
-                      create: "/incidencias/create",
-                      edit: "/incidencias/edit/:id",
-                      show: "/incidencias/show/:id",
-                      meta: {
-                        canDelete: true,
-                      },
-                    },
-                    {
-                      name: "dashboard",
-                      list: "/dashboard",
-                      meta: {
-                        label: "Panel de control",
-                        icon: <BarChartOutlined />,
-
-                      },
-                    },
-                    {
-                      name: "user_form",
-                      list: "/user_form",
-                      meta: {
-                        label: "Alta de usuarios",
-                        icon: <UserAddOutlined />,
-
-                      },
-                    },
-                    // {
-                    //   name: "persona emite reporte",
-                    //   list: "/personaEmite",
-                    //   create: "/personaEmite/create",
-                    //   edit: "/personaEmite/edit/:id",
-                    //   show: "/personaEmite/show/:id",
-                    //   meta: {
-                    //     canDelete: true,
-                    //   },
-                    // },
-
-
-                  ]}
+                  resources={resources}
                   options={{
                     syncWithLocation: true,
                     warnWhenUnsavedChanges: true,
@@ -196,6 +184,7 @@ function App() {
                       <Route path="*" element={<ErrorComponent />} />
                       <Route path="/dashboard" element={<Dashboard />} />
                       <Route path="/user_form" element={<UserCreate />} />
+                      <Route path="/create_permit" element={<CreatePermit />} />
                     </Route>
                   </Routes>
 
