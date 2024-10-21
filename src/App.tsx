@@ -4,7 +4,7 @@ import { RefineKbar, RefineKbarProvider } from "@refinedev/kbar";
 import { Image } from "antd";
 import { useContext } from "react";
 import { Dashboard } from "./components/dashboard";
-import { BarChartOutlined, LineChartOutlined, UserAddOutlined } from "@ant-design/icons";
+import { BarChartOutlined, InboxOutlined, LineChartOutlined, UserAddOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import HomePage from "./inicio/inicio";
 import {
@@ -52,32 +52,36 @@ import { auth } from "./firebaseConfig"; // Asegúrate de que tu archivo firebas
 import Login from "./login"; // El componente de Login que creaste
 import UserCreate from "./components/alta_usuarios/users_form";
 import { CreatePermit } from "./inicio/new_permit";
+import { TablaPermisos } from "./bandeja_entrada/bandeja_entrada";
+import { IncomingMessage } from "http";
+import { useUnreviewedPermitsCount } from "./hooks/conteoPermisos";
+import { DetallePermiso } from "./bandeja_entrada/permiso_id";
+
 
 function App() {
   const [authenticated, setAuthenticated] = useState(false); // Estado de autenticación
   const [loading, setLoading] = useState(true); // Para mostrar un estado de carga
   const [userEmail, setuserEmail] = useState<string | null>(null);
-
+  const count = useUnreviewedPermitsCount();
   useEffect(() => {
-    // Verifica el estado de autenticación de Firebase
+    // Verificación de autenticación con Firebase
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setAuthenticated(true);
-        setuserEmail(user.email); // Si el usuario está autenticado
+        setuserEmail(user.email); // Guardamos el correo del usuario
       } else {
-        setAuthenticated(false); 
-        setuserEmail(null);// Si no hay usuario
+        setAuthenticated(false);
+        setuserEmail(null); // No hay usuario
       }
-      setLoading(false); // Finaliza la carga
+      setLoading(false); // Terminamos el estado de carga
     });
 
-    // Limpieza de listener al desmontar
-    return () => unsubscribe();
+    return () => unsubscribe(); // Limpiamos el listener al desmontar
   }, []);
 
+  // Mostrar mensaje de carga
   if (loading) {
-    // Mientras se verifica el estado de autenticación
-    return <div>Cargando...</div>;
+    return <div style={{ textAlign: "center", marginTop: "20%" }}>Cargando...</div>;
   }
 
   const LogoTitle = () => {
@@ -99,10 +103,46 @@ function App() {
     );
   };
 
-  const resources = 
-  userEmail === "bernardo.ramirez@asiarobotica.com" || 
-  userEmail === "developer@asiarobotica.com"
-    ? [
+  console.log("Permisos sin revisar: ", count)
+  const resources =
+    userEmail === "bernardo.ramirez@asiarobotica.com" ||
+      userEmail === "developer@asiarobotica.com"
+      ? [
+        {
+          name: "tabla_permisos",
+          list: "/bandeja_entrada",
+          meta: {
+            label: "Bandeja entrada",
+            icon: (
+              <div style={{ display: "flex", alignItems: "center" }}>
+
+                {count > 0 ? (
+                  <div
+                    style={{
+                      backgroundColor: "#ff4d4f",
+                      color: "white",
+                      borderRadius: "50%",
+                      width: "20px",
+                      height: "20px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      marginLeft: "0px",
+                      fontSize: "12px",
+                    }}
+                  >
+                    {count}
+                  </div>
+                ):(
+                  <InboxOutlined style={{ marginRight: "8px" }} />
+                )}
+              </div>
+            ),
+          },
+        },
+
+
+
         {
           name: "incidencias",
           list: "/incidencias",
@@ -121,8 +161,9 @@ function App() {
           list: "/user_form",
           meta: { label: "Alta de usuarios", icon: <UserAddOutlined /> },
         },
+
       ]
-    : [];
+      : [];
 
   return (
     <BrowserRouter>
@@ -149,42 +190,26 @@ function App() {
                   <Routes>
                     <Route
                       element={
-                        <ThemedLayoutV2
-                          Header={() => <Header sticky />}
-                          Title={() => <LogoTitle />} // Aquí pasamos el logo en el título
-                        >
+                        <ThemedLayoutV2 Header={() => <Header sticky />} Title={() => <LogoTitle />}>
                           <Outlet />
                         </ThemedLayoutV2>
                       }
                     >
+                      <Route path="/" element={<HomePage />} /> {/* Ruta de inicio */}
 
-                      <Route index element={<HomePage />} />
-                      <Route
-                        index
-                        element={<NavigateToResource resource="blog_posts" />}
-                      />
                       <Route path="/incidencias">
                         <Route index element={<BlogPostList />} />
                         <Route path="create" element={<BlogPostCreate />} />
                         <Route path="edit/:id" element={<BlogPostEdit />} />
                         <Route path="show/:id" element={<BlogPostShow />} />
                       </Route>
-                      {/* <Route path="/personaEmite">
-                        <Route index element={<personaEmiteList />} />
-                        <Route path="create" element={<personaEmiteCreate />} />
-                        <Route path="edit/:id" element={<personaEmiteEdit />} />
-                        <Route path="show/:id" element={<personaEmiteShow />} />
-                      </Route> */}
-                      {/* <Route path="/categories">
-                        <Route index element={<CategoryList />} />
-                        <Route path="create" element={<CategoryCreate />} />
-                        <Route path="edit/:id" element={<CategoryEdit />} />
-                        <Route path="show/:id" element={<CategoryShow />} />
-                      </Route> */}
-                      <Route path="*" element={<ErrorComponent />} />
+
                       <Route path="/dashboard" element={<Dashboard />} />
                       <Route path="/user_form" element={<UserCreate />} />
                       <Route path="/create_permit" element={<CreatePermit />} />
+                      <Route path="/bandeja_entrada" element={<TablaPermisos />} />
+                      <Route path="/detalle_permiso/:id" element={<DetallePermiso />} /> 
+                      <Route path="*" element={<ErrorComponent />} /> {/* Ruta para errores */}
                     </Route>
                   </Routes>
 

@@ -2,10 +2,10 @@ import { Create, useForm } from "@refinedev/antd";
 import { Form, Input, Select, DatePicker, Button, message } from "antd";
 import dayjs from "dayjs";
 import { FormInstance } from "antd";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { collection, query, where, getDocs } from "firebase/firestore";
-import { auth, db } from "../firebaseConfig"; // Asegúrate de importar la configuración correcta
+import { auth, db } from "../firebaseConfig";
 
 type FormValues = {
   nombre_completo: string;
@@ -21,7 +21,9 @@ type FormValues = {
 
 export const CreatePermit = () => {
   const { formProps, saveButtonProps, form } = useForm<FormValues>();
-  const [userData, setUserData] = useState<Partial<FormValues>>({}); // Estado para los datos del usuario
+  const [userData, setUserData] = useState<Partial<FormValues>>({});
+  const [loading, setLoading] = useState(false); // Estado para deshabilitar el botón de envío
+  const isSubmitting = useRef(false); // Flag para evitar múltiples envíos
 
   // Escucha los cambios de autenticación y busca los datos del usuario en Firestore
   useEffect(() => {
@@ -29,21 +31,17 @@ export const CreatePermit = () => {
       if (user) {
         try {
           const correo = user.email;
-
-          // Realizamos la consulta a Firestore para obtener los datos del usuario
           const q = query(
-            collection(db, "usuarios"), // Asegúrate de que esta es tu colección
-            where("correo", "==", correo) // Filtramos por el correo del usuario autenticado
+            collection(db, "usuarios"),
+            where("correo", "==", correo)
           );
-
           const querySnapshot = await getDocs(q);
 
           if (!querySnapshot.empty) {
-            const userDoc = querySnapshot.docs[0].data(); // Obtenemos el primer resultado
+            const userDoc = querySnapshot.docs[0].data();
             setUserData(userDoc);
-            const nombreCompleto = `${userDoc.nombre} ${userDoc.apellido_paterno} ${userDoc.apellido_materno}`; 
+            const nombreCompleto = `${userDoc.nombre} ${userDoc.apellido_paterno} ${userDoc.apellido_materno}`;
 
-            // Establecemos los valores iniciales del formulario
             form.setFieldsValue({
               nombre_completo: nombreCompleto,
               correo: userDoc.correo,
@@ -60,26 +58,39 @@ export const CreatePermit = () => {
       }
     });
 
-    return () => unsubscribe(); // Limpieza del listener
+    return () => unsubscribe();
   }, [form]);
 
   const handleFinish = async (values: FormValues) => {
+    if (isSubmitting.current) return; // Evitar múltiples envíos
+    isSubmitting.current = true; // Establecer flag de envío
+
     try {
+      setLoading(true); // Mostrar estado de carga en el botón
+
+      // Formatear la fecha
       if (values.fecha_permiso && dayjs.isDayjs(values.fecha_permiso)) {
         values.fecha_permiso = dayjs(values.fecha_permiso).format("YYYY-MM-DD");
       }
 
-      console.log("Datos enviados al servidor:", values);
+      // Establecer el status como "Pendiente"
+      const dataToSend = { ...values, status: "Pendiente" };
 
-      const response = await fetch("https://www.desarrollotecnologicoar.com/api3/crear_permiso", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
-      });
+      console.log("Datos enviados al servidor:", dataToSend);
+
+      const response = await fetch(
+        "https://www.desarrollotecnologicoar.com/api3/crear_permiso",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(dataToSend),
+        }
+      );
 
       if (response.ok) {
         message.success("Permiso registrado con éxito");
         form.resetFields();
+        
       } else {
         const errorData = await response.json();
         message.error(`Error: ${errorData.message}`);
@@ -87,6 +98,9 @@ export const CreatePermit = () => {
     } catch (error) {
       console.error("Error al enviar los datos:", error);
       message.error("Hubo un error al registrar el permiso.");
+    } finally {
+      setLoading(false); // Restaurar el estado de carga
+      isSubmitting.current = false; // Reiniciar el flag de envío
     }
   };
 
@@ -167,19 +181,6 @@ export const CreatePermit = () => {
         </Form.Item>
 
         <Form.Item
-          label="Status"
-          name="status"
-          initialValue="Pendiente"
-          rules={[{ required: true, message: "El campo Status es obligatorio" }]}
-        >
-          <Select options={[
-            { value: "Pendiente", label: "Pendiente" },
-            { value: "Aprobado", label: "Aprobado" },
-            { value: "Rechazado", label: "Rechazado" },
-          ]} />
-        </Form.Item>
-
-        <Form.Item
           label="Fecha de Permiso"
           name="fecha_permiso"
           rules={[{ required: true, message: "El campo Fecha de Permiso es obligatorio" }]}
@@ -187,9 +188,8 @@ export const CreatePermit = () => {
           <DatePicker style={{ width: "100%" }} />
         </Form.Item>
 
-        {/* Botón de Enviar */}
         <Form.Item>
-          <Button type="primary" htmlType="submit" {...saveButtonProps}>
+          <Button type="primary" htmlType="submit" loading={loading} {...saveButtonProps}>
             Enviar
           </Button>
         </Form.Item>
