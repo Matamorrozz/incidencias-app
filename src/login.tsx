@@ -32,89 +32,87 @@ const Login: React.FC = () => {
   };
 
   return (
-    <MDBContainer fluid className='background-radial-gradient overflow-hidden d-flex justify-content-center align-items-center vh-100'>
-      <MDBRow className='w-100 align-items-center justify-content-center'>
-        <MDBCol className='d-flex justify-content-center'>
-          <img src="/ar_logo.png" alt="Logo" style={{ maxWidth: '25%', height: 'auto' }} />
-        </MDBCol>
-
-        <MDBCol md='6' className='d-flex flex-column justify-content-center align-items-start'>
-          <h1 className="my-3 display-4 fw-bold text-start" style={{ color: 'hsl(218, 81%, 95%)' }}>
+    <MDBContainer fluid className='background-radial-gradient overflow-hidden vh-100 d-flex justify-content-center align-items-center'>
+      {/* Contenedor del formulario con tamaño uniforme */}
+      <div 
+        className="p-5 rounded-3 shadow-lg"
+        style={{
+          maxWidth: '500px',  // Ancho máximo del contenedor
+        
+        }}
+      >
+        <div className="text-center mb-4">
+          <img 
+            src="/ar_logo.png" 
+            alt="Logo" 
+            style={{ width: '80px', marginBottom: '10px' }} 
+          />
+          <h1 className="display-6 fw-bold" style={{ color: 'hsl(218, 81%, 95%)' }}>
             INCIDENCIAS AR
           </h1>
-        </MDBCol>
-
-        <MDBCol md='6' className='d-flex flex-column justify-content-center align-items-start' style={{ textAlign: "justify" }}>
-          <p className='text-start' style={{ color: 'hsl(218, 81%, 85%)', maxWidth: '400px' }}>
+          <p style={{ color: 'hsl(218, 81%, 85%)' }}>
             Sistema de gestión de incidencias que te ayuda a organizar y seguir el progreso de tus reportes de manera eficiente y sencilla.
           </p>
-        </MDBCol>
+        </div>
 
-        <MDBCol md='6' className='d-flex flex-column justify-content-center align-items-start' style={{ textAlign: "justify" }}>
-          {error && <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
+        {error && <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
 
-          {/* Formulario alineado verticalmente */}
-          <form onSubmit={handleEmailPasswordLogin} className="w-100 d-flex flex-column align-items-center">
-            <MDBInput
-              label='Correo Electrónico'
-              id='email'
-              type='email'
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className='mb-3'
-              style={{ maxWidth: '300px', color: 'black' }}
-            />
+        <form onSubmit={handleEmailPasswordLogin} className="d-flex flex-column gap-3">
+          <p>Correo Electrónico</p>
+          <MDBInput
+            id='email'
+            type='email'
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            style={{ width: '100%' , borderRadius: '10px'}}
+          />
 
-            <MDBInput
-              label='Contraseña'
-              id='password'
-              type='password'
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className='mb-4'
-              style={{ maxWidth: '300px', color: 'black' }}
-            />
+           <p>Contraseña</p>
+          <MDBInput
+            id='password'
+            type='password'
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            style={{ width: '100%' , borderRadius: '10px'}}
+          />
 
+          {/* Botones alineados en una fila horizontal */}
+          <br></br>
+          <div className="d-flex justify-content-between gap-2">
             <MDBBtn
               type="submit"
+              className="w-100"
               style={{
                 backgroundColor: '#0d6efd',
                 color: 'white',
-                padding: '10px 40px',
+                padding: '10px 0',
                 borderRadius: '25px',
                 fontSize: '16px',
                 fontWeight: 'bold',
-                width: '100%',
-                maxWidth: '300px',
                 height: '50px',
-                marginBottom: '10px'
               }}
-              className="d-flex align-items-center justify-content-center"
             >
               Iniciar Sesión
             </MDBBtn>
-          </form>
-          </MDBCol>
-          <MDBCol md='6' className='d-flex flex-column justify-content-center align-items-start' style={{ textAlign: "justify" }}>
-          <MDBBtn
-            onClick={handleGoogleLogin}
-            style={{
-              backgroundColor: '#4285F4',
-              color: 'white',
-              padding: '10px 40px',
-              borderRadius: '25px',
-              fontSize: '16px',
-              fontWeight: 'bold',
-              width: '100%',
-              maxWidth: '300px',
-              height: '50px'
-            }}
-            className="d-flex align-items-center justify-content-center"
-          >
-            <MDBIcon fab icon='google' size="lg" className="me-2" /> Iniciar con Google
-          </MDBBtn>
-        </MDBCol>
-      </MDBRow>
+<br></br>
+            <MDBBtn
+              onClick={handleGoogleLogin}
+              className="w-100"
+              style={{
+                backgroundColor: '#4285F4',
+                color: 'white',
+                padding: '10px 0',
+                borderRadius: '25px',
+                fontSize: '16px',
+                fontWeight: 'bold',
+                height: '50px'
+              }}
+            >
+              <MDBIcon fab icon='google' size="lg" className="me-2" /> Google
+            </MDBBtn>
+          </div>
+        </form>
+      </div>
     </MDBContainer>
   );
 };
