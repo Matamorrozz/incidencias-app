@@ -1,19 +1,23 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Card, Button, Spin, message, Typography, Tag, Space } from "antd";
+import { Card, Button, Spin, message, Typography, Tag, Space, Modal, Form, Input, DatePicker, Select } from "antd";
 import axios from "axios";
-
-const { Title, Text } = Typography;
+import { auth } from "../firebaseConfig";
+import dayjs from "dayjs";
+const { Text } = Typography;
 
 interface Permiso {
   id: string;
+  fecha_solicitud: string;
   nombre_completo: string;
   correo: string;
-  fecha_solicitud: string;
+  jefe_inmediato: string;
+  area: string;
   tipo_permiso: string;
   urgencia: boolean;
   comentarios: string;
   status: string;
+  fecha_permiso: string;
 }
 
 export const DetallePermiso = () => {
@@ -21,6 +25,12 @@ export const DetallePermiso = () => {
   const navigate = useNavigate(); // Navegar entre rutas
   const [loading, setLoading] = useState(true); // Estado de carga
   const [permiso, setPermiso] = useState<Permiso | null>(null); // Estado del permiso
+  const [user, setUser] = useState<any>(null); // Usuario autenticado
+  const [isModalVisible, setIsModalVisible] = useState(false); // Control del modal
+  const [isRejectModalVisible, setIsRejectModalVisible] = useState(false);
+  const [nuevoStatus, setNuevoStatus] = useState<string>(""); // Estado del nuevo status
+
+  const [form] = Form.useForm(); // Crear una instancia del formulario
 
   // Función para obtener los datos del permiso
   const fetchPermiso = async () => {
@@ -37,30 +47,88 @@ export const DetallePermiso = () => {
     }
   };
 
+  // Validar datos del usuario
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) {
+        setUser(user); // Guardar el usuario autenticado
+      } else {
+        message.error("Usuario no autenticado");
+        navigate("/login");
+      }
+    });
+
+    return () => unsubscribe(); // Limpiar el listener
+  }, [navigate]);
+
   // useEffect para cargar los datos al montar el componente
   useEffect(() => {
     fetchPermiso();
   }, [id]);
 
-  // Función para actualizar el status en la API
-  const actualizarStatus = async (nuevoStatus: string) => {
-    console.log("ID:", id); // Verificar que el ID sea correcto
-    console.log("Nuevo Status:", nuevoStatus); // Verificar el estado enviado
-  
+  const showModal = (status: string) => {
+    setNuevoStatus(status); // Guardamos el nuevo status (Aprobado o Rechazado)
+    if (permiso && user) {
+      form.setFieldsValue({
+        persona_emisor: user.displayName || user.email,
+        nombre_emisor: permiso.nombre_completo,
+        jefe_inmediato: permiso.jefe_inmediato,
+        area: permiso.area,
+        fecha_permiso: dayjs(permiso.fecha_permiso).format("YYYY-MM-DD")
+      });
+    }
+    setIsModalVisible(true); // Mostrar el modal
+  };
+
+  const handleCancel = () => setIsModalVisible(false); // Cerrar el modal
+  const handleRejectCancel = () => setIsRejectModalVisible(false);
+
+  // Función para enviar el formulario
+  const handleOk = async () => {
     try {
-      const response = await axios.put(
+      const values = await form.validateFields(); // Validar los campos del formulario
+      console.log("Valores del formulario:", values);
+
+      // Llamada a la API para actualizar el estado
+      await axios.put(
         `https://desarrollotecnologicoar.com/api3/actualizar_status/${id}`,
-        { status: nuevoStatus }
+        { status: nuevoStatus, ...values }
       );
-  
-      console.log("Respuesta de la API:", response.data); // Verificar la respuesta
-      message.success(`El permiso ha sido ${nuevoStatus.toLowerCase()}.`);
+      message.success(`El permiso ha sido ${nuevoStatus.toLowerCase()} correctamente.`);
       navigate("/bandeja_entrada"); // Redirigir a la bandeja
     } catch (error) {
-      console.error("Error al actualizar el status:", error); // Mostrar el error
-      message.error("Hubo un error al actualizar el status.");
+      console.error("Error al actualizar el permiso:", error);
+      message.error("Hubo un error al actualizar el permiso.");
     }
+    try {
+      const values = await form.validateFields(); // Validar los campos del formulario
+      console.log("Valores del formulario:", values);
+      await axios.post(`https://desarrollotecnologicoar.com/api3/incidencias`, values);
+      message.success("El permiso se ha registrado correctamente.");
+      navigate("/bandeja_entrada");
+    } catch (error) {
+      console.error("Error al enviar el formulario:", error);
+      message.error("Hubo un error al registrar el permiso.");
+    }
+
+
   };
+
+    // Modal para confirmar el rechazo
+    const confirmRejection = async () => {
+      try {
+        await axios.put(
+          `https://desarrollotecnologicoar.com/api3/actualizar_status/${id}`,
+          { status: "Rechazado" }
+        );
+        message.success("El permiso ha sido rechazado.");
+        navigate("/bandeja_entrada");
+      } catch (error) {
+        console.error("Error al rechazar el permiso:", error);
+        message.error("Hubo un error al rechazar el permiso.");
+      }
+    };
+
   if (loading) {
     return <Spin size="large" style={{ display: "block", margin: "100px auto" }} />;
   }
@@ -99,7 +167,7 @@ export const DetallePermiso = () => {
         <Text strong>Status Actual:</Text>
         <Tag color={
           permiso.status === "Pendiente" ? "orange" :
-          permiso.status === "Aprobado" ? "green" : "red"
+            permiso.status === "Aprobado" ? "green" : "red"
         }>
           {permiso.status}
         </Tag>
@@ -107,20 +175,85 @@ export const DetallePermiso = () => {
         <Space size="middle" style={{ marginTop: "20px" }}>
           <Button
             type="primary"
-            onClick={() => actualizarStatus("Aprobado")}
+            onClick={() => showModal("Aprobado")}
             disabled={permiso.status === "Aprobado"}
           >
             Aprobar Permiso
           </Button>
           <Button
             danger
-            onClick={() => actualizarStatus("Rechazado")}
+            onClick={() => showModal("Rechazado")}
             disabled={permiso.status === "Rechazado"}
           >
             Rechazar Permiso
           </Button>
         </Space>
       </Space>
+
+      <Modal
+        title="Confirmar Cambio de Permiso"
+        visible={isModalVisible}
+        onOk={handleOk}
+        onCancel={handleCancel}
+        width={800}
+      >
+        <Form form={form} layout="vertical">
+
+          <Form.Item label="Persona Emisora" name="persona_emisor">
+            <Input disabled />
+          </Form.Item>
+
+          <Form.Item label="Nombre Emisor" name="nombre_emisor">
+            <Input disabled />
+          </Form.Item>
+
+          <Form.Item label="Jefe Inmediato" name="jefe_inmediato">
+            <Input disabled />
+          </Form.Item>
+
+          <Form.Item label="Tipo de Registro" name="tipo_registro" rules={[{ required: true, message: 'Campo requerido' }]}>
+          <Select options={[
+            { value: "Mala actitud", label: "Reporte de actitud (irresponsabilidad, acciones negativas, daños, etc)." },
+            { value: "Permiso de llegada tarde", label: "Permiso de llegada tarde por asuntos personales." },
+            { value: "Permiso de inasistencia a cuenta de vacaciones.", label: "Permiso de inasistencia a cuenta de vacaciones." },
+            { value: "Permiso de salida temprano.", label: "Permiso de salida temprano." },
+            { value: "Llegada tarde no justificada.", label: "Llegada tarde no justificada." },
+            { value: "Permiso de llegada tarde por cita médica (IMSS).", label: "Permiso de llegada tarde por cita médica (IMSS)." },
+            { value: "Falta justificada de acuerdo al Reglamento Interior de Trabajo.", label: "Falta justificada de acuerdo al Reglamento Interior de Trabajo." },
+            { value: "Falta injustificada.", label: "Falta injustificada." },
+            { value: "Permiso tiempo x tiempo controlado", label: "Permiso tiempo x tiempo controlado" },
+            { value: "Falta por incapacidad del IMSS.", label: "Falta por incapacidad del IMSS." },
+            { value: "Permiso de inasistencia sin goce de sueldo.", label: "Permiso de inasistencia sin goce de sueldo." },
+          ]} />
+          </Form.Item>
+
+          <Form.Item label="Fecha del Permiso" name="fecha_permiso">
+            <Input disabled />
+          </Form.Item>
+
+          <Form.Item label="Información del Registro" name="info_registro">
+            <Input.TextArea rows={5} />
+          </Form.Item>
+
+          <Form.Item label="Status del Acta" name="status_acta" rules={[{ required: true, message: 'Campo requerido' }]}>
+            <Select options={[
+              {value:"Favor de emitir" , label:"Favor de emitir" },
+              {value:"Emitida y firmada (enviada a RH)" , label:"Emitida y firmada (enviada a RH)" },
+              {value:"Emitida y firmada (pendiente de enviarse a RH)" , label:"Emitida y firmada (pendiente de enviarse a RH)" },
+              {value:"Emitida y en espera de recabar firmas" , label:"Emitida y en espera de recabar firmas" },
+
+            ]}/>
+          </Form.Item>
+
+          <Form.Item label="Área" name="area">
+            <Input disabled />
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      <Modal title="Confirmar Rechazo" visible={isRejectModalVisible} onOk={confirmRejection} onCancel={handleRejectCancel}>
+        <p>¿Estás seguro de rechazar este permiso?</p>
+      </Modal>
     </Card>
   );
 };
