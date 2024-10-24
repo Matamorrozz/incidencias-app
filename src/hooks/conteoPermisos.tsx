@@ -48,7 +48,6 @@ export const useUnreviewedPermitsCount = (): number => {
         );
 
         const registros = response.data; // Lista de todos los registros
-        console.log("Registros obtenidos:", registros); // Depuración
 
         // Filtramos los registros con estado 'Pendiente'
         const pendientes = registros.filter(

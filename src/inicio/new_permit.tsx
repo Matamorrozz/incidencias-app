@@ -24,7 +24,15 @@ export const CreatePermit = () => {
   const [userData, setUserData] = useState<Partial<FormValues>>({});
   const [loading, setLoading] = useState(false); // Estado para deshabilitar el botón de envío
   const isSubmitting = useRef(false); // Flag para evitar múltiples envíos
-
+  
+  const convertirTexto = (texto: string): string => {
+    return texto
+      .normalize("NFD")                    // Descompone caracteres Unicode (Ej: á -> a + ́)
+      .replace(/[\u0300-\u036f]/g, "")     // Elimina los diacríticos (acentos)
+      .toLowerCase()                       // Convierte a minúsculas
+      .replace(/\s+/g, '_');               // Reemplaza espacios por guiones bajos
+  };
+  
   // Escucha los cambios de autenticación y busca los datos del usuario en Firestore
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -46,7 +54,7 @@ export const CreatePermit = () => {
               nombre_completo: nombreCompleto,
               correo: userDoc.correo,
               jefe_inmediato: userDoc.jefe_inmediato,
-              area: userDoc.area,
+              area: convertirTexto(userDoc.area),
             });
           } else {
             message.error("No se encontró información del usuario.");

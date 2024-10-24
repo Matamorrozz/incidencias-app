@@ -1,17 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { Form, Input, Button, message, Table } from "antd"; // Importamos `Table`
+import { Form, Input, Button, message, Table, Popconfirm } from "antd"; 
 import { Create, useForm } from "@refinedev/antd";
-import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth, db } from '../../firebaseConfig'; // Firebase config
-import { collection, getDocs, doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { createUserWithEmailAndPassword, deleteUser } from 'firebase/auth';
+import { auth, db } from '../../firebaseConfig';
+import { collection, getDocs, doc, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 
 const UserCreate: React.FC = () => {
     const { formProps, saveButtonProps, form } = useForm();
     const navigate = useNavigate();
-    const [usuarios, setUsuarios] = useState<any[]>([]); // Estado para almacenar usuarios
+    const [usuarios, setUsuarios] = useState<any[]>([]); // Estado para usuarios
 
-    // Función para registrar un usuario
+    // Registrar un usuario
     const onFinish = async (values: any) => {
         try {
             console.log('Datos enviados:', values);
@@ -23,7 +23,7 @@ const UserCreate: React.FC = () => {
             );
 
             const user = userCredential.user;
-            console.log('Usuario registrado con éxito:', user);
+            console.log('Usuario registrado:', user);
 
             // Guardar en Firestore
             await setDoc(doc(db, 'usuarios', user.uid), {
@@ -36,24 +36,16 @@ const UserCreate: React.FC = () => {
                 fecha_creado: serverTimestamp(),
             });
 
-            console.log('Información guardada en Firestore.');
-
             message.success('Usuario registrado exitosamente.');
-            form.resetFields(); // Limpiar formulario tras envío exitoso
-            fetchUsuarios(); // Refrescar tabla tras registrar usuario
-
-        } catch (error: unknown) {
-            if (error instanceof Error) {
-                console.error('Error al registrar el usuario:', error.message);
-                message.error('Error al registrar el usuario. Intenta de nuevo.');
-            } else {
-                console.error('Error inesperado:', error);
-                message.error('Ocurrió un error inesperado.');
-            }
+            form.resetFields(); 
+            fetchUsuarios(); 
+        } catch (error) {
+            console.error('Error al registrar usuario:', error);
+            message.error('Error al registrar el usuario.');
         }
     };
 
-    // Función para obtener usuarios de Firestore
+    // Obtener usuarios de Firestore
     const fetchUsuarios = async () => {
         try {
             const querySnapshot = await getDocs(collection(db, 'usuarios'));
@@ -63,18 +55,32 @@ const UserCreate: React.FC = () => {
             }));
             setUsuarios(usuariosData);
         } catch (error) {
-            console.error('Error al obtener los usuarios:', error);
+            console.error('Error al obtener usuarios:', error);
             message.error('Error al cargar los usuarios.');
         }
     };
 
-    // Cargar usuarios y resetear formulario al montar el componente
+    // Eliminar usuario y documento de Firestore
+    const handleDelete = async (userId: string) => {
+        try {
+            // Eliminar documento de Firestore
+            await deleteDoc(doc(db, 'usuarios', userId));
+            message.success('Usuario eliminado con éxito.')
+
+            fetchUsuarios(); // Refrescar la lista
+        } catch (error) {
+            console.error('Error al eliminar usuario:', error);
+            message.error('Error al eliminar usuario.');
+        }
+    };
+
+    // Cargar usuarios al montar el componente
     useEffect(() => {
         fetchUsuarios();
         form.resetFields();
     }, [form]);
 
-    // Definición de las columnas de la tabla
+    // Definición de columnas con acción de eliminar
     const columns = [
         {
             title: 'Correo',
@@ -105,7 +111,21 @@ const UserCreate: React.FC = () => {
             title: 'Fecha Creado',
             dataIndex: 'fecha_creado',
             key: 'fecha_creado',
-            render: (text: any) => text?.toDate().toLocaleString(), // Mostrar timestamp como fecha legible
+            render: (text: any) => text?.toDate().toLocaleString(),
+        },
+        {
+            title: 'Acciones',
+            key: 'acciones',
+            render: (text: any, record: any) => (
+                <Popconfirm
+                    title="¿Estás seguro de eliminar este usuario?"
+                    onConfirm={() => handleDelete(record.id)}
+                    okText="Sí"
+                    cancelText="No"
+                >
+                    <Button danger>Eliminar</Button>
+                </Popconfirm>
+            ),
         },
     ];
 
@@ -117,7 +137,7 @@ const UserCreate: React.FC = () => {
                     name="correo"
                     rules={[
                         { required: true, message: 'Por favor, ingresa un correo electrónico' },
-                        { type: 'email', message: 'Por favor, ingresa un correo válido' }
+                        { type: 'email', message: 'Por favor, ingresa un correo válido' },
                     ]}
                 >
                     <Input placeholder="Correo Electrónico" />
@@ -170,12 +190,11 @@ const UserCreate: React.FC = () => {
                 </Form.Item>
             </Form>
 
-            {/* Tabla de usuarios */}
-            <Table 
-                dataSource={usuarios} 
-                columns={columns} 
-                rowKey="id" 
-                pagination={{ pageSize: 5 }} 
+            <Table
+                dataSource={usuarios}
+                columns={columns}
+                rowKey="id"
+                pagination={{ pageSize: 5 }}
             />
         </Create>
     );

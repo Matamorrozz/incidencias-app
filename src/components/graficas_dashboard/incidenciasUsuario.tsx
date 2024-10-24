@@ -6,7 +6,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { auth, db } from "../../firebaseConfig";
 import { collection, query, where, getDocs } from "firebase/firestore";
 
-interface AreaIncidencias {
+interface NombreIncidencias {
     name: string;
     value: number;
 }
@@ -17,16 +17,16 @@ interface Incidencia {
     nombre_emisor: string;
 }
 
-interface IncidenciasPorAreaListProps {
+interface IncidenciasPorUsuarioListProps {
     onSelectPersona: (persona: string) => void;
-    dates: [string | null, string | null]; // Rango de fechas
+    dates: [string | null, string | null]; // Rango de fechas recibido desde el componente padre
 }
 
-export const IncidenciasPorAreaList: React.FC<IncidenciasPorAreaListProps> = ({
+export const IncidenciasPorUsuario: React.FC<IncidenciasPorUsuarioListProps> = ({
     onSelectPersona,
     dates,
 }) => {
-    const [data, setData] = useState<AreaIncidencias[]>([]);
+    const [data, setData] = useState<NombreIncidencias[]>([]);
     const [loading, setLoading] = useState(true);
     const [userEmail, setUserEmail] = useState<string | null>(null);
     const [area, setArea] = useState<string | null>(null);
@@ -34,7 +34,7 @@ export const IncidenciasPorAreaList: React.FC<IncidenciasPorAreaListProps> = ({
     // Lista de usuarios con acceso completo
     const UsuariosPermitidos = ['developer@asiarobotica.com'];
 
-    // **1. Convertir texto (área) a formato normalizado**
+    // Convertir texto (área) a formato normalizado
     const convertirTexto = (texto: string): string =>
         texto
             .normalize("NFD")
@@ -42,11 +42,11 @@ export const IncidenciasPorAreaList: React.FC<IncidenciasPorAreaListProps> = ({
             .toLowerCase()
             .replace(/\s+/g, "_"); // Espacios por guiones bajos
 
-    // **2. Obtener las áreas únicas de las incidencias**
-    const getUniqueAreas = (incidencias: Incidencia[]): string[] =>
-        [...new Set(incidencias.map((i) => i.area || "Sin área"))];
+    // Obtener nombres únicos desde las incidencias
+    const getUniqueNames = (incidencias: Incidencia[]): string[] =>
+        [...new Set(incidencias.map((i) => i.nombre_emisor || "Sin área"))];
 
-    // **3. Obtener los datos completos (sin restricciones)**
+    // Llamar a la API sin filtros (acceso completo)
     const fetchData = async () => {
         try {
             let url = "https://www.desarrollotecnologicoar.com/api3/incidencias";
@@ -59,21 +59,22 @@ export const IncidenciasPorAreaList: React.FC<IncidenciasPorAreaListProps> = ({
             const response = await axios.get<Incidencia[]>(url);
             const incidencias = response.data;
 
-            const areas = getUniqueAreas(incidencias);
-            const incidenciasPorArea = areas.map((area) => ({
-                name: area,
-                value: incidencias.filter((i) => i.area === area).length,
+            const names = getUniqueNames(incidencias);
+            const incidenciasPorNombre = names.map((name) => ({
+                name,
+                value: incidencias.filter((i) => i.nombre_emisor === name).length,
             }));
 
-            setData(incidenciasPorArea);
+            setData(incidenciasPorNombre);
         } catch (error) {
             console.error("Error al obtener los datos:", error);
+            message.error("Error al cargar los datos.");
         } finally {
             setLoading(false);
         }
     };
 
-    // **4. Obtener datos filtrados por área (usuarios restringidos)**
+    // Llamar a la API filtrada por área
     const fetchUsuariosUnicos = async (userArea: string) => {
         try {
             const areaNormalizada = convertirTexto(userArea);
@@ -82,13 +83,13 @@ export const IncidenciasPorAreaList: React.FC<IncidenciasPorAreaListProps> = ({
             const response = await axios.get<Incidencia[]>(url);
             const incidencias = response.data;
 
-            const areas = getUniqueAreas(incidencias);
-            const incidenciasPorArea = areas.map((area) => ({
-                name: area,
-                value: incidencias.filter((i) => i.area === area).length,
+            const names = getUniqueNames(incidencias);
+            const incidenciasPorNombre = names.map((name) => ({
+                name,
+                value: incidencias.filter((i) => i.nombre_emisor === name).length,
             }));
 
-            setData(incidenciasPorArea);
+            setData(incidenciasPorNombre);
         } catch (error) {
             console.error("Error al obtener usuarios únicos:", error);
             message.error("Error al cargar los usuarios.");
@@ -97,7 +98,7 @@ export const IncidenciasPorAreaList: React.FC<IncidenciasPorAreaListProps> = ({
         }
     };
 
-    // **5. Obtener los datos del usuario autenticado**
+    // Obtener datos del usuario autenticado y decidir qué función llamar
     useEffect(() => {
         const fetchUserData = async (currentUser: any) => {
             try {
@@ -111,7 +112,6 @@ export const IncidenciasPorAreaList: React.FC<IncidenciasPorAreaListProps> = ({
                     const userDoc = querySnapshot.docs[0].data();
                     setArea(userDoc.area);
 
-                    // **6. Verificar si el usuario está permitido**
                     if (UsuariosPermitidos.includes(correo)) {
                         await fetchData(); // Acceso completo
                     } else {
@@ -128,7 +128,6 @@ export const IncidenciasPorAreaList: React.FC<IncidenciasPorAreaListProps> = ({
             }
         };
 
-        // **Escuchar cambios de autenticación**
         onAuthStateChanged(auth, (currentUser) => {
             if (currentUser) {
                 fetchUserData(currentUser);
@@ -137,19 +136,18 @@ export const IncidenciasPorAreaList: React.FC<IncidenciasPorAreaListProps> = ({
                 setLoading(false);
             }
         });
-    }, [dates]); // Actualizar cuando cambien las fechas
+    }, [dates]); // Ejecutar cuando cambien las fechas
 
-    const handleBarClick = (data: AreaIncidencias) => {
+    const handleBarClick = (data: NombreIncidencias) => {
         onSelectPersona(data.name);
     };
 
-    // **7. Tooltip personalizado**
     const CustomTooltip = ({ active, payload }: any) => {
         if (active && payload && payload.length) {
             const { name, value } = payload[0].payload;
             return (
                 <div style={{ backgroundColor: "#fff", padding: 10, border: "1px solid #ccc" }}>
-                    <p><strong>Área:</strong> {name}</p>
+                    <p><strong>Nombre:</strong> {name}</p>
                     <p><strong>Incidencias:</strong> {value}</p>
                 </div>
             );
@@ -160,7 +158,7 @@ export const IncidenciasPorAreaList: React.FC<IncidenciasPorAreaListProps> = ({
     if (loading) return <Spin size="large" />;
 
     return (
-        <List title="Incidencias según el área">
+        <List title="Incidencias por Usuario">
             <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={data}>
                     <XAxis dataKey="name" />

@@ -12,6 +12,7 @@ import {
   ThemedLayoutV2,
   ThemedSiderV2,
   useNotificationProvider,
+  
 } from "@refinedev/antd";
 import "@refinedev/antd/dist/reset.css";
 
@@ -103,7 +104,7 @@ function App() {
     );
   };
 
-  console.log("Permisos sin revisar: ", count)
+  
   const resources =
     userEmail === "bernardo.ramirez@asiarobotica.com" ||
       userEmail === "developer@asiarobotica.com"

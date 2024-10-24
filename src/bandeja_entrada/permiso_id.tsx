@@ -70,6 +70,7 @@ export const DetallePermiso = () => {
     setNuevoStatus(status); // Guardamos el nuevo status (Aprobado o Rechazado)
     if (permiso && user) {
       form.setFieldsValue({
+
         persona_emisor: user.displayName || user.email,
         nombre_emisor: permiso.nombre_completo,
         jefe_inmediato: permiso.jefe_inmediato,
