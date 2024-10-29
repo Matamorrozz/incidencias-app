@@ -2,12 +2,24 @@
 body {
   margin: 0;
   font-family: 'Arial', sans-serif;
-  background-color: hsl(218, 41%, 15%);
+  background-color: #373939;
 }
 
 .background-radial-gradient {
-  background-image: radial-gradient(650px circle at 0% 0%, hsl(218, 41%, 35%) 15%, hsl(218, 41%, 30%) 35%, hsl(218, 41%, 20%) 75%, hsl(218, 41%, 19%) 80%, transparent 100%),
-    radial-gradient(1250px circle at 100% 100%, hsl(218, 41%, 45%) 15%, hsl(218, 41%, 30%) 35%, hsl(218, 41%, 20%) 75%, hsl(218, 41%, 19%) 80%, transparent 100%);
+  background-image:     radial-gradient(650px circle at 0% 0%, 
+  #FD0900 15%, 
+  #242424 35%, 
+  #181818 75%, 
+  #181818 80%, 
+  transparent 100%
+),
+radial-gradient(1250px circle at 100% 100%, 
+#FB0900 15%, 
+#242424 35%, 
+#181818 75%, 
+#373939 80%, 
+transparent 100%
+);
 }
 
 .bg-glass {

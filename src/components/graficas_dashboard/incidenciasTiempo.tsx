@@ -138,7 +138,7 @@ export const IncidenciasPorTiempoList: React.FC<IncidenciasGraficaProps> = ({ ag
                             <Line
                                 type="monotone"
                                 dataKey="value"
-                                stroke="#ff7300"
+                                stroke="#FD0900"
                                 strokeWidth={3}
                                 activeDot={{ r: 8 }}
                             />

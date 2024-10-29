@@ -33,19 +33,17 @@ const Login: React.FC = () => {
 
   return (
     <MDBContainer fluid className='background-radial-gradient overflow-hidden vh-100 d-flex justify-content-center align-items-center'>
-      {/* Contenedor del formulario con tamaño uniforme */}
       <div 
         className="p-5 rounded-3 shadow-lg"
         style={{
-          maxWidth: '500px',  // Ancho máximo del contenedor
-        
+          maxWidth: '500px',  
         }}
       >
         <div className="text-center mb-4">
           <img 
             src="/ar_logo.png" 
             alt="Logo" 
-            style={{ width: '80px', marginBottom: '10px' }} 
+            style={{ width: '120px', marginBottom: '15px' }}  // Imagen más grande
           />
           <h1 className="display-6 fw-bold" style={{ color: 'hsl(218, 81%, 95%)' }}>
             INCIDENCIAS AR
@@ -64,26 +62,25 @@ const Login: React.FC = () => {
             type='email'
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            style={{ width: '100%' , borderRadius: '10px'}}
+            style={{ width: '100%', borderRadius: '10px' }}
           />
 
-           <p>Contraseña</p>
+          <p>Contraseña</p>
           <MDBInput
             id='password'
             type='password'
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            style={{ width: '100%' , borderRadius: '10px'}}
+            style={{ width: '100%', borderRadius: '10px' }}
           />
 
-          {/* Botones alineados en una fila horizontal */}
-          <br></br>
+          <br />
           <div className="d-flex justify-content-between gap-2">
             <MDBBtn
               type="submit"
               className="w-100"
               style={{
-                backgroundColor: '#0d6efd',
+                backgroundColor: '#FD0900',  // Color rojo para el botón de iniciar sesión
                 color: 'white',
                 padding: '10px 0',
                 borderRadius: '25px',
@@ -94,12 +91,13 @@ const Login: React.FC = () => {
             >
               Iniciar Sesión
             </MDBBtn>
-<br></br>
+
+            <br />
             <MDBBtn
               onClick={handleGoogleLogin}
               className="w-100"
               style={{
-                backgroundColor: '#4285F4',
+                backgroundColor: '#FD0900',  // Color rojo para el botón de Google
                 color: 'white',
                 padding: '10px 0',
                 borderRadius: '25px',

@@ -171,7 +171,7 @@ export const IncidenciasPorAreaList: React.FC<IncidenciasPorAreaListProps> = ({
                     <YAxis />
                     <Tooltip content={<CustomTooltip />} />
                     <Legend />
-                    <Bar dataKey="value" fill="#8884d8" onClick={(_, index) => handleBarClick(data[index])} />
+                    <Bar dataKey="value" fill="#FD0900" onClick={(_, index) => handleBarClick(data[index])} />
                 </BarChart>
             </ResponsiveContainer>
         </List>
