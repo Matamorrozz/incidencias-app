@@ -88,6 +88,17 @@ export const Dashboard: React.FC = () => {
                     </div>
 
                     <Row gutter={[16, 16]}>
+
+                        <Col xs={24} md={24}>
+                            <Card title="Incidencias por tiempo">
+                                <Select defaultValue="semana" style={{ width: 200 }} onChange={handleChange}>
+                                    <Option value="dia">Día</Option>
+                                    <Option value="semana">Semana</Option>
+                                    <Option value="mes">Mes</Option>
+                                </Select>
+                                <IncidenciasPorTiempoList agrupacion={agrupacion} dates={dates} />
+                            </Card>
+                        </Col>
                         <Col xs={24} md={24}>
                             <Card title="Gráficos de Incidencias">
                                 <div style={{ marginBottom: 16 }}>
@@ -101,19 +112,6 @@ export const Dashboard: React.FC = () => {
                                     </Select>
                                 </div>
                                 {graficosBarras}
-                            </Card>
-                        </Col>
-                    </Row>
-
-                    <Row gutter={[16, 16]}>
-                        <Col xs={24} md={24}>
-                            <Card title="Incidencias por tiempo">
-                                <Select defaultValue="semana" style={{ width: 200 }} onChange={handleChange}>
-                                    <Option value="dia">Día</Option>
-                                    <Option value="semana">Semana</Option>
-                                    <Option value="mes">Mes</Option>
-                                </Select>
-                                <IncidenciasPorTiempoList agrupacion={agrupacion} dates={dates} />
                             </Card>
                         </Col>
 

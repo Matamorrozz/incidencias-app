@@ -81,6 +81,10 @@ export const DetallePermiso = () => {
     setIsModalVisible(true); // Mostrar el modal
   };
 
+  const showModalRechazo = () => {
+    setIsRejectModalVisible(true); 
+  };
+
   const handleCancel = () => setIsModalVisible(false); // Cerrar el modal
   const handleRejectCancel = () => setIsRejectModalVisible(false);
 
@@ -183,7 +187,7 @@ export const DetallePermiso = () => {
           </Button>
           <Button
             danger
-            onClick={() => showModal("Rechazado")}
+            onClick={showModalRechazo}
             disabled={permiso.status === "Rechazado"}
           >
             Rechazar Permiso

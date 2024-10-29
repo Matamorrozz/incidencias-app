@@ -12,7 +12,7 @@ import {
   ThemedLayoutV2,
   ThemedSiderV2,
   useNotificationProvider,
-  
+
 } from "@refinedev/antd";
 import "@refinedev/antd/dist/reset.css";
 
@@ -104,10 +104,9 @@ function App() {
     );
   };
 
-  
+
   const resources =
-    userEmail === "bernardo.ramirez@asiarobotica.com" ||
-      userEmail === "developer@asiarobotica.com"
+    userEmail === "ana@asiarobotica.com"
       ? [
         {
           name: "tabla_permisos",
@@ -134,7 +133,7 @@ function App() {
                   >
                     {count}
                   </div>
-                ):(
+                ) : (
                   <InboxOutlined style={{ marginRight: "8px" }} />
                 )}
               </div>
@@ -164,7 +163,49 @@ function App() {
         },
 
       ]
-      : [];
+      : userEmail === "developer@asiarobotica.com" ? [{
+        name: "tabla_permisos",
+        list: "/bandeja_entrada",
+        meta: {
+          label: "Bandeja entrada",
+          icon: (
+            <div style={{ display: "flex", alignItems: "center" }}>
+
+              {count > 0 ? (
+                <div
+                  style={{
+                    backgroundColor: "#ff4d4f",
+                    color: "white",
+                    borderRadius: "50%",
+                    width: "20px",
+                    height: "20px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    marginLeft: "0px",
+                    fontSize: "12px",
+                  }}
+                >
+                  {count}
+                </div>
+              ) : (
+                <InboxOutlined style={{ marginRight: "8px" }} />
+              )}
+            </div>
+          ),
+        },
+      },
+
+      {
+        name: "dashboard",
+        list: "/dashboard",
+        meta: { label: "Panel de control", icon: <BarChartOutlined /> },
+      },
+      {
+        name: "user_form",
+        list: "/user_form",
+        meta: { label: "Alta de usuarios", icon: <UserAddOutlined /> },
+      }] : [];
 
   return (
     <BrowserRouter>
@@ -209,7 +250,7 @@ function App() {
                       <Route path="/user_form" element={<UserCreate />} />
                       <Route path="/create_permit" element={<CreatePermit />} />
                       <Route path="/bandeja_entrada" element={<TablaPermisos />} />
-                      <Route path="/detalle_permiso/:id" element={<DetallePermiso />} /> 
+                      <Route path="/detalle_permiso/:id" element={<DetallePermiso />} />
                       <Route path="*" element={<ErrorComponent />} /> {/* Ruta para errores */}
                     </Route>
                   </Routes>

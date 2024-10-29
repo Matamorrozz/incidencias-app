@@ -1,7 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import axios from "axios";
-import { List, Spin, Table, Row, Col } from "@pankod/refine-antd";
+import { List, Spin, Table, Row, Col, message } from "@pankod/refine-antd";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth, db } from "../../firebaseConfig";
+import { collection, query, where, getDocs } from "firebase/firestore";
+import { usuariosPermitidos } from "../../user_config"; // Importar lista global de usuarios permitidos
+import moment from "moment";
 
 interface IncidenciasGraficaProps {
     agrupacion: 'dia' | 'semana' | 'mes';
@@ -9,56 +14,110 @@ interface IncidenciasGraficaProps {
 }
 
 interface TiempoIncidencias {
-    name: string; // Puede ser el nombre del mes, semana o día
-    value: number; // El número de incidencias
+    name: string;
+    value: number;
 }
 
 export const IncidenciasPorTiempoList: React.FC<IncidenciasGraficaProps> = ({ agrupacion, dates }) => {
     const [data, setData] = useState<TiempoIncidencias[]>([]);
     const [loading, setLoading] = useState(true);
+    const [userEmail, setUserEmail] = useState<string | null>(null);
+    const [area, setArea] = useState<string | null>(null);
 
+    const convertirTexto = (texto: string): string =>
+        texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/\s+/g, "_");
+
+    // **Función para obtener incidencias con o sin filtro de área**
+    const fetchData = async (areaUsuario?: string) => {
+        try {
+            setLoading(true);
+            let url = `https://www.desarrollotecnologicoar.com/api3/incidencias_fechas_area?agrupacion=${agrupacion}`;
+
+            const [startDate, endDate] = dates;
+            if (startDate && endDate) {
+                url += `&startDate=${startDate}&endDate=${endDate}`;
+            }
+
+            // Si el usuario no tiene acceso completo, añadir área como filtro
+            if (areaUsuario) {
+                url += `&area=${encodeURIComponent(areaUsuario)}`;
+            }
+
+            const response = await axios.get(url);
+            const incidencias = response.data.map((item: any) => ({
+                name: item.fecha 
+                    ? item.fecha.slice(0,10)
+                    : item.semana 
+                    ? `Semana ${item.semana}` 
+                    : item.mes || "Sin agrupar",
+                value: item.total_incidencias,
+            }));
+
+            setData(incidencias);
+        } catch (error) {
+            console.error("Error al obtener los datos:", error);
+            message.error("Error al cargar los datos.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // **Función para obtener datos del usuario autenticado**
     useEffect(() => {
-        const fetchData = async () => {
+        const fetchUserData = async (currentUser: any) => {
             try {
-                let url = `https://www.desarrollotecnologicoar.com/api3/incidencias_fechas?agrupacion=${agrupacion}`;
+                const correo = currentUser.email;
+                setUserEmail(correo);
 
-                const [startDate, endDate] = dates;
-                if (startDate && endDate) {
-                    url += `&startDate=${startDate}&endDate=${endDate}`;
+                const q = query(collection(db, "usuarios"), where("correo", "==", correo));
+                const querySnapshot = await getDocs(q);
+
+                if (!querySnapshot.empty) {
+                    const userDoc = querySnapshot.docs[0].data();
+                    const userArea = convertirTexto(userDoc.area);
+                    setArea(userArea);
+
+                    // Si el usuario está permitido, fetch sin filtro de área; si no, con filtro
+                    if (usuariosPermitidos.includes(correo)) {
+                        await fetchData(); // Acceso completo
+                    } else {
+                        await fetchData(userArea); // Filtrar por área
+                    }
+                } else {
+                    message.error("No se encontró información del usuario.");
                 }
-
-                const response = await axios.get(url);
-
-                // Ajustamos los datos para que se puedan usar en el gráfico de líneas
-                const incidencias = response.data.map((item: any) => ({
-                    name: item.fecha || item.semana || item.mes, // Dependiendo de cómo esté agrupado
-                    value: item.total_incidencias, // El valor de incidencias
-                }));
-
-                setData(incidencias);
             } catch (error) {
-                console.error("Error al obtener los datos:", error);
+                console.error("Error al obtener datos del usuario:", error);
+                message.error("Error al cargar los datos del usuario.");
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchData();
-    }, [agrupacion, dates]);
+        // Escuchar cambios de autenticación
+        onAuthStateChanged(auth, (currentUser) => {
+            if (currentUser) {
+                fetchUserData(currentUser);
+            } else {
+                message.error("Usuario no autenticado.");
+                setLoading(false);
+            }
+        });
+    }, [agrupacion, dates]); // Actualiza cuando cambia la agrupación o fechas
 
-    // Configurar las columnas de la tabla
+    // Configuración de columnas de la tabla
     const columns = [
         {
             title: agrupacion === 'dia' ? 'Fecha' : agrupacion === 'semana' ? 'Semana' : 'Mes',
             dataIndex: 'name',
             key: 'name',
-            width: '50%', // Ajusta el ancho de la columna
+            width: '50%',
         },
         {
             title: 'Conteo incidencias',
             dataIndex: 'value',
             key: 'value',
-            width: '50%', // Ajusta el ancho de la columna
+            width: '50%',
         },
     ];
 
@@ -67,23 +126,15 @@ export const IncidenciasPorTiempoList: React.FC<IncidenciasGraficaProps> = ({ ag
     return (
         <List title={`Incidencias agrupadas por ${agrupacion}`}>
             <Row gutter={[16, 16]}>
-                {/* Columna para la gráfica de líneas */}
-                <Col xs={24} md={14}> {/* Ocupa 14/24 columnas en pantallas medianas */}
+                {/* Gráfica de líneas */}
+                <Col xs={24} md={14}>
                     <ResponsiveContainer width="100%" height={400}>
                         <LineChart data={data}>
                             <CartesianGrid strokeDasharray="3 3" />
-
-                            {/* Eje X, ajusta el formato si es necesario */}
                             <XAxis dataKey="name" />
-
-                            {/* Eje Y con dominio personalizado */}
                             <YAxis domain={[0, 'dataMax + 15']} tickCount={8} />
-
-                            {/* Tooltip y leyenda */}
                             <Tooltip />
                             <Legend />
-
-                            {/* Línea personalizada */}
                             <Line
                                 type="monotone"
                                 dataKey="value"
@@ -95,15 +146,15 @@ export const IncidenciasPorTiempoList: React.FC<IncidenciasGraficaProps> = ({ ag
                     </ResponsiveContainer>
                 </Col>
 
-                {/* Columna para la tabla */}
-                <Col xs={24} md={10}> {/* Ocupa 10/24 columnas en pantallas medianas */}
+                {/* Tabla */}
+                <Col xs={24} md={10}>
                     <div style={{ height: 400, overflowY: 'scroll' }}>
                         <Table
                             columns={columns}
                             dataSource={data}
                             pagination={false}
                             rowKey="name"
-                            scroll={{ y: 275 }} // Ajusta la altura de la tabla
+                            scroll={{ y: 275 }}
                         />
                     </div>
                 </Col>

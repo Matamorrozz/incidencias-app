@@ -1,146 +1,152 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Spin, Input } from 'antd';
+import { Table, Spin, Input, message } from 'antd';
 import axios from 'axios';
 import moment from 'moment';
+import { onAuthStateChanged } from "firebase/auth";
+import { auth, db } from "../../firebaseConfig";
+import { collection, query, where, getDocs } from "firebase/firestore";
+import { usuariosPermitidos } from '../../user_config';
 
 const { Search } = Input;
 
 interface PiezasTableProps {
-    selectedArea: string | null; // Prop para el área seleccionada
-    selectedFecha: string | null; // Prop para la fecha seleccionada
-    dates: [string | null, string | null]; // Prop para el rango de fechas
+    selectedArea: string | null;
+    selectedFecha: string | null;
+    dates: [string | null, string | null];
 }
 
-const PiezasTable: React.FC<PiezasTableProps> = ({ selectedArea, selectedFecha, dates }) => {
+const PiezasTable: React.FC<PiezasTableProps> = ({ selectedArea, dates }) => {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [search, setSearch] = useState(''); // Estado para el término de búsqueda
+    const [search, setSearch] = useState(''); 
+
+    const [userEmail, setUserEmail] = useState<string | null>(null);
+    const [area, setArea] = useState<string | null>(null);
+
+    const UsuariosPermitidos = usuariosPermitidos;
+
+    const convertirTexto = (texto: string): string =>
+        texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/\s+/g, "_");
+
+    // 🔥 Actualización: Asegurar que los datos se asignan correctamente.
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const response = await axios.get('https://www.desarrollotecnologicoar.com/api3/incidencias');
+            let filteredData = response.data;
+
+
+            if (dates[0] && dates[1]) {
+                const [startDate, endDate] = dates;
+                filteredData = filteredData.filter((incidencia: any) => {
+                    const fechaPermiso = moment(incidencia.marca_temporal);
+                    return fechaPermiso.isBetween(moment(startDate), moment(endDate), undefined, '[]');
+                });
+            }
+
+            setData(filteredData);
+        } catch (error) {
+            console.error("Error al obtener los datos de la API", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const fetchUsuariosUnicos = async (userArea: string) => {
+        try {
+            setLoading(true)
+
+            
+            const areaNormalizada = convertirTexto(userArea);
+            const url = `https://desarrollotecnologicoar.com/api3/incidencias_area?area=${encodeURIComponent(areaNormalizada)}`;
+
+            const response = await axios.get(url);
+            let filteredData = response.data;
+            
+
+            if (dates[0] && dates[1]) {
+                const [startDate, endDate] = dates;
+                filteredData = filteredData.filter((incidencia: any) => {
+                    const fechaPermiso = moment(incidencia.marca_temporal);
+                    return fechaPermiso.isBetween(moment(startDate), moment(endDate), undefined, '[]');
+                });
+            }
+            setData(filteredData);  // 🔥 Guardar los datos obtenidos
+        } catch (error) {
+            console.error("Error al obtener usuarios únicos:", error);
+            message.error("Error al cargar los usuarios.");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const fetchData = async () => {
+        const fetchUserData = async (currentUser: any) => {
             try {
-                setLoading(true);
-                const response = await axios.get('https://www.desarrollotecnologicoar.com/api3/incidencias');
-                let filteredData = response.data;
-
-                // Filtrar por área si se ha seleccionado
-                if (selectedArea) {
-                    filteredData = filteredData.filter((incidencia: any) => incidencia.area.toLowerCase() === selectedArea.toLowerCase());
+                const correo = currentUser.email;
+                setUserEmail(correo);
+    
+                const q = query(collection(db, "usuarios"), where("correo", "==", correo));
+                const querySnapshot = await getDocs(q);
+    
+                if (!querySnapshot.empty) {
+                    const userDoc = querySnapshot.docs[0].data();
+                    const userArea = convertirTexto(userDoc.area);
+                    setArea(userArea); // Guardamos el área en el estado
+    
+                    if (UsuariosPermitidos.includes(correo)) {
+                        await fetchData(); // Acceso completo
+                    } else {
+                        await fetchUsuariosUnicos(userArea); // Filtrar por área del usuario
+                    }
+                } else {
+                    message.error("No se encontró información del usuario.");
                 }
-
-                // Filtrar por fecha si se ha seleccionado una
-                if (selectedFecha) {
-                    filteredData = filteredData.filter((incidencia: any) => incidencia.marca_temporal === selectedFecha.toLowerCase());
-                }
-
-                // Filtrar por rango de fechas si se han seleccionado
-                if (dates[0] && dates[1]) {
-                    const [startDate, endDate] = dates;
-                    filteredData = filteredData.filter((incidencia: any) => {
-                        const fechaPermiso = moment(incidencia.fecha_permiso);
-                        return fechaPermiso.isSameOrAfter(moment(startDate)) && fechaPermiso.isSameOrBefore(moment(endDate));
-                    });
-                }
-
-                setData(filteredData);
             } catch (error) {
-                console.error("Error al obtener los datos de la API", error);
-            } finally {
-                setLoading(false);
+                console.error("Error al obtener datos del usuario:", error);
+                message.error("Error al cargar los datos del usuario.");
             }
         };
 
-        fetchData();
-    }, [selectedArea, selectedFecha, dates]);
+        onAuthStateChanged(auth, (currentUser) => {
+            if (currentUser) {
+                fetchUserData(currentUser);
+            } else {
+                message.error("Usuario no autenticado.");
+                setLoading(false);
+            }
+        });
+    }, [dates, selectedArea]);
 
-    // Filtrar los datos por el término de búsqueda (código o ticket)
-    const searchedData = data.filter((pieza: any) => 
-        pieza.persona_emisor?.toLowerCase().includes(search.toLowerCase()) || pieza.nombre_emisor?.toLowerCase().includes(search.toLowerCase())
+    const searchedData = data.filter((pieza: any) =>
+        pieza.persona_emisor?.toLowerCase().includes(search.toLowerCase()) ||
+        pieza.nombre_emisor?.toLowerCase().includes(search.toLowerCase())
     );
 
-    // Configurar las columnas de la tabla
     const columns = [
-        { 
-            title: 'ID', 
-            dataIndex: 'id', 
-            key: 'id',
-            render: (text: any) => text || 'No disponible' 
-        },
-        { 
-            title: 'Marca Temporal', 
-            dataIndex: 'marca_temporal', 
-            key: 'marca_temporal', 
-            render: (fecha: any) => moment(fecha).format('YYYY-MM-DD HH:mm:ss') 
-        },
-        { 
-            title: 'Persona Emisora', 
-            dataIndex: 'persona_emisor', 
-            key: 'persona_emisor', 
-            render: (text: any) => text || 'No disponible' 
-        },
-        { 
-            title: 'Nombre Emisor', 
-            dataIndex: 'nombre_emisor', 
-            key: 'nombre_emisor', 
-            render: (text: any) => text || 'No disponible' 
-        },
-        { 
-            title: 'Jefe Inmediato', 
-            dataIndex: 'jefe_inmediato', 
-            key: 'jefe_inmediato', 
-            render: (text: any) => text || 'No disponible' 
-        },
-        { 
-            title: 'Tipo de Registro', 
-            dataIndex: 'tipo_registro', 
-            key: 'tipo_registro', 
-            render: (text: any) => text || 'No disponible' 
-        },
-        { 
-            title: 'Fecha de Permiso', 
-            dataIndex: 'fecha_permiso', 
-            key: 'fecha_permiso', 
-            render: (fecha: any) => fecha !== '1899-12-30T00:00:00.000Z' ? moment(fecha).format('YYYY-MM-DD') : 'No disponible' 
-        },
-        { 
-            title: 'Información del Registro', 
-            dataIndex: 'info_registro', 
-            key: 'info_registro', 
-            render: (text: any) => text || 'No disponible' 
-        },
-        { 
-            title: 'Estatus del Acta', 
-            dataIndex: 'status_acta', 
-            key: 'status_acta', 
-            render: (text: any) => text || 'No disponible' 
-        },
-        { 
-            title: 'Área', 
-            dataIndex: 'area', 
-            key: 'area', 
-            render: (text: any) => text || 'No disponible' 
-        }
+        { title: 'ID', dataIndex: 'id', key: 'id' },
+        { title: 'Marca Temporal', dataIndex: 'marca_temporal', key: 'marca_temporal', render: (fecha: any) => moment(fecha).format('DD/MM/YYYY HH:mm:ss') },
+        { title: 'Persona Emisora', dataIndex: 'persona_emisor', key: 'persona_emisor' },
+        { title: 'Nombre Emisor', dataIndex: 'nombre_emisor', key: 'nombre_emisor' },
+        { title: 'Jefe Inmediato', dataIndex: 'jefe_inmediato', key: 'jefe_inmediato' },
+        { title: 'Tipo de Registro', dataIndex: 'tipo_registro', key: 'tipo_registro' },
+        { title: 'Fecha de Permiso', dataIndex: 'fecha_permiso', key: 'fecha_permiso', render: (fecha: any) => moment(fecha).format('DD/MM/YYYY') },
+        { title: 'Información del Registro', dataIndex: 'info_registro', key: 'info_registro' },
+        { title: 'Estatus del Acta', dataIndex: 'status_acta', key: 'status_acta' },
+        { title: 'Área', dataIndex: 'area', key: 'area' },
     ];
 
     if (loading) return <Spin size="large" />;
 
     return (
         <div>
-            {/* Barra de búsqueda */}
-            <Search 
-                placeholder="Buscar por persona emisora o nombre del emisor" 
-                value={search} 
-                onChange={(e) => setSearch(e.target.value)} // Actualiza el estado de búsqueda
-                style={{ marginBottom: 16 }} // Espacio entre la barra de búsqueda y la tabla
+            <Search
+                placeholder="Buscar por persona o nombre del emisor"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                style={{ marginBottom: 16 }}
             />
-
-            {/* Tabla con los datos filtrados */}
-            <Table 
-                columns={columns} 
-                dataSource={searchedData} // Usamos los datos filtrados por búsqueda
-                rowKey="id" // Asegúrate de que la API tiene una propiedad 'id' única
-                pagination={{ pageSize: 5 }} 
-            />
+            <Table columns={columns} dataSource={searchedData} rowKey="id" pagination={{ pageSize: 5 }} />
         </div>
     );
 };

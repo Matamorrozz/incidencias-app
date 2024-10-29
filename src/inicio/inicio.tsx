@@ -3,7 +3,7 @@ import { Button, Table, message } from "antd"; // Importamos los componentes nec
 import { useNavigate } from "react-router-dom"; // Para redireccionar al hacer clic en el botón
 import { onAuthStateChanged } from "firebase/auth"; // Obtenemos el usuario autenticado
 import { auth } from "../firebaseConfig"; // Importa la configuración de Firebase
-
+import moment from "moment";
 // Definimos los tipos de datos para los permisos
 type Permiso = {
   id: string;
@@ -78,65 +78,81 @@ const HomePage: React.FC = () => {
     fetchPermisos();
   }, [userEmail]);
   
-  // Definición de las columnas de la tabla
   const columns = [
     {
-      title: "Id de solicitud",
-      dataIndex: "id",
-      key: "id",
+        title: "Id de solicitud",
+        dataIndex: "id",
+        key: "id",
     },
     {
-      title: "Fecha de Solicitud",
-      dataIndex: "fecha_solicitud",
-      key: "fecha_solicitud",
+        title: "Fecha de Solicitud",
+        dataIndex: "fecha_solicitud",
+        key: "fecha_solicitud",
+        render: (fecha: any) => moment(fecha).format("DD/MM/YYYY HH:mm"),
     },
     {
-      title: "Nombre Completo",
-      dataIndex: "nombre_completo",
-      key: "nombre_completo",
+        title: "Nombre Completo",
+        dataIndex: "nombre_completo",
+        key: "nombre_completo",
     },
     {
-      title: "Correo",
-      dataIndex: "correo",
-      key: "correo",
+        title: "Jefe Inmediato",
+        dataIndex: "jefe_inmediato",
+        key: "jefe_inmediato",
     },
     {
-      title: "Jefe Inmediato",
-      dataIndex: "jefe_inmediato",
-      key: "jefe_inmediato",
+        title: "Tipo de Permiso",
+        dataIndex: "tipo_permiso",
+        key: "tipo_permiso",
     },
     {
-      title: "Área",
-      dataIndex: "area",
-      key: "area",
+        title: "Urgencia",
+        dataIndex: "urgencia",
+        key: "urgencia",
+        render: (urgencia: boolean) => (
+            <span style={{ color: urgencia ? "orange" : "blue" }}>
+                {urgencia ? "Urgente" : "No Urgente"}
+            </span>
+        ),
     },
     {
-      title: "Tipo de Permiso",
-      dataIndex: "tipo_permiso",
-      key: "tipo_permiso",
+        title: "Comentarios",
+        dataIndex: "comentarios",
+        key: "comentarios",
     },
     {
-      title: "Urgencia",
-      dataIndex: "urgencia",
-      key: "urgencia",
-      render: (urgencia: boolean) => (urgencia ? "Urgente" : "No Urgente"), // Renderiza como texto
+        title: "Status",
+        dataIndex: "status",
+        key: "status",
+        render: (status: string) => {
+            let color = "";
+            switch (status) {
+                case "Aprobado":
+                    color = "green";
+                    break;
+                case "Pendiente":
+                    color = "orange";
+                    break;
+                case "Rechazado":
+                    color = "red";
+                    break;
+                default:
+                    color = "gray";
+            }
+            return (
+                <span>
+                    <strong style={{ color }}>{status}</strong>
+                </span>
+            );
+        },
     },
     {
-      title: "Comentarios",
-      dataIndex: "comentarios",
-      key: "comentarios",
+        title: "Fecha de Permiso",
+        dataIndex: "fecha_permiso",
+        key: "fecha_permiso",
+        render: (fecha: any) => moment(fecha).format("DD/MM/YYYY"),
     },
-    {
-      title: "Status",
-      dataIndex: "status",
-      key: "status",
-    },
-    {
-      title: "Fecha de Permiso",
-      dataIndex: "fecha_permiso",
-      key: "fecha_permiso",
-    },
-  ];
+];
 
   return (
     <div style={{ padding: 24, textAlign: "center" }}>

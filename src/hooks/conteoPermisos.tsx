@@ -10,6 +10,14 @@ export const useUnreviewedPermitsCount = (): number => {
   const [count, setCount] = useState<number>(0); // Estado del conteo
   const [area, setArea] = useState<string | null>(null); // Área del usuario
 
+  // **1. Convertir texto (área) a formato normalizado**
+  const convertirTexto = (texto: string): string =>
+    texto
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "") // Eliminar acentos
+      .toLowerCase()
+      .replace(/\s+/g, "_"); // Espacios por guiones bajos
+
   // Obtener el área del usuario autenticado
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -21,7 +29,7 @@ export const useUnreviewedPermitsCount = (): number => {
 
           if (!querySnapshot.empty) {
             const userDoc = querySnapshot.docs[0].data();
-            setArea(userDoc.area || ""); // Guardar el área en el estado
+            setArea(convertirTexto(userDoc.area) || ""); // Guardar el área en el estado
           } else {
             message.error("No se encontró información del usuario.");
           }

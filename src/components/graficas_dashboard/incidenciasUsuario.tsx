@@ -5,6 +5,7 @@ import { List, Spin, message } from "@pankod/refine-antd";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth, db } from "../../firebaseConfig";
 import { collection, query, where, getDocs } from "firebase/firestore";
+import { usuariosPermitidos } from "../../user_config";
 
 interface NombreIncidencias {
     name: string;
@@ -32,7 +33,7 @@ export const IncidenciasPorUsuario: React.FC<IncidenciasPorUsuarioListProps> = (
     const [area, setArea] = useState<string | null>(null);
 
     // Lista de usuarios con acceso completo
-    const UsuariosPermitidos = ['developer@asiarobotica.com'];
+    const UsuariosPermitidos = usuariosPermitidos;
 
     // Convertir texto (área) a formato normalizado
     const convertirTexto = (texto: string): string =>
@@ -78,8 +79,12 @@ export const IncidenciasPorUsuario: React.FC<IncidenciasPorUsuarioListProps> = (
     const fetchUsuariosUnicos = async (userArea: string) => {
         try {
             const areaNormalizada = convertirTexto(userArea);
-            const url = `https://desarrollotecnologicoar.com/api3/incidencias_area?area=${encodeURIComponent(areaNormalizada)}`;
+            let url = `https://desarrollotecnologicoar.com/api3/incidencias_area?area=${encodeURIComponent(areaNormalizada)}`;
+            const [startDate, endDate] = dates;
 
+            if (startDate && endDate) {
+                url += `&startDate=${startDate}&endDate=${endDate}`;
+            }
             const response = await axios.get<Incidencia[]>(url);
             const incidencias = response.data;
 

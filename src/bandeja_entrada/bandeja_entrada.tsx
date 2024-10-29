@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import moment from "moment";
 
 // Definimos la interfaz para los permisos
 interface Permiso {
@@ -22,14 +23,14 @@ interface Permiso {
 
 // Definimos las columnas de la tabla
 const columns = (navigate: (path: string) => void) => [
-  { title: "Fecha de solicitud", dataIndex: "fecha_solicitud", key: "fecha_solicitud" },
+  { title: "Fecha de solicitud", dataIndex: "fecha_solicitud", key: "fecha_solicitud", render: (fecha: any) => moment(fecha).format("DD/MM/YYYY HH:MM") },
   { title: "Nombre", dataIndex: "nombre_completo", key: "nombre_completo" },
   { title: "Correo / Usuario", dataIndex: "correo", key: "correo" },
   { title: "Jefe Inmediato", dataIndex: "jefe_inmediato", key: "jefe_inmediato" },
   { title: "Tipo de permiso", dataIndex: "tipo_permiso", key: "tipo_permiso" },
   { title: "Urgencia", dataIndex: "urgencia", key: "urgencia" },
   { title: "Comentarios", dataIndex: "comentarios", key: "comentarios" },
-  { title: "Fecha de permiso", dataIndex: "fecha_permiso", key: "fecha_permiso" },
+  { title: "Fecha de permiso", dataIndex: "fecha_permiso", key: "fecha_permiso", render: (fecha: any) => moment(fecha).format("DD/MM/YYYY") },
   {
     title: "Status del permiso",
     dataIndex: "status",
@@ -37,11 +38,15 @@ const columns = (navigate: (path: string) => void) => [
     render: (status: string, record: Permiso) => {
       const color =
         status === "Aprobado" ? "green" :
-        status === "Pendiente" ? "orange" : "red";
+          status === "Pendiente" ? "orange" : "red";
+      const isDisabled = status === "Aprobado" || status === "Rechazado"
+
+      
 
       return (
         <Button
           style={{ backgroundColor: color, color: "white", border: "none" }}
+          disabled= {isDisabled}
           onClick={() => navigate(`/detalle_permiso/${record.id}`)}
         >
           {status}
@@ -57,6 +62,14 @@ export const TablaPermisos: React.FC = () => {
   const [area, setArea] = useState<string>(""); // Área del usuario
   const navigate = useNavigate(); // Hook de navegación
 
+  // **1. Convertir texto (área) a formato normalizado**
+  const convertirTexto = (texto: string): string =>
+    texto
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "") // Eliminar acentos
+      .toLowerCase()
+      .replace(/\s+/g, "_"); // Espacios por guiones bajos
+
   // Escuchar cambios en la autenticación y obtener área del usuario
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -68,7 +81,7 @@ export const TablaPermisos: React.FC = () => {
 
           if (!querySnapshot.empty) {
             const userDoc = querySnapshot.docs[0].data();
-            const userArea = userDoc.area || "";
+            const userArea = convertirTexto(userDoc.area) || "";
             setArea(userArea); // Guardar el área del usuario
           } else {
             message.error("No se encontró información del usuario.");
