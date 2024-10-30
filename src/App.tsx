@@ -106,7 +106,8 @@ function App() {
 
 
   const resources =
-    userEmail === "ana@asiarobotica.com"
+    userEmail === "ana@asiarobotica.com"||
+    userEmail === "developer@asiarobotica.com"
       ? [
         {
           name: "tabla_permisos",
@@ -162,50 +163,7 @@ function App() {
           meta: { label: "Alta de usuarios", icon: <UserAddOutlined /> },
         },
 
-      ]
-      : userEmail === "developer@asiarobotica.com" ? [{
-        name: "tabla_permisos",
-        list: "/bandeja_entrada",
-        meta: {
-          label: "Bandeja entrada",
-          icon: (
-            <div style={{ display: "flex", alignItems: "center" }}>
-
-              {count > 0 ? (
-                <div
-                  style={{
-                    backgroundColor: "#ff4d4f",
-                    color: "white",
-                    borderRadius: "50%",
-                    width: "20px",
-                    height: "20px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    marginLeft: "0px",
-                    fontSize: "12px",
-                  }}
-                >
-                  {count}
-                </div>
-              ) : (
-                <InboxOutlined style={{ marginRight: "8px" }} />
-              )}
-            </div>
-          ),
-        },
-      },
-
-      {
-        name: "dashboard",
-        list: "/dashboard",
-        meta: { label: "Panel de control", icon: <BarChartOutlined /> },
-      },
-      {
-        name: "user_form",
-        list: "/user_form",
-        meta: { label: "Alta de usuarios", icon: <UserAddOutlined /> },
-      }] : [];
+      ] : [];
 
   return (
     <BrowserRouter>
