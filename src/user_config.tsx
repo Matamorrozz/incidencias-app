@@ -29,6 +29,12 @@ export const usuariosSidebar = [
     "christian.mendoza@asiarobotica.com",
     "gustavo.gallegos@asiarobotica.com",
     "saul.espinoza@asiarobotica.com",
-    "esmeralda.ramirez@asiarobotica.com"
+    "esmeralda.ramirez@asiarobotica.com",
+    'pablo@asiarobotica.com',
+    'ana.sanchez@asiarobotica.com',
+    'marada@asiarobotica.com',
+    'esteban@asiarobotica.com',
+    'luis.martinez@asiarobotica.com'
+
 
 ]
