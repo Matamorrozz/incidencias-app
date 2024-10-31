@@ -5,7 +5,8 @@ export const usuariosPermitidos = [
     'ana.sanchez@asiarobotica.com',
     'marada@asiarobotica.com',
     'esteban@asiarobotica.com',
-    'luis.martinez@asiarobotica.com'
+    'luis.martinez@asiarobotica.com',
+    'diana.garcia@asiarobotica.com'
 
 
 ];
@@ -34,7 +35,8 @@ export const usuariosSidebar = [
     'ana.sanchez@asiarobotica.com',
     'marada@asiarobotica.com',
     'esteban@asiarobotica.com',
-    'luis.martinez@asiarobotica.com'
+    'luis.martinez@asiarobotica.com',
+    'diana.garcia@asiarobotica.com'
 
 
 ]
