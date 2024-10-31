@@ -57,6 +57,7 @@ import { TablaPermisos } from "./bandeja_entrada/bandeja_entrada";
 import { IncomingMessage } from "http";
 import { useUnreviewedPermitsCount } from "./hooks/conteoPermisos";
 import { DetallePermiso } from "./bandeja_entrada/permiso_id";
+import { usuariosPermitidos, usuariosSidebar } from "./user_config";
 
 
 function App() {
@@ -106,9 +107,8 @@ function App() {
 
 
   const resources =
-    userEmail === "ana@asiarobotica.com"||
-    userEmail === "developer@asiarobotica.com"
-      ? [
+  usuariosSidebar.includes(userEmail || "") // Verifica si el correo está en la lista
+    ? [
         {
           name: "tabla_permisos",
           list: "/bandeja_entrada",
@@ -116,7 +116,6 @@ function App() {
             label: "Bandeja entrada",
             icon: (
               <div style={{ display: "flex", alignItems: "center" }}>
-
                 {count > 0 ? (
                   <div
                     style={{
@@ -141,9 +140,6 @@ function App() {
             ),
           },
         },
-
-
-
         {
           name: "incidencias",
           list: "/incidencias",
@@ -162,9 +158,8 @@ function App() {
           list: "/user_form",
           meta: { label: "Alta de usuarios", icon: <UserAddOutlined /> },
         },
-
-      ] : [];
-
+      ]
+    : [];
   return (
     <BrowserRouter>
       <RefineKbarProvider>

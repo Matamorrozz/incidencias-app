@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Form, Input, Button, message, Table, Popconfirm } from "antd";
+import { Form, Input, Button, message, Table, Popconfirm, Select } from "antd";
 import { Create, useForm } from "@refinedev/antd";
 import { auth, db } from '../../firebaseConfig';
 import { collection, getDocs, doc, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
@@ -8,14 +8,14 @@ import { useNavigate } from 'react-router-dom';
 const UserCreate: React.FC = () => {
     const { formProps, saveButtonProps, form } = useForm();
     const navigate = useNavigate();
-    const [usuarios, setUsuarios] = useState<any[]>([]); 
+    const [usuarios, setUsuarios] = useState<any[]>([]);
 
 
     const onFinish = async (values: any) => {
         try {
             console.log('Datos enviados:', values);
 
-            const apiKey ='AIzaSyDArlaidbMgHfMvy4U6HcaNS3B9j59pN60'; // Tu API Key de Firebase
+            const apiKey = 'AIzaSyDArlaidbMgHfMvy4U6HcaNS3B9j59pN60'; // Tu API Key de Firebase
             const url = `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${apiKey}`;
 
             const response = await fetch(url, {
@@ -165,7 +165,32 @@ const UserCreate: React.FC = () => {
                     name="areaTrabajo"
                     rules={[{ required: true, message: 'Por favor, ingresa el área de trabajo' }]}
                 >
-                    <Input placeholder="Área de Trabajo" />
+                    <Select options={
+                        [
+                            { value: "Desarrollo Tecnológico", label: "Desarrollo Tecnológico" },
+                            { value: "Logística", label: "Logística" },
+                            { value: "Producción", label: "Producción" },
+                            { value: "Calidad y Procesos", label: "Calidad y Procesos" },
+                            { value: "Garantías y Satisfacción al cliente", label: "Garantías y Satisfacción al cliente" },
+                            { value: "Almacén", label: "Almacén" },
+                            { value: "Mercadotecnia", label: "Mercadotecnia" },
+                            { value: "Soporte Técnico Presencial", label: "Soporte Técnico Presencial" },
+                            { value: "Crédito y Cobranza", label: "Crédito y Cobranza" },
+                            { value: "Compras", label: "Compras" },
+                            { value: "Ventas de refacciones y servicios", label: "Ventas de refacciones y servicios" },
+                            { value: "Servicio Técnico Telefónico", label: "Servicio Técnico Telefónico" },
+                            { value: "Contabilidad y Finanzas", label: "Contabilidad y Finanzas" },
+                            { value: "Recursos Humanos", label: "Recursos Humanos" },
+
+
+
+
+
+
+
+
+
+                        ]} />
                 </Form.Item>
 
                 <Form.Item>

@@ -16,7 +16,6 @@ type FormValues = {
   urgencia: boolean;
   comentarios: string;
   status: string;
-  fecha_permiso: any;
 };
 
 export const CreatePermit = () => {
@@ -24,6 +23,7 @@ export const CreatePermit = () => {
   const [userData, setUserData] = useState<Partial<FormValues>>({});
   const [loading, setLoading] = useState(false); // Estado para deshabilitar el botón de envío
   const isSubmitting = useRef(false); // Flag para evitar múltiples envíos
+  const [user, setUser] = useState('')
   
   const convertirTexto = (texto: string): string => {
     return texto
@@ -76,10 +76,6 @@ export const CreatePermit = () => {
     try {
       setLoading(true); // Mostrar estado de carga en el botón
 
-      // Formatear la fecha
-      if (values.fecha_permiso && dayjs.isDayjs(values.fecha_permiso)) {
-        values.fecha_permiso = dayjs(values.fecha_permiso).format("YYYY-MM-DD");
-      }
 
       // Establecer el status como "Pendiente"
       const dataToSend = { ...values, status: "Pendiente" };
