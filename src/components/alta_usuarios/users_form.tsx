@@ -200,7 +200,7 @@ const UserCreate: React.FC = () => {
                 </Form.Item>
             </Form>
 
-            <Table dataSource={usuarios} columns={columns} rowKey="id" pagination={{ pageSize: 5 }} />
+            <Table dataSource={usuarios} columns={columns} rowKey="id" pagination={{ pageSize: 5 }} scroll={{ x: 800, y: 300 }} />
         </Create>
     );
 };

@@ -146,7 +146,7 @@ const PiezasTable: React.FC<PiezasTableProps> = ({ selectedArea, dates }) => {
                 onChange={(e) => setSearch(e.target.value)}
                 style={{ marginBottom: 16 }}
             />
-            <Table columns={columns} dataSource={searchedData} rowKey="id" pagination={{ pageSize: 5 }} />
+            <Table scroll={{ x: 800, y: 300 }} columns={columns} dataSource={searchedData} rowKey="id" pagination={{ pageSize: 5 }} />
         </div>
     );
 };

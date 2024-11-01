@@ -87,6 +87,18 @@ export const Header: React.FC<RefineThemedLayoutV2HeaderProps> = ({
     return name ? name.charAt(0).toUpperCase() : "";
   };
 
+  const displayName = (
+    <>
+        {user?.name ? (
+            <>
+                Hola,<Text strong>{user.name}</Text>
+            </>
+        ) : (
+            'Hola, invitado'
+        )}
+    </>
+);
+
   return (
     <AntdLayout.Header style={headerStyles}>
       <Space>
@@ -98,10 +110,10 @@ export const Header: React.FC<RefineThemedLayoutV2HeaderProps> = ({
         />
         <Space style={{ marginLeft: "8px" }} size="middle">
           {/* Mostrar el nombre del usuario */}
-          {user?.name && <Text strong>{user.name}</Text>}
+          {displayName}
 
-          {/* Mostrar el correo del usuario */}
-          {user?.email && <Text>{user.email}</Text>}
+          {/* Mostrar el correo del usuario
+          {user?.email && <Text>{user.email}</Text>} */}
 
           {/* Mostrar avatar con la primera letra del nombre y fondo aleatorio */}
           <Avatar

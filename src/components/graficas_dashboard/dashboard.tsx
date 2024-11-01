@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { Row, Col, Card, DatePicker, Button, Select, Tabs } from "antd";
-import { IncidenciasPorAreaList } from "./graficas_dashboard/incidenciasArea";
-import { IncidenciasPorTiempoList } from "./graficas_dashboard/incidenciasTiempo";
-import PiezasTable from "./graficas_dashboard/incidenciasTabla";
-import { Usuario } from "./incidentes_usuarios/panel_usuario";
-import { IncidenciasPorUsuario } from "./graficas_dashboard/incidenciasUsuario";
+import { IncidenciasPorAreaList } from "../graficas_dashboard/incidenciasArea";
+import { IncidenciasPorTiempoList } from "../graficas_dashboard/incidenciasTiempo";
+import PiezasTable from "../graficas_dashboard/incidenciasTabla";
+import { Usuario } from "../incidentes_usuarios/panel_usuario";
+import { IncidenciasPorUsuario } from "../graficas_dashboard/incidenciasUsuario";
 import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "../firebaseConfig"
+import { auth } from "../../firebaseConfig"
 
 
 const { RangePicker } = DatePicker;
@@ -74,7 +74,11 @@ export const Dashboard: React.FC = () => {
 
 
     return (
-        <Tabs defaultActiveKey="1" centered>
+        <Tabs defaultActiveKey="1"
+              centered
+              tabBarStyle={{ minHeight: 48 }}
+              tabBarGutter={20}
+            >
             <Tabs.TabPane tab="Panel de Control" key="1">
                 <div style={{ padding: 24 }}>
                     <h2>Dashboard</h2>

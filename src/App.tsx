@@ -3,7 +3,7 @@ import { DevtoolsPanel, DevtoolsProvider } from "@refinedev/devtools";
 import { RefineKbar, RefineKbarProvider } from "@refinedev/kbar";
 import { Image } from "antd";
 import { useContext } from "react";
-import { Dashboard } from "./components/dashboard";
+import { Dashboard } from "./components/graficas_dashboard/dashboard";
 import { BarChartOutlined, InboxOutlined, LineChartOutlined, UserAddOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import HomePage from "./inicio/inicio";

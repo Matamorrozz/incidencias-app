@@ -179,6 +179,7 @@ const HomePage: React.FC = () => {
           columns={columns}
           loading={loading}
           rowKey="id" // Asegúrate de tener una clave única para cada fila
+          scroll={{ x: 800}}
         />
       </div>
     </div>

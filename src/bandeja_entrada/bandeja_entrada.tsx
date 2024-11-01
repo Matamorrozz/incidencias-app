@@ -129,10 +129,14 @@ export const TablaPermisos: React.FC = () => {
   }
 
   return (
-    <Tabs defaultActiveKey="1" centered>
+    <Tabs defaultActiveKey="1"
+          centered
+          tabBarGutter={20} // Espaciado entre pestañas para una mejor accesibilidad en móviles
+          tabBarStyle={{ minHeight: 48 }} >
       <Tabs.TabPane tab="Pendientes" key="1">
         <Table
           columns={columns(navigate)}
+          scroll={{ x: 800, y: 300 }}
           dataSource={permisosPendientes}
           rowKey="id"
           pagination={{ pageSize: 5 }}
@@ -142,6 +146,7 @@ export const TablaPermisos: React.FC = () => {
       <Tabs.TabPane tab="Aprobados" key="2">
         <Table
           columns={columns(navigate)}
+          scroll={{ x: 800, y: 300 }}
           dataSource={permisosAprobados}
           rowKey="id"
           pagination={{ pageSize: 5 }}
@@ -151,6 +156,7 @@ export const TablaPermisos: React.FC = () => {
       <Tabs.TabPane tab="Rechazados" key="3">
         <Table
           columns={columns(navigate)}
+          scroll={{ x: 800, y: 300 }}
           dataSource={permisosRechazados}
           rowKey="id"
           pagination={{ pageSize: 5 }}

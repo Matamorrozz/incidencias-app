@@ -134,7 +134,8 @@ export const Usuario = () => {
     <Card
       title="Perfil del Usuario"
       bordered={false}
-      style={{ width: 800, margin: "50px auto", borderRadius: 12, boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)" }}
+      style={{ width: "100%", maxWidth: "600px" , margin: "50px auto", borderRadius: 12, boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)", padding: "20px" }}
+      bodyStyle={{padding: "10px 16px"}}
     >
       <Space direction="vertical" size="large" style={{ width: "100%" }}>
         <Select
@@ -149,9 +150,9 @@ export const Usuario = () => {
           ))}
         </Select>
 
-        <RangePicker onChange={handleDateChange} />
+        <RangePicker onChange={handleDateChange} style={{ width: "100%" }} size="large"/>
 
-        <Button type="primary" onClick={fetchHistorial}>
+        <Button type="primary" onClick={fetchHistorial} style={{ width: "100%" }} size="large">
           Mostrar Historial
         </Button>
 
@@ -162,6 +163,7 @@ export const Usuario = () => {
           <List
             itemLayout="horizontal"
             dataSource={historial}
+            style={{ maxHeight: "300px", overflowY: "scroll" }}
             renderItem={(item) => (
               <List.Item>
                 <List.Item.Meta

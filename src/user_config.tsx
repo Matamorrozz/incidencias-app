@@ -6,7 +6,8 @@ export const usuariosPermitidos = [
     'marada@asiarobotica.com',
     'esteban@asiarobotica.com',
     'luis.martinez@asiarobotica.com',
-    'diana.garcia@asiarobotica.com'
+    'diana.garcia@asiarobotica.com',
+    'developer@asiarobotica.com'
 
 
 ];

@@ -121,9 +121,10 @@ export const BlogPostList = () => {
       </Row>
 
       <Table
-        dataSource={paginatedData} // Usar los datos paginados
+        dataSource={paginatedData} 
         rowKey="id"
-        pagination={false} // Desactivar la paginación automática de Ant Design
+        pagination={false}
+        scroll={{ x: 800, y: 300 }}
       >
         <Table.Column dataIndex="id" title="ID" />
         <Table.Column dataIndex="persona_emisor" title="Persona Emisor" />
