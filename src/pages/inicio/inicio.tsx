@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Button, Table, message } from "antd"; // Importamos los componentes necesarios
 import { useNavigate } from "react-router-dom"; // Para redireccionar al hacer clic en el botón
 import { onAuthStateChanged } from "firebase/auth"; // Obtenemos el usuario autenticado
-import { auth } from "../firebaseConfig"; // Importa la configuración de Firebase
+import { auth } from "../../firebaseConfig"; // Importa la configuración de Firebase
 import moment from "moment";
 // Definimos los tipos de datos para los permisos
 type Permiso = {

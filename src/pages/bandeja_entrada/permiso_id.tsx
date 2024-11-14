@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, Button, Spin, message, Typography, Tag, Space, Modal, Form, Input, DatePicker, Select } from "antd";
 import axios from "axios";
-import { auth } from "../firebaseConfig";
+import { auth } from "../../firebaseConfig";
 import dayjs from "dayjs";
 const { Text } = Typography;
 

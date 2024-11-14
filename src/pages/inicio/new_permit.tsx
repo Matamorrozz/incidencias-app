@@ -5,7 +5,7 @@ import { FormInstance } from "antd";
 import { useEffect, useState, useRef } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { collection, query, where, getDocs } from "firebase/firestore";
-import { auth, db } from "../firebaseConfig";
+import { auth, db } from "../../firebaseConfig";
 
 type FormValues = {
   nombre_completo: string;

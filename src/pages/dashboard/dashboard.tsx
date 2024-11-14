@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Row, Col, Card, DatePicker, Button, Select, Tabs } from "antd";
-import { IncidenciasPorAreaList } from "../graficas_dashboard/incidenciasArea";
-import { IncidenciasPorTiempoList } from "../graficas_dashboard/incidenciasTiempo";
-import PiezasTable from "../graficas_dashboard/incidenciasTabla";
+import { IncidenciasPorAreaList } from "./incidenciasArea";
+import { IncidenciasPorTiempoList } from "./incidenciasTiempo";
+import PiezasTable from "./incidenciasTabla";
 import { Usuario } from "../incidentes_usuarios/panel_usuario";
-import { IncidenciasPorUsuario } from "../graficas_dashboard/incidenciasUsuario";
+import { IncidenciasPorUsuario } from "./incidenciasUsuario";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../../firebaseConfig"
 
