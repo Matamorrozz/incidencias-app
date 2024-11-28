@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Card, Avatar, Typography, Spin, message, List, Space, Select, DatePicker, Button } from "antd";
 import { UserOutlined } from "@ant-design/icons";
 import axios from "axios";
-import { auth, db } from "../../firebaseConfig";
+import { auth, db } from "../../../firebaseConfig";
 import { collection, query, where, getDocs } from "firebase/firestore";
 
 const { Title, Text } = Typography;
@@ -168,7 +168,7 @@ export const Usuario = () => {
               <List.Item>
                 <List.Item.Meta
                   title={`Tipo: ${item.tipo_registro}`}
-                  description={`Fecha: ${item.fecha_permiso.slice(0, 10)} | Estado: ${item.status_acta}`}
+                  description={`Fecha: ${item.fecha_permiso ? item.fecha_permiso.slice(0, 10) : "Sin fecha"} | Estado: ${item.status_acta || "Sin estado"}`}
                 />
                 <Text>{`Comentarios adicionales: ${item.info_registro}`}</Text>
               </List.Item>

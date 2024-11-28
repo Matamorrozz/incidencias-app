@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { MDBBtn, MDBContainer, MDBRow, MDBCol, MDBIcon, MDBInput } from 'mdb-react-ui-kit';
 import { GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from './firebaseConfig';
+import { auth, db } from './firebaseConfig'; // Importar Firestore
+import { doc, getDoc } from 'firebase/firestore'; // Métodos para Firestore
 import './Login.css';
 
 const Login: React.FC = () => {
@@ -14,7 +15,22 @@ const Login: React.FC = () => {
   const handleGoogleLogin = async () => {
     setError(null); 
     try {
-      await signInWithPopup(auth, googleProvider); 
+      // Inicia sesión con Google
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+
+      // Verifica si el usuario está registrado en Firestore
+      const userDocRef = doc(db, 'usuarios', user.uid); // Referencia al documento del usuario
+      const userSnapshot = await getDoc(userDocRef);
+
+      if (userSnapshot.exists()) {
+        console.log('Usuario registrado, acceso permitido:', user.email);
+        // Redirigir a la plataforma o continuar con el flujo
+      } else {
+        setError('Usuario no registrado. Contacte con el administrador.');
+        // Opcional: Cierra la sesión si no está registrado
+        auth.signOut();
+      }
     } catch (err: any) {
       setError(err.message); 
     }
@@ -23,9 +39,9 @@ const Login: React.FC = () => {
   const handleEmailPasswordLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    console.log("Email:", email, "Password:", password);
     try {
       await signInWithEmailAndPassword(auth, email, password);
+      console.log("Inicio de sesión exitoso con correo y contraseña.");
     } catch (err: any) {
       setError(err.message); 
     }
@@ -43,7 +59,7 @@ const Login: React.FC = () => {
           <img 
             src="/ar_logo.png" 
             alt="Logo" 
-            style={{ width: '120px', marginBottom: '15px' }}  // Imagen más grande
+            style={{ width: '120px', marginBottom: '15px' }} 
           />
           <h1 className="display-6 fw-bold" style={{ color: 'hsl(218, 81%, 95%)' }}>
             INCIDENCIAS AR
@@ -80,7 +96,7 @@ const Login: React.FC = () => {
               type="submit"
               className="w-100"
               style={{
-                backgroundColor: '#FD0900',  // Color rojo para el botón de iniciar sesión
+                backgroundColor: '#FD0900',
                 color: 'white',
                 padding: '10px 0',
                 borderRadius: '25px',
@@ -97,7 +113,7 @@ const Login: React.FC = () => {
               onClick={handleGoogleLogin}
               className="w-100"
               style={{
-                backgroundColor: '#FD0900',  // Color rojo para el botón de Google
+                backgroundColor: '#FD0900',
                 color: 'white',
                 padding: '10px 0',
                 borderRadius: '25px',

@@ -3,7 +3,7 @@ import { DevtoolsPanel, DevtoolsProvider } from "@refinedev/devtools";
 import { RefineKbar, RefineKbarProvider } from "@refinedev/kbar";
 import { Image } from "antd";
 import { useContext } from "react";
-import { Dashboard } from "./pages/graficas_dashboard/dashboard";
+import { Dashboard } from "./pages/dashboard/dashboard";
 import { BarChartOutlined, InboxOutlined, LineChartOutlined, UserAddOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import HomePage from "./pages/inicio/inicio";
@@ -51,7 +51,7 @@ import { useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./firebaseConfig"; // Asegúrate de que tu archivo firebaseConfig.js esté bien configurado
 import Login from "./login"; // El componente de Login que creaste
-import UserCreate from "./components/alta_usuarios/users_form";
+import UserCreate from "./pages/alta_usuarios/users_form";
 import { CreatePermit } from "./pages/inicio/new_permit";
 import { TablaPermisos } from "./pages/bandeja_entrada/bandeja_entrada";
 import { IncomingMessage } from "http";

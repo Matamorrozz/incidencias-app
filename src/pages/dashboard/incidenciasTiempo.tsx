@@ -7,6 +7,8 @@ import { auth, db } from "../../firebaseConfig";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { usuariosPermitidos } from "../../user_config"; // Importar lista global de usuarios permitidos
 import moment from "moment";
+import { ColorModeContext } from "../../contexts/color-mode";
+import { useContext } from "react";
 
 interface IncidenciasGraficaProps {
     agrupacion: 'dia' | 'semana' | 'mes';
@@ -120,6 +122,11 @@ export const IncidenciasPorTiempoList: React.FC<IncidenciasGraficaProps> = ({ ag
             width: '50%',
         },
     ];
+    const { mode } = useContext(ColorModeContext);
+    const modeImage = mode === "dark" ? "#0fad03" : "#020675"; 
+
+
+
 
     if (loading) return <Spin size="large" />;
 
@@ -138,7 +145,7 @@ export const IncidenciasPorTiempoList: React.FC<IncidenciasGraficaProps> = ({ ag
                             <Line
                                 type="monotone"
                                 dataKey="value"
-                                stroke="#FD0900"
+                                stroke= {modeImage}
                                 strokeWidth={3}
                                 activeDot={{ r: 8 }}
                             />

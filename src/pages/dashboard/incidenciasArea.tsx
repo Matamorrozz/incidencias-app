@@ -6,7 +6,8 @@ import { onAuthStateChanged } from "firebase/auth";
 import { auth, db } from "../../firebaseConfig";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { usuariosPermitidos } from "../../user_config";
-
+import { ColorModeContext } from "../../contexts/color-mode";
+import { useContext } from "react";
 interface AreaIncidencias {
     name: string;
     value: number;
@@ -162,6 +163,8 @@ export const IncidenciasPorAreaList: React.FC<IncidenciasPorAreaListProps> = ({
     };
 
     if (loading) return <Spin size="large" />;
+    const { mode } = useContext(ColorModeContext);
+    const modeImage = mode === "dark" ? "#0fad03" : "#020675"; 
 
     return (
         <List title="Incidencias según el área">
@@ -171,7 +174,7 @@ export const IncidenciasPorAreaList: React.FC<IncidenciasPorAreaListProps> = ({
                     <YAxis />
                     <Tooltip content={<CustomTooltip />} />
                     <Legend />
-                    <Bar dataKey="value" fill="#FD0900" onClick={(_, index) => handleBarClick(data[index])} />
+                    <Bar dataKey="value" fill={modeImage} onClick={(_, index) => handleBarClick(data[index])} />
                 </BarChart>
             </ResponsiveContainer>
         </List>

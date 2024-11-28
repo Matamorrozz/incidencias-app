@@ -7,6 +7,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { auth, db } from "../../firebaseConfig";
 
+
 type FormValues = {
   nombre_completo: string;
   correo: string;
@@ -18,9 +19,12 @@ type FormValues = {
   status: string;
 };
 
+
+
 export const CreatePermit = () => {
   const { formProps, saveButtonProps, form } = useForm<FormValues>();
   const [userData, setUserData] = useState<Partial<FormValues>>({});
+
   const [loading, setLoading] = useState(false); // Estado para deshabilitar el botón de envío
   const isSubmitting = useRef(false); // Flag para evitar múltiples envíos
   const [user, setUser] = useState('')
@@ -68,6 +72,7 @@ export const CreatePermit = () => {
 
     return () => unsubscribe();
   }, [form]);
+
 
   const handleFinish = async (values: FormValues) => {
     if (isSubmitting.current) return; // Evitar múltiples envíos

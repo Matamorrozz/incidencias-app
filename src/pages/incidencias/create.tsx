@@ -1,28 +1,56 @@
 import { Create, useForm } from "@refinedev/antd";
-import { Form, Input, Select, DatePicker, message } from "antd";
+import { Form, Input, Select, DatePicker, message} from "antd";
 import dayjs from "dayjs";
-import { FormInstance } from "antd"; 
+import { FormInstance } from "antd";
 import React, { useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { collection, query, where, getDocs } from "firebase/firestore";
-import { auth, db } from "../../firebaseConfig"; // Importa tu configuración de Firebase
+import { auth, db } from "../../firebaseConfig";
+import axios from "axios";
 
 type FormValues = {
-    persona_emisor: string;
-    nombre_emisor: string;
-    jefe_inmediato: string;
-    tipo_registro: string;
-    fecha_permiso: any;
-    info_registro: string;
-    status_acta: string;
-    area: string;
+  persona_emisor: string;
+  nombre_emisor: string;
+  jefe_inmediato: string;
+  tipo_registro: string;
+  fecha_permiso: any;
+  info_registro: string;
+  status_acta: string;
+  area: string;
 };
+interface Incidencia {
+  id: string;
+  marca_temporal: string;
+  persona_emisor: string;
+  nombre_emisor: string;
+  jefe_inmediato: string;
+  tipo_registro: string;
+  fecha_permiso: string;
+  info_registro: string;
+  status_acta: string;
+  area: string;
+}
+
+interface UsuarioData {
+  displayName: string;
+  email: string;
+  area: string;
+}
 
 export const BlogPostCreate = () => {
   const { formProps, saveButtonProps, form } = useForm<FormValues>();
-  const [userData, setUserData] = useState<{ nombreCompleto: string } | null>(null);
+  const [userData, setUserData] = useState<Partial<FormValues>>({});
+  const [loading, setLoading] = useState(true); // Estado para mostrar carga inicial
+  const [usuarios, setUsuarios] = useState<string[]>([]); // Lista de usuarios únicos
+  const [selectedUser, setSelectedUser] = useState<string | null>(null); // Usuario seleccionado
 
-  // Obtener el nombre completo del usuario autenticado
+  const convertirTexto = (texto: string): string =>
+    texto
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "") // Eliminar acentos
+      .toLowerCase()
+      .replace(/\s+/g, "_"); // Espacios por guiones bajos
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
@@ -33,12 +61,15 @@ export const BlogPostCreate = () => {
 
           if (!querySnapshot.empty) {
             const userDoc = querySnapshot.docs[0].data();
+            setUserData(userDoc);
             const nombreCompleto = `${userDoc.nombre} ${userDoc.apellido_paterno} ${userDoc.apellido_materno}`;
-            setUserData({ nombreCompleto });
+            const area = userDoc.area;
+            await fetchUsuariosUnicos(area);
 
-            // Autocompletar el campo `persona_emisor`
+            // Establecer valores iniciales en el formulario
             form.setFieldsValue({
               persona_emisor: nombreCompleto,
+              area: area,
             });
           } else {
             message.error("No se encontró información del usuario.");
@@ -46,12 +77,36 @@ export const BlogPostCreate = () => {
         } catch (error) {
           console.error("Error al obtener los datos del usuario:", error);
           message.error("Hubo un error al cargar los datos del usuario.");
+        } finally {
+          setLoading(false); // Finalizar carga
         }
       }
     });
 
     return () => unsubscribe();
   }, [form]);
+
+
+  const fetchUsuariosUnicos = async (userArea: string) => {
+    try {
+      const areaNormalizada = convertirTexto(userArea);
+      console.log('El area normalizada es: ', areaNormalizada)
+      const url = `https://desarrollotecnologicoar.com/api3/incidencias_area?area=${encodeURIComponent(areaNormalizada)}`;
+
+      const response = await axios.get<Incidencia[]>(url);
+      const incidencias = response.data;
+
+      const nombresUnicos = Array.from(
+        new Set(incidencias.map((i) => i.nombre_emisor as string))
+      );
+
+      setUsuarios(nombresUnicos);
+
+    } catch (error) {
+      console.error("Error al obtener los usuarios únicos:", error);
+      message.error("Error al cargar los usuarios.");
+    }
+  };
 
   const handleFinish = (values: FormValues) => {
     if (values.fecha_permiso && dayjs.isDayjs(values.fecha_permiso)) {
@@ -64,6 +119,11 @@ export const BlogPostCreate = () => {
       formProps.onFinish(values);
     }
   };
+
+  if (loading) {
+    return <div style={{ textAlign: "center", marginTop: "20%" }}>Cargando datos del usuario...</div>;
+  }
+
   return (
     <Create saveButtonProps={saveButtonProps}>
       <Form<FormValues>
@@ -86,33 +146,22 @@ export const BlogPostCreate = () => {
           name="nombre_emisor"
           rules={[{ required: true, message: "El campo Nombre Emisor es obligatorio" }]}
         >
-          <Input />
+          <Select
+            placeholder="Selecciona un usuario"
+            options={usuarios.map((usuario) => ({
+              value: usuario,
+              label: usuario,
+            }))}
+          />
         </Form.Item>
 
+        {/* Campo `area` prellenado y deshabilitado */}
         <Form.Item
           label="Área"
           name="area"
           rules={[{ required: true, message: "El campo Área es obligatorio" }]}
         >
-          <Select
-            options={[
-              { value: "Desarrollo Tecnológico", label: "Desarrollo Tecnológico" },
-              { value: "Logística", label: "Logística" },
-              { value: "Producción", label: "Producción" },
-              { value: "Calidad y Procesos", label: "Calidad y Procesos" },
-              { value: "Garantías y Satisfacción al cliente", label: "Garantías y Satisfacción al cliente" },
-              { value: "Almacén", label: "Almacén" },
-              { value: "Mercadotecnia", label: "Mercadotecnia" },
-              { value: "Soporte Técnico Presencial", label: "Soporte Técnico Presencial" },
-              { value: "Crédito y Cobranza", label: "Crédito y Cobranza" },
-              { value: "Compras", label: "Compras" },
-              { value: "Ventas de refacciones y servicios", label: "Ventas de refacciones y servicios" },
-              { value: "Servicio Técnico Telefónico", label: "Servicio Técnico Telefónico" },
-              { value: "Contabilidad y Finanzas", label: "Contabilidad y Finanzas" },
-              { value: "Recursos Humanos", label: "Recursos Humanos" },
-            ]}
-            style={{ width: 1050 }}
-          />
+          <Input disabled /> {/* Campo deshabilitado */}
         </Form.Item>
 
         <Form.Item
@@ -123,7 +172,6 @@ export const BlogPostCreate = () => {
           <Input />
         </Form.Item>
 
-        {/* Campo `tipo_registro` como `Select` */}
         <Form.Item
           label="Tipo de registro"
           name="tipo_registro"
@@ -135,23 +183,7 @@ export const BlogPostCreate = () => {
               { value: "Llegada tarde no justificada", label: "Llegada tarde no justificada" },
               { value: "Permiso de llegada tarde por asuntos personales", label: "Permiso de llegada tarde por asuntos personales" },
               { value: "Permiso de llegada tarde por cita médica (IMSS)", label: "Permiso de llegada tarde por cita médica (IMSS)" },
-              { value: "Permiso de salida temprano", label: "Permiso de salida temprano" },
-              { value: "Permiso de inasistencia sin goce de sueldo", label: "Permiso de inasistencia sin goce de sueldo" },
-              { value: "Permiso de inasistencia a cuenta de vacaciones", label: "Permiso de inasistencia a cuenta de vacaciones" },
-              { value: "Falta por incapacidad del IMSS", label: "Falta por incapacidad del IMSS" },
-              { value: "Falta injustificada", label: "Falta injustificada" },
-              { value: "Permiso sin goce de sueldo", label: "Permiso sin goce de sueldo" },
-              { value: "Permiso de inasistencia", label: "Permiso de inasistencia" },
-              { value: "Reporte de actitud (irresponsabilidad, acciones negativas, daños, etc)", label: "Reporte de actitud (irresponsabilidad, acciones negativas, daños, etc)" },
-              { value: "Permiso de llegada tarde (no se presentó)", label: "Permiso de llegada tarde (no se presentó)" },
-              { value: "Falta justificada de acuerdo al Reglamento Interior de Trabajo", label: "Falta justificada de acuerdo al Reglamento Interior de Trabajo" },
-              { value: "Permiso para faltar toda la semana", label: "Permiso para faltar toda la semana" },
-              { value: "Permiso de salida temprano", label: "Permiso de salida temprano" },
-              { value: "Permiso Inasistencia sin goce de sueldo", label: "Permiso Inasistencia sin goce de sueldo" },
-              { value: "Suspensión por faltas o retardos", label: "Suspensión por faltas o retardos" },
-              { value: "Home Office", label: "Home Office" },
             ]}
-            style={{ width: 1050 }}
           />
         </Form.Item>
 
@@ -170,13 +202,11 @@ export const BlogPostCreate = () => {
           rules={[{ required: true, message: "El campo Status del Acta es obligatorio" }]}
         >
           <Select
-            defaultValue="Favor de emitir"
             options={[
               { value: "Favor de emitir", label: "Favor de emitir" },
               { value: "Emitida y firmada", label: "Emitida y firmada" },
               { value: "Pendiente de envío", label: "Pendiente de envío" },
             ]}
-            style={{ width: 1050 }}
           />
         </Form.Item>
       </Form>

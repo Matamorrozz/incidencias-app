@@ -6,6 +6,8 @@ import { onAuthStateChanged } from "firebase/auth";
 import { auth, db } from "../../firebaseConfig";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { usuariosPermitidos } from "../../user_config";
+import { ColorModeContext } from "../../contexts/color-mode";
+import { useContext } from "react";
 
 interface NombreIncidencias {
     name: string;
@@ -161,6 +163,8 @@ export const IncidenciasPorUsuario: React.FC<IncidenciasPorUsuarioListProps> = (
     };
 
     if (loading) return <Spin size="large" />;
+    const { mode } = useContext(ColorModeContext);
+    const modeImage = mode === "dark" ? "#0fad03" : "#020675"; 
 
     return (
         <List title="Incidencias por Usuario">
@@ -170,7 +174,7 @@ export const IncidenciasPorUsuario: React.FC<IncidenciasPorUsuarioListProps> = (
                     <YAxis />
                     <Tooltip content={<CustomTooltip />} />
                     <Legend />
-                    <Bar dataKey="value" fill="#8884d8" onClick={(_, index) => handleBarClick(data[index])} />
+                    <Bar dataKey="value" fill={modeImage} onClick={(_, index) => handleBarClick(data[index])} />
                 </BarChart>
             </ResponsiveContainer>
         </List>

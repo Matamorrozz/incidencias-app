@@ -3,13 +3,48 @@ import { Form, Input, Button, message, Table, Popconfirm, Select } from "antd";
 import { Create, useForm } from "@refinedev/antd";
 import { auth, db } from '../../firebaseConfig';
 import { collection, getDocs, doc, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
+import { onAuthStateChanged } from "firebase/auth";
 import { useNavigate } from 'react-router-dom';
+import { usuariosPermitidos } from '../../user_config';
 
 const UserCreate: React.FC = () => {
     const { formProps, saveButtonProps, form } = useForm();
     const navigate = useNavigate();
     const [usuarios, setUsuarios] = useState<any[]>([]);
+    const [selectedArea, setSelectedArea] = useState<string | null>(null);
+    const [isUserAllowed, setIsUserAllowed] = useState(false);
+    const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
 
+    const opciones = [
+        { value: "Desarrollo Tecnológico", label: "Desarrollo Tecnológico" },
+        { value: "Logística", label: "Logística" },
+        { value: "Producción", label: "Producción" },
+        { value: "Calidad y Procesos", label: "Calidad y Procesos" },
+        { value: "Garantías y Satisfacción al cliente", label: "Garantías y Satisfacción al cliente" },
+        { value: "Almacén", label: "Almacén" },
+        { value: "Mercadotecnia", label: "Mercadotecnia" },
+        { value: "Soporte Técnico Presencial", label: "Soporte Técnico Presencial" },
+        { value: "Crédito y Cobranza", label: "Crédito y Cobranza" },
+        { value: "Compras", label: "Compras" },
+        { value: "Ventas de refacciones y servicios", label: "Ventas de refacciones y servicios" },
+        { value: "Servicio Técnico Telefónico", label: "Servicio Técnico Telefónico" },
+        { value: "Contabilidad y Finanzas", label: "Contabilidad y Finanzas" },
+        { value: "Recursos Humanos", label: "Recursos Humanos" },
+
+    ]
+
+    useEffect(() => {
+        const unsuscribe = onAuthStateChanged(auth, (user) => {
+            if (user) {
+                setCurrentUserEmail(user.email || null);
+                setIsUserAllowed(usuariosPermitidos.includes(user.email || ""))
+            } else {
+                setIsUserAllowed(false);
+                setCurrentUserEmail(null);
+            }
+        });
+        return () => unsuscribe();
+    }, []);
 
     const onFinish = async (values: any) => {
         try {
@@ -30,7 +65,7 @@ const UserCreate: React.FC = () => {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.error.message || 'Error al registrar el usuario');
+                throw new Error(errorData.error.message || `Error al registrar el usuario`);
             }
 
             const { localId } = await response.json(); // Obtener el UID del usuario
@@ -50,7 +85,12 @@ const UserCreate: React.FC = () => {
             fetchUsuarios(); // Refrescar la lista de usuarios
         } catch (error) {
             console.error('Error al registrar usuario:', error);
-            message.error('Error al registrar el usuario.');
+            // Check if error is an instance of Error and handle accordingly
+            if (error instanceof Error) {
+                message.error(`Error al registrar el usuario: ${error.message}`);
+            } else {
+                message.error('Error desconocido al registrar el usuario');
+            }
         }
     };
 
@@ -86,6 +126,10 @@ const UserCreate: React.FC = () => {
         form.resetFields();
     }, [form]);
 
+    const filteredUsuarios = selectedArea ?
+        usuarios.filter(user => user.area === selectedArea)
+        : usuarios;
+
     const columns = [
         { title: 'Correo', dataIndex: 'correo', key: 'correo' },
         { title: 'Nombre Completo', dataIndex: 'nombre', key: 'nombre' },
@@ -108,7 +152,7 @@ const UserCreate: React.FC = () => {
                     okText="Sí"
                     cancelText="No"
                 >
-                    <Button danger>Eliminar</Button>
+                    <Button danger disabled={!isUserAllowed}>Eliminar</Button>
                 </Popconfirm>
             ),
         },
@@ -165,42 +209,27 @@ const UserCreate: React.FC = () => {
                     name="areaTrabajo"
                     rules={[{ required: true, message: 'Por favor, ingresa el área de trabajo' }]}
                 >
-                    <Select options={
-                        [
-                            { value: "Desarrollo Tecnológico", label: "Desarrollo Tecnológico" },
-                            { value: "Logística", label: "Logística" },
-                            { value: "Producción", label: "Producción" },
-                            { value: "Calidad y Procesos", label: "Calidad y Procesos" },
-                            { value: "Garantías y Satisfacción al cliente", label: "Garantías y Satisfacción al cliente" },
-                            { value: "Almacén", label: "Almacén" },
-                            { value: "Mercadotecnia", label: "Mercadotecnia" },
-                            { value: "Soporte Técnico Presencial", label: "Soporte Técnico Presencial" },
-                            { value: "Crédito y Cobranza", label: "Crédito y Cobranza" },
-                            { value: "Compras", label: "Compras" },
-                            { value: "Ventas de refacciones y servicios", label: "Ventas de refacciones y servicios" },
-                            { value: "Servicio Técnico Telefónico", label: "Servicio Técnico Telefónico" },
-                            { value: "Contabilidad y Finanzas", label: "Contabilidad y Finanzas" },
-                            { value: "Recursos Humanos", label: "Recursos Humanos" },
-
-
-
-
-
-
-
-
-
-                        ]} />
+                    <Select options={opciones} />
                 </Form.Item>
 
+
                 <Form.Item>
-                    <Button type="primary" htmlType="submit">
+                    <Button type="primary" htmlType="submit" disabled={!isUserAllowed}>
                         Registrar Usuario
                     </Button>
                 </Form.Item>
+        
             </Form>
+            <Select
+                    placeholder="Filtrar por área"
+                    style={{ marginBottom: 16, width: 200 }}
+                    onChange={(value) => setSelectedArea(value)}
+                    allowClear
+                    options = {opciones}
+                >
+            </Select>
 
-            <Table dataSource={usuarios} columns={columns} rowKey="id" pagination={{ pageSize: 5 }} scroll={{ x: 800, y: 300 }} />
+            <Table dataSource={filteredUsuarios} columns={columns} rowKey="id" pagination={{ pageSize: 5 }} scroll={{ x: 800, y: 300 }} />
         </Create>
     );
 };
