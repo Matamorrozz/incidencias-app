@@ -19,6 +19,32 @@ type FormValues = {
   status: string;
 };
 
+const jefesInmediatos = [
+  { value: "Luis Jaime Martínez Arredondo", label: "Luis Jaime Martínez Arredondo - Operaciones" },
+  { value: "Carlos Antonio Rivas Martínez", label: "Carlos Antonio Rivas Martínez - Soporte Técnico Call Center / NPI" },
+  { value: "Ana Rosa Lira Ortíz", label: "Ana Rosa Lira Ortíz - Logística" },
+  { value: "Armando de la Rosa García", label: "Armando de la Rosa García - Jefe de Desarrollo Tecnológico  " },
+  { value: "Ma. del Refugio Arroyo", label: "Ma. del Refugio Arroyo - Gerente Contabilidad, Finanza y RRHH" },
+  { value: "Rubén Muñoz González", label: "Rubén Muñoz González - Soporte Técnico Presencial" },
+  { value: "Laura Beatriz Arroyo Salcedo", label: "Laura Beatriz Arroyo Salcedo - Jefe de Contabilidad" },
+  { value: "Esteban Ramírez", label: "Esteban Ramírez - Gerente General" },
+  { value: "Karen Ibarra Ramírez", label: "Karen Ibarra Ramírez - Encargada Ventas de Refacciones y Servicios" },
+  { value: "Biviana Tirado Burgueño", label: "Biviana Tirado Burgueño - Encargada Satisfacción al cliente" },
+  { value: "Ana Sánchez Murúa", label: "Ana Sánchez Murúa - Generalista RRHH" },
+  { value: "Mariana Flores Ibarra", label: "Mariana Flores Ibarra - Jefe de Crédito y Cobranza" },
+  { value: "Lucero Ávila Cortes", label: "Lucero Ávila Cortes - Gerente de Mercadotecnia" },
+  { value: "Alonso Saúl Sandoval López", label: "Alonso Saúl Sandoval López - Supervisor de Producción" },
+  { value: "Sergio Alejandro García Trejo", label: "Sergio Alejandro García Trejo - Jefe de Procesos y Calidad" },
+  { value: "Adrián Carlos Guerrero", label: "Adrián Carlos Guerrero - Planeador de Materiales" },
+  { value: "Gerardo Reynoso López", label: "Gerardo Reynoso López - Supervisor de Producción" },
+  { value: "Jaime Daniel Flores Hernández", label: "Jaime Daniel Flores Hernández - Supervisor de Calidad" },
+  { value: "Paola Sarahí Ayala Camacho", label: "Paola Sarahí Ayala Camacho - Analista de Seguridad e Higiene / Mantenimiento" },
+  { value: "Christian Mendoza Nepomuceno", label: "Christian Mendoza Nepomuceno - Jefe de Almacén" },
+  { value: "Gustavo Gallegos Cortés", label: "Gustavo Gallegos Cortés - Subjefe de Soporte Técnico Presencial / Encargado de Sucursal CDMX" },
+  { value: "Saúl Espinoza Silva", label: "Saúl Espinoza Silva - Encargado de Logística Internacional" },
+  { value: "Esmeralda Ramírez Díaz", label: "Esmeralda Ramírez Díaz - Subjefe Crédito y Cobranza" },
+];
+
 
 
 export const CreatePermit = () => {
@@ -136,13 +162,15 @@ export const CreatePermit = () => {
         >
           <Input disabled />
         </Form.Item>
-
         <Form.Item
-          label="Jefe Inmediato"
+          label="Jefe Inmediato del empleado"
           name="jefe_inmediato"
           rules={[{ required: true, message: "El campo Jefe Inmediato es obligatorio" }]}
         >
-          <Input />
+          <Select
+            placeholder="Selecciona un jefe inmediato"
+            options={jefesInmediatos}
+          />
         </Form.Item>
 
         <Form.Item
