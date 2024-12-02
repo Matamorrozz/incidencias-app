@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { MDBBtn, MDBContainer, MDBRow, MDBCol, MDBIcon, MDBInput } from 'mdb-react-ui-kit';
-import { GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword } from 'firebase/auth';
+import { GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, deleteUser } from 'firebase/auth';
 import { auth, db } from './firebaseConfig'; // Importar Firestore
+import { useNavigate } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore'; // Métodos para Firestore
 import './Login.css';
 
@@ -9,6 +10,7 @@ const Login: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [email, setEmail] = useState<string>(''); 
   const [password, setPassword] = useState<string>(''); 
+  const navigate = useNavigate();
 
   const googleProvider = new GoogleAuthProvider();
 
@@ -25,9 +27,11 @@ const Login: React.FC = () => {
 
       if (userSnapshot.exists()) {
         console.log('Usuario registrado, acceso permitido:', user.email);
-        // Redirigir a la plataforma o continuar con el flujo
+        navigate('/')
       } else {
         setError('Usuario no registrado. Contacte con el administrador.');
+        deleteUser(user)
+
         // Opcional: Cierra la sesión si no está registrado
         auth.signOut();
       }
@@ -42,6 +46,7 @@ const Login: React.FC = () => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       console.log("Inicio de sesión exitoso con correo y contraseña.");
+      navigate('/')
     } catch (err: any) {
       setError(err.message); 
     }
