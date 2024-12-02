@@ -18,6 +18,7 @@ interface Permiso {
   comentarios: string;
   status: string;
   fecha_permiso: string;
+  motivo_rechazado: string;
 }
 
 export const DetallePermiso = () => {
@@ -29,6 +30,8 @@ export const DetallePermiso = () => {
   const [isModalVisible, setIsModalVisible] = useState(false); // Control del modal
   const [isRejectModalVisible, setIsRejectModalVisible] = useState(false);
   const [nuevoStatus, setNuevoStatus] = useState<string>(""); // Estado del nuevo status
+  const [rechazoComentarios, setRechazoComentarios] = useState<string>("");
+
 
   const [form] = Form.useForm(); // Crear una instancia del formulario
 
@@ -81,8 +84,14 @@ export const DetallePermiso = () => {
     setIsModalVisible(true); // Mostrar el modal
   };
 
-  const showModalRechazo = () => {
-    setIsRejectModalVisible(true); 
+  const showModalRechazo = (status: string) => {
+    setNuevoStatus(status);
+    if (permiso && user) {
+      form.setFieldsValue({
+        motivo_rechazado: ""
+      });
+    }
+    setIsRejectModalVisible(true);
   };
 
   const handleCancel = () => setIsModalVisible(false); // Cerrar el modal
@@ -119,20 +128,24 @@ export const DetallePermiso = () => {
 
   };
 
-    // Modal para confirmar el rechazo
-    const confirmRejection = async () => {
-      try {
-        await axios.put(
-          `https://desarrollotecnologicoar.com/api3/actualizar_status/${id}`,
-          { status: "Rechazado" }
-        );
-        message.success("El permiso ha sido rechazado.");
-        navigate("/bandeja_entrada");
-      } catch (error) {
-        console.error("Error al rechazar el permiso:", error);
-        message.error("Hubo un error al rechazar el permiso.");
-      }
-    };
+  // Modal para confirmar el rechazo
+  const confirmRejection = async () => {
+    try {
+      const values = await form.validateFields();
+      await axios.put(
+        `https://desarrollotecnologicoar.com/api3/actualizar_status/${id}`,
+        {
+          status: "Rechazado",
+          motivo_rechazado: values.motivo_rechazado
+        }
+      );
+      message.success("El permiso ha sido rechazado.");
+      navigate("/bandeja_entrada");
+    } catch (error) {
+      console.error("Error al rechazar el permiso:", error);
+      message.error("Hubo un error al rechazar el permiso.");
+    }
+  };
 
   if (loading) {
     return <Spin size="large" style={{ display: "block", margin: "100px auto" }} />;
@@ -187,7 +200,7 @@ export const DetallePermiso = () => {
           </Button>
           <Button
             danger
-            onClick={showModalRechazo}
+            onClick={() => showModalRechazo("Rechazado")}
             disabled={permiso.status === "Rechazado"}
           >
             Rechazar Permiso
@@ -217,19 +230,19 @@ export const DetallePermiso = () => {
           </Form.Item>
 
           <Form.Item label="Tipo de Registro" name="tipo_registro" rules={[{ required: true, message: 'Campo requerido' }]}>
-          <Select options={[
-            { value: "Mala actitud", label: "Reporte de actitud (irresponsabilidad, acciones negativas, daños, etc)." },
-            { value: "Permiso de llegada tarde", label: "Permiso de llegada tarde por asuntos personales." },
-            { value: "Permiso de inasistencia a cuenta de vacaciones.", label: "Permiso de inasistencia a cuenta de vacaciones." },
-            { value: "Permiso de salida temprano.", label: "Permiso de salida temprano." },
-            { value: "Llegada tarde no justificada.", label: "Llegada tarde no justificada." },
-            { value: "Permiso de llegada tarde por cita médica (IMSS).", label: "Permiso de llegada tarde por cita médica (IMSS)." },
-            { value: "Falta justificada de acuerdo al Reglamento Interior de Trabajo.", label: "Falta justificada de acuerdo al Reglamento Interior de Trabajo." },
-            { value: "Falta injustificada.", label: "Falta injustificada." },
-            { value: "Permiso tiempo x tiempo controlado", label: "Permiso tiempo x tiempo controlado" },
-            { value: "Falta por incapacidad del IMSS.", label: "Falta por incapacidad del IMSS." },
-            { value: "Permiso de inasistencia sin goce de sueldo.", label: "Permiso de inasistencia sin goce de sueldo." },
-          ]} />
+            <Select options={[
+              { value: "Mala actitud", label: "Reporte de actitud (irresponsabilidad, acciones negativas, daños, etc)." },
+              { value: "Permiso de llegada tarde", label: "Permiso de llegada tarde por asuntos personales." },
+              { value: "Permiso de inasistencia a cuenta de vacaciones.", label: "Permiso de inasistencia a cuenta de vacaciones." },
+              { value: "Permiso de salida temprano.", label: "Permiso de salida temprano." },
+              { value: "Llegada tarde no justificada.", label: "Llegada tarde no justificada." },
+              { value: "Permiso de llegada tarde por cita médica (IMSS).", label: "Permiso de llegada tarde por cita médica (IMSS)." },
+              { value: "Falta justificada de acuerdo al Reglamento Interior de Trabajo.", label: "Falta justificada de acuerdo al Reglamento Interior de Trabajo." },
+              { value: "Falta injustificada.", label: "Falta injustificada." },
+              { value: "Permiso tiempo x tiempo controlado", label: "Permiso tiempo x tiempo controlado" },
+              { value: "Falta por incapacidad del IMSS.", label: "Falta por incapacidad del IMSS." },
+              { value: "Permiso de inasistencia sin goce de sueldo.", label: "Permiso de inasistencia sin goce de sueldo." },
+            ]} />
           </Form.Item>
 
           <Form.Item label="Fecha del Permiso" name="fecha_permiso">
@@ -242,12 +255,12 @@ export const DetallePermiso = () => {
 
           <Form.Item label="Status del Acta" name="status_acta" rules={[{ required: true, message: 'Campo requerido' }]}>
             <Select options={[
-              {value:"Favor de emitir" , label:"Favor de emitir" },
-              {value:"Emitida y firmada (enviada a RH)" , label:"Emitida y firmada (enviada a RH)" },
-              {value:"Emitida y firmada (pendiente de enviarse a RH)" , label:"Emitida y firmada (pendiente de enviarse a RH)" },
-              {value:"Emitida y en espera de recabar firmas" , label:"Emitida y en espera de recabar firmas" },
+              { value: "Favor de emitir", label: "Favor de emitir" },
+              { value: "Emitida y firmada (enviada a RH)", label: "Emitida y firmada (enviada a RH)" },
+              { value: "Emitida y firmada (pendiente de enviarse a RH)", label: "Emitida y firmada (pendiente de enviarse a RH)" },
+              { value: "Emitida y en espera de recabar firmas", label: "Emitida y en espera de recabar firmas" },
 
-            ]}/>
+            ]} />
           </Form.Item>
 
           <Form.Item label="Área" name="area">
@@ -256,9 +269,23 @@ export const DetallePermiso = () => {
         </Form>
       </Modal>
 
-      <Modal title="Confirmar Rechazo" visible={isRejectModalVisible} onOk={confirmRejection} onCancel={handleRejectCancel}>
-        <p>¿Estás seguro de rechazar este permiso?</p>
+      <Modal
+        title="Confirmar Rechazo"
+        visible={isRejectModalVisible}
+        onOk={confirmRejection}
+        onCancel={handleRejectCancel}
+      >
+        <Form form={form} layout="vertical">
+          <Form.Item
+            label="Escribe el motivo del rechazo"
+            name="motivo_rechazado"
+            rules={[{ required: true, message: "Por favor, escribe el motivo del rechazo." }]}
+          >
+            <Input.TextArea rows={3} />
+          </Form.Item>
+        </Form>
       </Modal>
+
     </Card>
   );
 };
