@@ -208,10 +208,19 @@ export const BlogPostCreate = () => {
         >
           <Select
             options={[
+              { value: "Mala actitud", label: "Reporte de actitud (irresponsabilidad, acciones negativas, daños, etc)." },
+              { value: "Permiso de llegada tarde", label: "Permiso de llegada tarde por asuntos personales." },
+              { value: "Permiso de inasistencia a cuenta de vacaciones.", label: "Permiso de inasistencia a cuenta de vacaciones." },
+              { value: "Permiso de salida temprano.", label: "Permiso de salida temprano." },
+              { value: "Llegada tarde no justificada.", label: "Llegada tarde no justificada." },
+              { value: "Permiso de llegada tarde por cita médica (IMSS).", label: "Permiso de llegada tarde por cita médica (IMSS)." },
+              { value: "Falta justificada de acuerdo al Reglamento Interior de Trabajo.", label: "Falta justificada de acuerdo al Reglamento Interior de Trabajo." },
+              { value: "Falta injustificada.", label: "Falta injustificada." },
               { value: "Permiso tiempo x tiempo controlado", label: "Permiso tiempo x tiempo controlado" },
-              { value: "Llegada tarde no justificada", label: "Llegada tarde no justificada" },
-              { value: "Permiso de llegada tarde por asuntos personales", label: "Permiso de llegada tarde por asuntos personales" },
-              { value: "Permiso de llegada tarde por cita médica (IMSS)", label: "Permiso de llegada tarde por cita médica (IMSS)" },
+              { value: "Falta por incapacidad del IMSS.", label: "Falta por incapacidad del IMSS." },
+              { value: "Permiso de inasistencia sin goce de sueldo.", label: "Permiso de inasistencia sin goce de sueldo." },
+              { value: "Otro (negativo).", label: "Otro (negativo)." },
+              { value: "Otro (positivo).", label: "Otro (positivo)." },
             ]}
           />
         </Form.Item>
