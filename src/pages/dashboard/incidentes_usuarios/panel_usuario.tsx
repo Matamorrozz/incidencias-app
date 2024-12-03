@@ -4,10 +4,18 @@ import { UserOutlined } from "@ant-design/icons";
 import axios from "axios";
 import { auth, db } from "../../../firebaseConfig";
 import { collection, query, where, getDocs } from "firebase/firestore";
-
+import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { ColorModeContext } from "../../../contexts/color-mode";
+import { useContext } from "react";
 const { Title, Text } = Typography;
 const { Option } = Select;
 const { RangePicker } = DatePicker;
+
+
+interface TipoIncidencias {
+  name: string;
+  value: number;
+}
 
 interface Incidencia {
   id: string;
@@ -36,6 +44,7 @@ export const Usuario = () => {
   const [historial, setHistorial] = useState<Incidencia[]>([]); // Historial de incidencias
   const [loading, setLoading] = useState(true); // Estado de carga
   const [dates, setDates] = useState<[string | null, string | null]>([null, null]); // Fechas seleccionadas
+  const [data, setData] = useState<TipoIncidencias[]>([]);
 
   const convertirTexto = (texto: string): string => {
     return texto
@@ -67,6 +76,12 @@ export const Usuario = () => {
       setLoading(false);
     }
   };
+  const truncateText = (text: string, maxLength: number) => {
+    if (text.length > maxLength) {
+      return text.substring(0, maxLength) + "...";
+    }
+    return text;
+  };
 
   const fetchUsuariosUnicos = async (userArea: string) => {
     try {
@@ -79,8 +94,11 @@ export const Usuario = () => {
       const nombresUnicos = Array.from(
         new Set(incidencias.map((i) => i.nombre_emisor as string))
       );
-
+      // Contar incidencias por tipo
       setUsuarios(nombresUnicos);
+
+      // Convertir el conteo a un array para el gráfico
+
     } catch (error) {
       console.error("Error al obtener los usuarios únicos:", error);
       message.error("Error al cargar los usuarios.");
@@ -104,11 +122,36 @@ export const Usuario = () => {
       }
 
       const response = await axios.get<Incidencia[]>(url);
+      const tipoConteo: Record<string, number> = {};
+      response.data.forEach((i) => {
+        const tipo = i.tipo_registro;
+        tipoConteo[tipo] = (tipoConteo[tipo] || 0) + 1;
+      });
+      const tipoGraficoData = Object.entries(tipoConteo).map(([name, value]) => ({ name, value }));
+
+      console.log("Datos del gráfico:", tipoGraficoData); // Validar formato
+      setData(tipoGraficoData);
       setHistorial(response.data);
     } catch (error) {
       console.error("Error al obtener el historial:", error);
       message.error("Error al cargar el historial de incidencias.");
     }
+  };
+
+
+  const CustomTooltip = ({ active, payload }: any) => {
+    console.log("Tooltip activo:", active, "Payload:", payload);
+  
+    if (active && payload && payload.length) {
+      const { name, value } = payload[0].payload; // Datos del tooltip
+      return (
+        <div style={{ backgroundColor: "#fff", padding: "10px", border: "1px solid #ccc", borderRadius: "5px", color: "#000" }}>
+          <p><strong>Tipo:</strong> {name}</p>
+          <p><strong>Conteo:</strong> {value}</p>
+        </div>
+      );
+    }
+    return null;
   };
 
   useEffect(() => {
@@ -129,13 +172,15 @@ export const Usuario = () => {
   if (loading) {
     return <Spin size="large" style={{ display: "block", margin: "100px auto" }} />;
   }
+  const { mode } = useContext(ColorModeContext);
+  const modeImage = mode === "dark" ? "#0fad03" : "#020675";
 
   return (
     <Card
       title="Perfil del Usuario"
       bordered={false}
-      style={{ width: "100%", maxWidth: "600px" , margin: "50px auto", borderRadius: 12, boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)", padding: "20px" }}
-      bodyStyle={{padding: "10px 16px"}}
+      style={{ width: "100%", maxWidth: "800px", margin: "50px auto", borderRadius: 12, boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)", padding: "20px" }}
+      bodyStyle={{ padding: "10px 16px" }}
     >
       <Space direction="vertical" size="large" style={{ width: "100%" }}>
         <Select
@@ -150,17 +195,31 @@ export const Usuario = () => {
           ))}
         </Select>
 
-        <RangePicker onChange={handleDateChange} style={{ width: "100%" }} size="large"/>
+        <RangePicker onChange={handleDateChange} style={{ width: "100%" }} size="large" />
 
         <Button type="primary" onClick={fetchHistorial} style={{ width: "100%" }} size="large">
           Mostrar Historial
         </Button>
+        {data.length > 0 ? (
+          <ResponsiveContainer width="100%" height={300} >
+            <BarChart data={data}>
+              <XAxis dataKey="name" tickFormatter={(value)=>truncateText(value,25)}/>
+              <YAxis />
+              <Tooltip content={<CustomTooltip />} />
+              <Legend />
+              <Bar dataKey="value" fill={modeImage} />
+            </BarChart>
+          </ResponsiveContainer>
+        ) : (
+          <Text>No hay datos para mostrar.</Text>
+        )}
 
         <Title level={5} style={{ marginTop: 24 }}>
           Historial de Incidencias
         </Title>
         {historial.length > 0 ? (
           <List
+
             itemLayout="horizontal"
             dataSource={historial}
             style={{ maxHeight: "300px", overflowY: "scroll" }}
