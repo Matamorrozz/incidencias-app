@@ -78,6 +78,7 @@ const UserCreate: React.FC = () => {
                 area: values.areaTrabajo,
                 correo: values.correo,
                 fecha_creado: serverTimestamp(),
+                numero_empleado:  values.numeroEmpleado
             });
 
             message.success('Usuario registrado exitosamente.');
@@ -142,6 +143,7 @@ const UserCreate: React.FC = () => {
             key: 'fecha_creado',
             render: (text: any) => text?.toDate().toLocaleString(),
         },
+        { title: 'Numero de empleado', dataIndex: 'numero_empleado', key: 'numero_empleado' },
         {
             title: 'Acciones',
             key: 'acciones',
@@ -212,12 +214,21 @@ const UserCreate: React.FC = () => {
                     <Select options={opciones} />
                 </Form.Item>
 
+                <Form.Item
+                    label="Numero de empleado"
+                    name="numeroEmpleado"
+                    rules={[{ required: true, message: 'Por favor, ingresa el anumero de empleadoo' }]}
+                >
+                    <Input placeholder="# de empleado" />
+                </Form.Item>
+
 
                 <Form.Item>
                     <Button type="primary" htmlType="submit" disabled={!isUserAllowed}>
                         Registrar Usuario
                     </Button>
                 </Form.Item>
+                
         
             </Form>
             <Select
