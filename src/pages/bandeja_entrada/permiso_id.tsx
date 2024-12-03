@@ -242,6 +242,9 @@ export const DetallePermiso = () => {
               { value: "Permiso tiempo x tiempo controlado", label: "Permiso tiempo x tiempo controlado" },
               { value: "Falta por incapacidad del IMSS.", label: "Falta por incapacidad del IMSS." },
               { value: "Permiso de inasistencia sin goce de sueldo.", label: "Permiso de inasistencia sin goce de sueldo." },
+              { value: "Otro (negativo).", label: "Otro (negativo)." },
+              { value: "Otro (positivo).", label: "Otro (positivo)." },
+              
             ]} />
           </Form.Item>
 
