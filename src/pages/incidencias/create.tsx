@@ -1,5 +1,5 @@
 import { Create, useForm } from "@refinedev/antd";
-import { Form, Input, Select, DatePicker, message} from "antd";
+import { Form, Input, Select, DatePicker, message, Button } from "antd";
 import dayjs from "dayjs";
 import { FormInstance } from "antd";
 import React, { useEffect, useState } from "react";
@@ -7,6 +7,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { auth, db } from "../../firebaseConfig";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 type FormValues = {
   persona_emisor: string;
@@ -69,6 +70,9 @@ export const BlogPostCreate = () => {
   const [loading, setLoading] = useState(true); // Estado para mostrar carga inicial
   const [usuarios, setUsuarios] = useState<string[]>([]); // Lista de usuarios únicos
   const [selectedUser, setSelectedUser] = useState<string | null>(null); // Usuario seleccionado
+  const [tipoRegistro, setTipoRegistro] = useState<string | undefined>(); // Estado para el tipo de registro
+
+  const navigate = useNavigate();
 
   const convertirTexto = (texto: string): string =>
     texto
@@ -112,7 +116,6 @@ export const BlogPostCreate = () => {
     return () => unsubscribe();
   }, [form]);
 
-
   const fetchUsuariosUnicos = async (userArea: string) => {
     try {
       const areaNormalizada = convertirTexto(userArea);
@@ -135,6 +138,11 @@ export const BlogPostCreate = () => {
   };
 
   const handleFinish = (values: FormValues) => {
+    if (tipoRegistro === "Otro (negativo)." || tipoRegistro === "Otro (positivo).") {
+      // No proceder con el envío predeterminado del formulario
+      return;
+    }
+
     if (values.fecha_permiso && dayjs.isDayjs(values.fecha_permiso)) {
       values.fecha_permiso = dayjs(values.fecha_permiso).format("YYYY-MM-DD");
     }
@@ -146,12 +154,25 @@ export const BlogPostCreate = () => {
     }
   };
 
+  const handleGenerarActa = () => {
+    form.validateFields().then((values) => {
+      navigate("/impresion_acta", { state: { ...values } });
+    }).catch((errorInfo) => {
+      console.error('Error de validación:', errorInfo);
+    });
+  };
+
+  const adjustedSaveButtonProps = {
+    ...saveButtonProps,
+    disabled: tipoRegistro === "Otro (negativo)." || tipoRegistro === "Otro (positivo).",
+  };
+
   if (loading) {
     return <div style={{ textAlign: "center", marginTop: "20%" }}>Cargando datos del usuario...</div>;
   }
 
   return (
-    <Create saveButtonProps={saveButtonProps}>
+    <Create saveButtonProps={adjustedSaveButtonProps}>
       <Form<FormValues>
         {...formProps}
         form={form as unknown as FormInstance<FormValues>}
@@ -207,6 +228,10 @@ export const BlogPostCreate = () => {
           rules={[{ required: true, message: "El campo Tipo de Registro es obligatorio" }]}
         >
           <Select
+            onChange={(value) => {
+              setTipoRegistro(value);
+              form.setFieldsValue({ tipo_registro: value });
+            }}
             options={[
               { value: "Mala actitud", label: "Reporte de actitud (irresponsabilidad, acciones negativas, daños, etc)." },
               { value: "Permiso de llegada tarde", label: "Permiso de llegada tarde por asuntos personales." },
@@ -233,20 +258,32 @@ export const BlogPostCreate = () => {
           <Input.TextArea rows={4} />
         </Form.Item>
 
-        <Form.Item
-          label="Confirme la emisión física del Acta Administrativa:"
-          name="status_acta"
-          initialValue="Favor de emitir"
-          rules={[{ required: true, message: "El campo Status del Acta es obligatorio" }]}
-        >
-          <Select
-            options={[
-              { value: "Favor de emitir", label: "Favor de emitir" },
-              { value: "Emitida y firmada", label: "Emitida y firmada" },
-              { value: "Pendiente de envío", label: "Pendiente de envío" },
-            ]}
-          />
-        </Form.Item>
+        {/* Condicionalmente renderizar `status_acta` */}
+        {tipoRegistro !== "Otro (negativo)." && tipoRegistro !== "Otro (positivo)." && (
+          <Form.Item
+            label="Confirme la emisión física del Acta Administrativa:"
+            name="status_acta"
+            initialValue="Favor de emitir"
+            rules={[{ required: true, message: "El campo Status del Acta es obligatorio" }]}
+          >
+            <Select
+              options={[
+                { value: "Favor de emitir", label: "Favor de emitir" },
+                { value: "Emitida y firmada", label: "Emitida y firmada" },
+                { value: "Pendiente de envío", label: "Pendiente de envío" },
+              ]}
+            />
+          </Form.Item>
+        )}
+
+        {/* Mostrar botón "Generar Acta" condicionalmente */}
+        {(tipoRegistro === "Otro (negativo)." || tipoRegistro === "Otro (positivo).") && (
+          <Form.Item>
+            <Button type="primary" onClick={handleGenerarActa}>
+              Generar Acta
+            </Button>
+          </Form.Item>
+        )}
       </Form>
     </Create>
   );
