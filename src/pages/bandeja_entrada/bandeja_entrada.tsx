@@ -6,6 +6,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import moment from "moment";
+import { usuariosPermitidos } from "../../user_config";
 
 // Definimos la interfaz para los permisos
 interface Permiso {
@@ -25,7 +26,7 @@ interface Permiso {
 const columns = (navigate: (path: string) => void) => [
   { title: "Fecha de solicitud", dataIndex: "fecha_solicitud", key: "fecha_solicitud", render: (fecha: any) => moment(fecha).format("DD/MM/YYYY HH:MM") },
   { title: "Nombre", dataIndex: "nombre_completo", key: "nombre_completo" },
-  { title: "Correo / Usuario", dataIndex: "correo", key: "correo" },
+  { title: "Area", dataIndex: "area", key: "area" },
   { title: "Jefe Inmediato", dataIndex: "jefe_inmediato", key: "jefe_inmediato" },
   { title: "Tipo de permiso", dataIndex: "tipo_permiso", key: "tipo_permiso" },
   { title: "Urgencia", dataIndex: "urgencia", key: "urgencia" },
@@ -39,14 +40,12 @@ const columns = (navigate: (path: string) => void) => [
       const color =
         status === "Aprobado" ? "green" :
           status === "Pendiente" ? "orange" : "red";
-      const isDisabled = status === "Aprobado" || status === "Rechazado"
-
-      
+      const isDisabled = status === "Aprobado" || status === "Rechazado";
 
       return (
         <Button
           style={{ backgroundColor: color, color: "white", border: "none" }}
-          disabled= {isDisabled}
+          disabled={isDisabled}
           onClick={() => navigate(`/detalle_permiso/${record.id}`)}
         >
           {status}
@@ -70,54 +69,79 @@ export const TablaPermisos: React.FC = () => {
       .toLowerCase()
       .replace(/\s+/g, "_"); // Espacios por guiones bajos
 
-  // Escuchar cambios en la autenticación y obtener área del usuario
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         try {
           const correo = user.email || "";
-          const q = query(collection(db, "usuarios"), where("correo", "==", correo));
-          const querySnapshot = await getDocs(q);
 
-          if (!querySnapshot.empty) {
-            const userDoc = querySnapshot.docs[0].data();
-            const userArea = convertirTexto(userDoc.area) || "";
-            setArea(userArea); // Guardar el área del usuario
-          } else {
-            message.error("No se encontró información del usuario.");
+          // Verificar si el usuario está en usuariosPermitidos
+          if (usuariosPermitidos.includes(correo)) {
+           //fetch a la api general
+            const fetchPermisosGenerales = async () => {
+              try {
+                const response = await axios.get<Permiso[]>(
+                  "https://desarrollotecnologicoar.com/api3/permisos"
+                );
+                setData(response.data);
+              } catch (error) {
+                console.error("Error al obtener permisos generales:", error);
+                message.error("Hubo un error al cargar los permisos generales.");
+              } finally {
+                setLoading(false);
+              }
+            };
+            await fetchPermisosGenerales();
+          } else { 
+            // Obtener el área del usuario para permisos específicos
+            const q = query(collection(db, "usuarios"), where("correo", "==", correo));
+            const querySnapshot = await getDocs(q);
+
+            if (!querySnapshot.empty) {
+              const userDoc = querySnapshot.docs[0].data();
+              const userArea = convertirTexto(userDoc.area) || "";
+              setArea(userArea); // Guardar el área del usuario
+            } else {
+              message.error("No se encontró información del usuario.");
+              setLoading(false);
+            }
           }
         } catch (error) {
           console.error("Error al obtener los datos del usuario:", error);
           message.error("Hubo un error al cargar los datos del usuario.");
+          setLoading(false);
         }
       } else {
         message.error("El usuario no está autenticado.");
+        setLoading(false);
       }
     });
 
     return () => unsubscribe(); // Limpiar el listener
   }, []);
 
-  // Cargar permisos cuando se obtenga el área
+  // Cargar permisos por área
   useEffect(() => {
-    const fetchPermisos = async () => {
+    const fetchPermisosPorArea = async () => {
       if (!area) return; // No continuar si no hay área
 
       try {
         const response = await axios.get<Permiso[]>(
           `https://desarrollotecnologicoar.com/api3/permiso_por_area/${area}`
         );
-        setData(response.data); // Guardar los permisos en el estado
+        setData(response.data);
       } catch (error) {
-        console.error("Error al obtener permisos:", error);
-        message.error("Hubo un error al cargar los permisos.");
+        console.error("Error al obtener permisos por área:", error);
+        message.error("Hubo un error al cargar los permisos por área.");
       } finally {
-        setLoading(false); // Finalizar la carga
+        setLoading(false);
       }
     };
 
-    fetchPermisos();
-  }, [area]); // Ejecutar cada vez que el área cambie
+    if (!usuariosPermitidos.includes(auth.currentUser?.email || "")) {
+      fetchPermisosPorArea();
+    }
+  }, [area]);
 
   // Filtrar permisos por status
   const permisosPendientes = data.filter((permiso) => permiso.status === "Pendiente");
