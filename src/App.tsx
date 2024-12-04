@@ -4,8 +4,9 @@ import { RefineKbar, RefineKbarProvider } from "@refinedev/kbar";
 import { Image } from "antd";
 import { useContext } from "react";
 import { Dashboard } from "./pages/dashboard/dashboard";
-import { BarChartOutlined, InboxOutlined, LineChartOutlined, UserAddOutlined } from "@ant-design/icons";
+import { BarChartOutlined, InboxOutlined, LineChartOutlined, UserAddOutlined , PrinterFilled, PrinterOutlined, FilePdfOutlined, FileAddFilled} from "@ant-design/icons";
 import { Link } from "react-router-dom";
+import {PDFEditor} from "./pages/impresion_actas/formato_acta"
 import HomePage from "./pages/inicio/inicio";
 import {
   ErrorComponent,
@@ -158,6 +159,11 @@ function App() {
           list: "/user_form",
           meta: { label: "Alta de usuarios", icon: <UserAddOutlined /> },
         },
+        {
+          name: "impresion_acta",
+          list: "/impresion_acta",
+          meta: { label: "Impresión de acta", icon: <FilePdfOutlined /> },
+        },
       ]
     : [];
   return (
@@ -204,6 +210,8 @@ function App() {
                       <Route path="/create_permit" element={<CreatePermit />} />
                       <Route path="/bandeja_entrada" element={<TablaPermisos />} />
                       <Route path="/detalle_permiso/:id" element={<DetallePermiso />} />
+                      <Route path="/impresion_acta" element={<PDFEditor />} />
+
                       <Route path="*" element={<ErrorComponent />} /> {/* Ruta para errores */}
                     </Route>
                   </Routes>
