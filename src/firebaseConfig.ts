@@ -2,6 +2,7 @@ import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getAnalytics, isSupported } from "firebase/analytics";
 import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage"; // Importar Storage
 
 const firebaseConfig = {
   apiKey: "AIzaSyDArlaidbMgHfMvy4U6HcaNS3B9j59pN60",
@@ -21,3 +22,5 @@ export const auth = getAuth(app);
 
 // Inicializa Firestore
 export const db = getFirestore(app);
+// Agrega Storage
+export const storage = getStorage(app, "gs://incidencias-a781e.firebasestorage.app");
