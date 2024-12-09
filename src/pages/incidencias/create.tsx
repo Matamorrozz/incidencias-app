@@ -123,6 +123,8 @@ export const BlogPostCreate = () => {
     return () => unsubscribe();
   }, [form]);
 
+  var nombreCompleto
+
 
 
   const fetchUsersByArea = async (area: string) => {
@@ -257,7 +259,7 @@ export const BlogPostCreate = () => {
           <Select
             placeholder="Selecciona un usuario"
             options={usuarios.map((user) => ({
-              value: user.nombre,
+              value: user.nombreCompleto,
               label: `${user.nombre} ${user.apellido_paterno} ${user.apellido_materno}`,
           }))}
           />
