@@ -259,7 +259,7 @@ export const BlogPostCreate = () => {
           <Select
             placeholder="Selecciona un usuario"
             options={usuarios.map((user) => ({
-              value: user.nombreCompleto,
+              value: `${user.nombre} ${user.apellido_paterno} ${user.apellido_materno}`,
               label: `${user.nombre} ${user.apellido_paterno} ${user.apellido_materno}`,
           }))}
           />

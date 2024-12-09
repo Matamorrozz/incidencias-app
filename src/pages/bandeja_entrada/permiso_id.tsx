@@ -1,12 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Card, Button, Spin, message, Typography, Tag, Space, Modal, Form, Input, Select, Upload } from "antd";
+import { Card, Button, Spin, message, Typography, Tag, Space, Modal, Form, Input, DatePicker, Select } from "antd";
 import axios from "axios";
-import { auth, storage } from "../../firebaseConfig";
+import { auth } from "../../firebaseConfig";
 import dayjs from "dayjs";
-import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
-import { UploadOutlined } from "@ant-design/icons";
-
 const { Text } = Typography;
 
 interface Permiso {
@@ -34,19 +31,7 @@ export const DetallePermiso = () => {
   const [isRejectModalVisible, setIsRejectModalVisible] = useState(false);
   const [nuevoStatus, setNuevoStatus] = useState<string>(""); // Estado del nuevo status
   const [rechazoComentarios, setRechazoComentarios] = useState<string>("");
-  const [uploading, setUploading] = useState(false);
-  const [fileToUpload, setFileToUpload] = useState<File | null>(null);
 
-  // Estados agregados para replicar lógica del primer componente
-  const [tipoRegistro, setTipoRegistro] = useState<string | undefined>();
-  const [showUploadSection, setShowUploadSection] = useState(false);
-
-  const convertirTexto = (texto: string): string =>
-    texto
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "") // Eliminar acentos
-      .toLowerCase()
-      .replace(/\s+/g, "_"); // Espacios por guiones bajos
 
   const [form] = Form.useForm(); // Crear una instancia del formulario
 
@@ -88,6 +73,7 @@ export const DetallePermiso = () => {
     setNuevoStatus(status); // Guardamos el nuevo status (Aprobado o Rechazado)
     if (permiso && user) {
       form.setFieldsValue({
+
         persona_emisor: user.displayName || user.email,
         nombre_emisor: permiso.nombre_completo,
         jefe_inmediato: permiso.jefe_inmediato,
@@ -111,89 +97,38 @@ export const DetallePermiso = () => {
   const handleCancel = () => setIsModalVisible(false); // Cerrar el modal
   const handleRejectCancel = () => setIsRejectModalVisible(false);
 
-  // Función para subir el archivo a Firebase Storage
-  const handleUpload = (file: File, area: string, nombre_emisor: string): Promise<string> => {
-    return new Promise<string>((resolve, reject) => {
-      try {
-        setUploading(true);
-
-        const areaNormalized = convertirTexto(area);
-        const nombreEmisorNormalized = convertirTexto(nombre_emisor);
-
-        const storagePath = `${areaNormalized}/${nombreEmisorNormalized}/${file.name}`;
-
-        const storageRef = ref(storage, storagePath);
-        const uploadTask = uploadBytesResumable(storageRef, file);
-
-        uploadTask.on(
-          "state_changed",
-          (snapshot) => {
-            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-            console.log(`Subiendo: ${progress}%`);
-          },
-          (error) => {
-            console.error("Error al subir archivo:", error);
-            message.error("Hubo un error al subir el archivo.");
-            setUploading(false);
-            reject(error);
-          },
-          async () => {
-            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-            console.log("Archivo disponible en:", downloadURL);
-            message.success("Archivo subido correctamente.");
-            setUploading(false);
-            resolve(downloadURL);
-          }
-        );
-      } catch (error) {
-        console.error("Error al subir archivo:", error);
-        message.error("Hubo un error al subir el archivo.");
-        setUploading(false);
-        reject(error);
-      }
-    });
-  };
-
+  // Función para enviar el formulario
   const handleOk = async () => {
-    // Antes de proceder revisamos el tipoRegistro
-    if (tipoRegistro === "Otro (negativo)." || tipoRegistro === "Otro (positivo).") {
-      // No proceder si es "Otro"
-      message.warning("No se puede registrar el permiso con este tipo de registro.");
-      return;
-    }
-
     try {
       const values = await form.validateFields(); // Validar los campos del formulario
+      console.log("Valores del formulario:", values);
 
-      // Subida de archivo si se adjuntó
-      if (fileToUpload) {
-        try {
-          const downloadURL = await handleUpload(fileToUpload, values.area, values.nombre_emisor);
-          values.downloadURL = downloadURL;
-        } catch (error) {
-          console.error("Error al subir archivo:", error);
-          message.error("Error al subir el archivo. No se puede continuar.");
-          return;
-        }
-      }
-
-      // Actualizar status del permiso en la API
+      // Llamada a la API para actualizar el estado
       await axios.put(
         `https://desarrollotecnologicoar.com/api3/actualizar_status/${id}`,
         { status: nuevoStatus, ...values }
       );
-
-      // Registrar la incidencia (similar a como se hace en el primer componente)
-      await axios.post(`https://desarrollotecnologicoar.com/api3/incidencias`, values);
-
-      message.success(`El permiso ha sido ${nuevoStatus.toLowerCase()} y registrado correctamente.`);
+      message.success(`El permiso ha sido ${nuevoStatus.toLowerCase()} correctamente.`);
       navigate("/bandeja_entrada"); // Redirigir a la bandeja
     } catch (error) {
-      console.error("Error al actualizar o registrar el permiso:", error);
-      message.error("Hubo un error al actualizar o registrar el permiso.");
+      console.error("Error al actualizar el permiso:", error);
+      message.error("Hubo un error al actualizar el permiso.");
     }
+    try {
+      const values = await form.validateFields(); // Validar los campos del formulario
+      console.log("Valores del formulario:", values);
+      await axios.post(`https://desarrollotecnologicoar.com/api3/incidencias`, values);
+      message.success("El permiso se ha registrado correctamente.");
+      navigate("/bandeja_entrada");
+    } catch (error) {
+      console.error("Error al enviar el formulario:", error);
+      message.error("Hubo un error al registrar el permiso.");
+    }
+
+
   };
 
+  // Modal para confirmar el rechazo
   const confirmRejection = async () => {
     try {
       const values = await form.validateFields();
@@ -212,10 +147,6 @@ export const DetallePermiso = () => {
     }
   };
 
-  const handleGenerarActa = () => {
-    setShowUploadSection(true); // Mostrar la sección de subida de archivos
-  };
-
   if (loading) {
     return <Spin size="large" style={{ display: "block", margin: "100px auto" }} />;
   }
@@ -231,8 +162,7 @@ export const DetallePermiso = () => {
       style={{ width: 600, margin: "50px auto", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)" }}
     >
       <Space direction="vertical" size="large" style={{ width: "100%" }}>
-        <Text strong>ID:</Text>
-        <Text>{permiso.id}</Text>
+        <Text>ID:</Text>
 
         <Text strong>Correo:</Text>
         <Text>{permiso.correo}</Text>
@@ -240,8 +170,8 @@ export const DetallePermiso = () => {
         <Text strong>Fecha de Solicitud:</Text>
         <Text>{permiso.fecha_solicitud}</Text>
 
-        <Text strong>Tipo de Permiso:</Text>
-        <Text>{permiso.tipo_permiso}</Text>
+        <Text><strong>Tipo de Permiso: </strong>{permiso.tipo_permiso}</Text>
+        
 
         <Text strong>Urgencia:</Text>
         <Tag color={permiso.urgencia ? "red" : "green"}>
@@ -285,6 +215,7 @@ export const DetallePermiso = () => {
         width={800}
       >
         <Form form={form} layout="vertical">
+
           <Form.Item label="Persona Emisora" name="persona_emisor">
             <Input disabled />
           </Form.Item>
@@ -297,33 +228,23 @@ export const DetallePermiso = () => {
             <Input disabled />
           </Form.Item>
 
-          {/* Tipo de registro con onChange para setear estado */}
-          <Form.Item 
-            label="Tipo de Registro" 
-            name="tipo_registro" 
-            rules={[{ required: true, message: 'Campo requerido' }]}
-          >
-            <Select 
-              onChange={(value) => {
-                setTipoRegistro(value);
-                form.setFieldsValue({ tipo_registro: value });
-              }}
-              options={[
-                { value: "Mala actitud", label: "Reporte de actitud (irresponsabilidad, acciones negativas, daños, etc)." },
-                { value: "Permiso de llegada tarde", label: "Permiso de llegada tarde por asuntos personales." },
-                { value: "Permiso de inasistencia a cuenta de vacaciones.", label: "Permiso de inasistencia a cuenta de vacaciones." },
-                { value: "Permiso de salida temprano.", label: "Permiso de salida temprano." },
-                { value: "Llegada tarde no justificada.", label: "Llegada tarde no justificada." },
-                { value: "Permiso de llegada tarde por cita médica (IMSS).", label: "Permiso de llegada tarde por cita médica (IMSS)." },
-                { value: "Falta justificada de acuerdo al Reglamento Interior de Trabajo.", label: "Falta justificada de acuerdo al Reglamento Interior de Trabajo." },
-                { value: "Falta injustificada.", label: "Falta injustificada." },
-                { value: "Permiso tiempo x tiempo controlado", label: "Permiso tiempo x tiempo controlado" },
-                { value: "Falta por incapacidad del IMSS.", label: "Falta por incapacidad del IMSS." },
-                { value: "Permiso de inasistencia sin goce de sueldo.", label: "Permiso de inasistencia sin goce de sueldo." },
-                { value: "Otro (negativo).", label: "Otro (negativo)." },
-                { value: "Otro (positivo).", label: "Otro (positivo)." },
-              ]} 
-            />
+          <Form.Item label="Tipo de Registro" name="tipo_registro" rules={[{ required: true, message: 'Campo requerido' }]}>
+            <Select options={[
+              { value: "Mala actitud", label: "Reporte de actitud (irresponsabilidad, acciones negativas, daños, etc)." },
+              { value: "Permiso de llegada tarde", label: "Permiso de llegada tarde por asuntos personales." },
+              { value: "Permiso de inasistencia a cuenta de vacaciones.", label: "Permiso de inasistencia a cuenta de vacaciones." },
+              { value: "Permiso de salida temprano.", label: "Permiso de salida temprano." },
+              { value: "Llegada tarde no justificada.", label: "Llegada tarde no justificada." },
+              { value: "Permiso de llegada tarde por cita médica (IMSS).", label: "Permiso de llegada tarde por cita médica (IMSS)." },
+              { value: "Falta justificada de acuerdo al Reglamento Interior de Trabajo.", label: "Falta justificada de acuerdo al Reglamento Interior de Trabajo." },
+              { value: "Falta injustificada.", label: "Falta injustificada." },
+              { value: "Permiso tiempo x tiempo controlado", label: "Permiso tiempo x tiempo controlado" },
+              { value: "Falta por incapacidad del IMSS.", label: "Falta por incapacidad del IMSS." },
+              { value: "Permiso de inasistencia sin goce de sueldo.", label: "Permiso de inasistencia sin goce de sueldo." },
+              { value: "Otro (negativo).", label: "Otro (negativo)." },
+              { value: "Otro (positivo).", label: "Otro (positivo)." },
+              
+            ]} />
           </Form.Item>
 
           <Form.Item label="Fecha del Permiso" name="fecha_permiso">
@@ -334,71 +255,19 @@ export const DetallePermiso = () => {
             <Input.TextArea rows={5} />
           </Form.Item>
 
-          {/* Mostrar `status_acta` solo si tipo_registro NO es "Otro" */}
-          {tipoRegistro !== "Otro (negativo)." && tipoRegistro !== "Otro (positivo)." && (
-            <Form.Item
-              label="Confirme la emisión física del Acta Administrativa:"
-              name="status_acta"
-              initialValue="Favor de emitir"
-            >
-              <Select
-                options={[
-                  { value: "Favor de emitir", label: "Favor de emitir" },
-                  { value: "Emitida y firmada", label: "Emitida y firmada" },
-                  { value: "Pendiente de envío", label: "Pendiente de envío" },
-                ]}
-              />
-            </Form.Item>
-          )}
+          <Form.Item label="Status del Acta" name="status_acta" rules={[{ required: true, message: 'Campo requerido' }]}>
+            <Select options={[
+              { value: "Favor de emitir", label: "Favor de emitir" },
+              { value: "Emitida y firmada (enviada a RH)", label: "Emitida y firmada (enviada a RH)" },
+              { value: "Emitida y firmada (pendiente de enviarse a RH)", label: "Emitida y firmada (pendiente de enviarse a RH)" },
+              { value: "Emitida y en espera de recabar firmas", label: "Emitida y en espera de recabar firmas" },
+
+            ]} />
+          </Form.Item>
 
           <Form.Item label="Área" name="area">
             <Input disabled />
           </Form.Item>
-
-          {/* Mostrar botón "Adjuntar Acta" si el tipo_registro no es Otro */}
-          {[
-            "Mala actitud",
-            "Permiso de llegada tarde",
-            "Permiso de inasistencia a cuenta de vacaciones.",
-            "Permiso de salida temprano.",
-            "Llegada tarde no justificada.",
-            "Permiso de llegada tarde por cita médica (IMSS).",
-            "Falta justificada de acuerdo al Reglamento Interior de Trabajo.",
-            "Falta injustificada.",
-            "Permiso tiempo x tiempo controlado",
-            "Falta por incapacidad del IMSS.",
-            "Permiso de inasistencia sin goce de sueldo.",
-          ].includes(tipoRegistro || "") && (
-            <Form.Item>
-              <Button type="primary" onClick={handleGenerarActa}>
-                Adjuntar Acta
-              </Button>
-              <span style={{ marginLeft: "10px" }}>
-                <a
-                  onClick={() => navigate("/impresion_acta")}
-                  style={{ color: "#1890ff", cursor: "pointer" }}
-                >
-                  ¿No cuentas con acta? Llénala aquí!
-                </a>
-              </span>
-            </Form.Item>
-          )}
-
-          {/* Sección de subida de archivos condicional */}
-          {showUploadSection && (
-            <Form.Item label="Subir Acta Administrativa">
-              <Upload
-                accept=".pdf,.jpg,.png,.jpeg"
-                beforeUpload={(file) => {
-                  setFileToUpload(file); // Guardar archivo en el estado
-                  return false; // Prevenir la subida automática
-                }}
-                showUploadList={true}
-              >
-                <Button icon={<UploadOutlined />}>Seleccionar archivo</Button>
-              </Upload>
-            </Form.Item>
-          )}
         </Form>
       </Modal>
 

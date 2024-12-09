@@ -11,8 +11,7 @@ import { opciones } from '../alta_usuarios/users_form';
 import warning from 'antd/es/_util/warning';
 import { cedeConfigurations } from './pdf_config';
 
-
-// Declaramos el objeto para el prellenado del acta
+// valores del acta
 type ActaValues = {
     cede: string;
     fecha: string;
@@ -27,7 +26,6 @@ type ActaValues = {
     status_acta: string;
     area: string;
 };
-
 const initialActaValues: ActaValues = {
     cede: 'luis_molina',
     fecha: '',
@@ -42,6 +40,7 @@ const initialActaValues: ActaValues = {
     status_acta: '',
     area: '',
 };
+
 
 export const PDFEditor = () => {
     const [isLoading, setIsLoading] = useState(false);
@@ -94,6 +93,8 @@ export const PDFEditor = () => {
 
         return () => unsubscribe();
     }, []);
+
+    // función para incluir unicamente a los usuarios del área del jefe indmediato
     const fetchUsersByArea = async (area: string) => {
         try {
             const q = query(collection(db, "usuarios"), where("area", "==", area));
@@ -111,17 +112,17 @@ export const PDFEditor = () => {
         }
     };
 
-
+     
     const drawFields = async (pdfDoc: PDFDocument, actaValues: ActaValues, cede: string) => {
         const config = cedeConfigurations[cede];
         if (!config) {
             throw new Error(`No hay configuración definida para la cede: ${cede}`);
         }
-    
+
         const pages = pdfDoc.getPages();
         const firstPage = pages[0];
         const helveticaFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
-    
+
         const fieldsToDraw = {
             fecha: actaValues.fecha.slice(0, 10),
             hora: actaValues.fecha.slice(10, 16),
@@ -136,14 +137,14 @@ export const PDFEditor = () => {
             fecha_suceso: actaValues.fecha_suceso,
             area: actaValues.area,
         };
-    
+
         Object.entries(fieldsToDraw).forEach(([field, value]) => {
             if (value && config[field]) {
                 let { x, y, size = 10 } = config[field];
-                if (value.length > 30){
+                if (value.length > 30) {
                     size = 8;
                     value = value.slice(0, value.indexOf('/'))
-                } if (value.length > 35){
+                } if (value.length > 35) {
                     size = 7;
                     value = value.slice(0, value.indexOf('/'))
                 }
@@ -162,61 +163,68 @@ export const PDFEditor = () => {
             const caracter_recortado = actaValues.lider_inmediato.includes('-')
                 ? actaValues.lider_inmediato.slice(actaValues.lider_inmediato.indexOf('-') + 1, actaValues.lider_inmediato.length)
                 : actaValues.lider_inmediato; // Si no hay '-', usa toda la cadena
-                try {
-                    const pdfPath = cede();
-                    if (!pdfPath) {
-                        throw new Error("Ruta de PDF no encontrada. Selecciona una cede válida.");
-                    }
-                    const existingPdfBytes = await fetch(pdfPath).then((res) => res.arrayBuffer());
-                    const pdfDoc = await PDFDocument.load(existingPdfBytes);
-                
-                    // Dibujar los campos en el PDF
-                    await drawFields(pdfDoc, actaValues, actaValues.cede);
-                
-                    // Generar el PDF modificado
-                    const pdfBytes = await pdfDoc.save();
-                    const blob = new Blob([pdfBytes], { type: "application/pdf" });
-                    const url = URL.createObjectURL(blob);
-                    setPdfUrl(url);
-                } catch (error) {
-                    console.error("Error al generar el PDF:", error);
+            try {
+                const pdfPath = cede();
+                if (!pdfPath) {
+                    throw new Error("Ruta de PDF no encontrada. Selecciona una cede válida.");
                 }
+                const existingPdfBytes = await fetch(pdfPath).then((res) => res.arrayBuffer());
+                const pdfDoc = await PDFDocument.load(existingPdfBytes);
+
+                // Dibujar los campos en el PDF
+                await drawFields(pdfDoc, actaValues, actaValues.cede);
+
+                // Generar el PDF modificado
+                const pdfBytes = await pdfDoc.save();
+                const blob = new Blob([pdfBytes], { type: "application/pdf" });
+                const url = URL.createObjectURL(blob);
+                setPdfUrl(url);
+            } catch (error) {
+                console.error("Error al generar el PDF:", error);
+            }
         };
 
         generatePdfPreview();
     }, [actaValues]);
 
     const generarPDF = async () => {
-        setIsLoading(true);
-        const lider_recortado = actaValues.lider_inmediato.includes('-')
-        ? actaValues.lider_inmediato.slice(0, actaValues.lider_inmediato.indexOf('-'))
-        : actaValues.lider_inmediato; // Si no hay '-', usa toda la cadena
-
-    const caracter_recortado = actaValues.lider_inmediato.includes('-')
-        ? actaValues.lider_inmediato.slice(actaValues.lider_inmediato.indexOf('-') + 1, actaValues.lider_inmediato.length)
-        : actaValues.lider_inmediato; // Si no hay '-', usa toda la cadena
-        const pdfPath = cede();
-        if (!pdfPath) {
-            throw new Error("Ruta de PDF no encontrada. Selecciona una cede válida.");
-        }
         try {
+            setIsLoading(true);
             const pdfPath = cede();
             if (!pdfPath) {
-                throw new Error("Ruta de PDF no encontrada. Selecciona una cede válida.");
+                message.error("Por favor, selecciona una cede válida.");
+                setIsLoading(false);
+                return;
             }
-            const existingPdfBytes = await fetch(pdfPath).then((res) => res.arrayBuffer());
+
+            console.log("Generando PDF con cede:", pdfPath);
+
+            const existingPdfBytes = await fetch(pdfPath).then((res) => {
+                if (!res.ok) {
+                    throw new Error("Error al cargar el PDF base.");
+                }
+                return res.arrayBuffer();
+            });
+
             const pdfDoc = await PDFDocument.load(existingPdfBytes);
-        
-            // Dibujar los campos en el PDF
+
+            console.log("PDF cargado exitosamente.");
+
             await drawFields(pdfDoc, actaValues, actaValues.cede);
-        
-            // Generar el PDF modificado
+
             const pdfBytes = await pdfDoc.save();
             const blob = new Blob([pdfBytes], { type: "application/pdf" });
-            const url = URL.createObjectURL(blob);
-            setPdfUrl(url);
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = `Acta_${actaValues.fecha || "sin_fecha"}.pdf`;
+            link.click();
+
+            message.success("PDF generado exitosamente.");
         } catch (error) {
             console.error("Error al generar el PDF:", error);
+            message.error("Hubo un error al generar el PDF. Por favor, inténtalo nuevamente.");
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -227,29 +235,17 @@ export const PDFEditor = () => {
         }));
     };
 
-    const cede = () =>{
-        if (actaValues.cede === "luis_molina"){
-            return "/acta_lm.pdf"
-        } else if (actaValues.cede === "8_de_julio"){
-            return "/acta_8julio.pdf"
-        } else if (actaValues.cede === "españoles"){
-            return "/acta_españoles.pdf"
-        } else if (actaValues.cede === "cdmx"){
-            return "/acta_cdmx.pdf"
-        } else if (actaValues.cede === "mty"){
-            return "/acta_mty.pdf"
-        } else if (actaValues.cede === "ocotlan"){
-            return "/acta_ocotlan.pdf"
+    const cede = () => {
+        switch (actaValues.cede) {
+            case "luis_molina": return "/acta_lm.pdf";
+            case "8_de_julio": return "/acta_8julio.pdf";
+            case "españoles": return "/acta_españoles.pdf";
+            case "cdmx": return "/acta_cdmx.pdf";
+            case "mty": return "/acta_mty.pdf";
+            case "ocotlan": return "/acta_ocotlan.pdf";
+            default: return null; // Asegúrate de manejar un valor por defecto correctamente
         }
-        return "/acta_lm.pdf"
-    }
-
-    // const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    //     setActaValues({
-    //         ...actaValues,
-    //         [e.target.name]: e.target.value,
-    //     });
-    // };
+    };
 
     return (
         <Row gutter={16} style={{ padding: 24 }}>
@@ -257,7 +253,7 @@ export const PDFEditor = () => {
                 <Card title="GENERAR ACTA" bordered={false} style={{ borderRadius: "12px", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)", margin: "auto", textAlign: 'center' }} >
                     <h3>Llena los siguientes datos para imprimir el acta prellenada. (opcional)</h3>
                     <Form>
-                    <Form.Item label='Selecciona la cede del acta: ' name='cede' initialValue={"luis_molina"}>
+                        <Form.Item label='Selecciona la cede del acta: ' name='cede' initialValue={"luis_molina"}>
                             <Select options={[
                                 { value: "luis_molina", label: "Luis Molina No. 2505 Col. Echeverría, Guadalajara Jal" },
                                 { value: "8_de_julio", label: "Av. 8 de Julio 1626, Morelos Guadalajara Jal." },
@@ -308,15 +304,17 @@ export const PDFEditor = () => {
                         </Form.Item>
                         {/* --------------------------------------------------------------------------------------------------------------- */}
                         <Form.Item label='Ingresa la fecha de lo ocurrido:' name='area'>
-                            <Select 
-                            options={opciones}
-                            onChange={(value) => handleChange("area", value)} />
+                            <Select
+                                options={opciones}
+                                onChange={(value) => handleChange("area", value)} />
                         </Form.Item>
                         {/* --------------------------------------------------------------------------------------------------------------- */}
 
 
                     </Form>
-                    <Button onClick={generarPDF}>Descargar PDF</Button>
+                    <Button onClick={generarPDF} loading={isLoading}>
+                        {isLoading ? "Generando PDF..." : "Descargar PDF"}
+                    </Button>
                 </Card>
             </Col>
             <Col span={12}>
