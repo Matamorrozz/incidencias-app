@@ -42,14 +42,14 @@ interface UsuarioData {
   area: string;
 }
 
-const jefesInmediatos = [
-  { value: "Luis Jaime Martínez Arredondo", label: "Luis Jaime Martínez Arredondo - Operaciones" },
-  { value: "Carlos Antonio Rivas Martínez", label: "Carlos Antonio Rivas Martínez - Soporte Técnico Call Center / NPI" },
-  { value: "Ana Rosa Lira Ortíz", label: "Ana Rosa Lira Ortíz - Logística" },
-  { value: "Armando de la Rosa García", label: "Armando de la Rosa García - Jefe de Desarrollo Tecnológico  " },
+export const jefesInmediatos = [
+  { value: "Luis Jaime Martínez Arredondo", label: "Luis Jaime Martínez Arredondo - Líder de Operaciones" },
+  { value: "Carlos Antonio Rivas Martínez", label: "Carlos Antonio Rivas Martínez - Líder de Soporte Técnico Call Center / NPI" },
+  { value: "Ana Rosa Lira Ortíz", label: "Ana Rosa Lira Ortíz - Líder de Logística" },
+  { value: "Armando de la Rosa García", label: "Armando de la Rosa García - Líder de Desarrollo Tecnológico  " },
   { value: "Ma. del Refugio Arroyo", label: "Ma. del Refugio Arroyo - Gerente Contabilidad, Finanza y RRHH" },
-  { value: "Rubén Muñoz González", label: "Rubén Muñoz González - Soporte Técnico Presencial" },
-  { value: "Laura Beatriz Arroyo Salcedo", label: "Laura Beatriz Arroyo Salcedo - Jefe de Contabilidad" },
+  { value: "Rubén Muñoz González", label: "Rubén Muñoz González - Lider de Soporte Técnico Presencial" },
+  { value: "Laura Beatriz Arroyo Salcedo", label: "Laura Beatriz Arroyo Salcedo - Líder de Contabilidad" },
   { value: "Esteban Ramírez", label: "Esteban Ramírez - Gerente General" },
   { value: "Karen Ibarra Ramírez", label: "Karen Ibarra Ramírez - Encargada Ventas de Refacciones y Servicios" },
   { value: "Biviana Tirado Burgueño", label: "Biviana Tirado Burgueño - Encargada Satisfacción al cliente" },
@@ -72,9 +72,12 @@ export const BlogPostCreate = () => {
   const { formProps, saveButtonProps, form } = useForm<FormValues>();
   const [userData, setUserData] = useState<Partial<FormValues>>({});
   const [loading, setLoading] = useState(true); // Estado para mostrar carga inicial
-  const [usuarios, setUsuarios] = useState<string[]>([]); // Lista de usuarios únicos
+  const [usuarios, setUsuarios] = useState<any[]>([]);
   const [selectedUser, setSelectedUser] = useState<string | null>(null); // Usuario seleccionado
   const [tipoRegistro, setTipoRegistro] = useState<string | undefined>(); // Estado para el tipo de registro
+  const [showUploadSection, setShowUploadSection] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [fileToUpload, setFileToUpload] = useState<File | null>(null);
 
   const navigate = useNavigate();
 
@@ -124,19 +127,15 @@ export const BlogPostCreate = () => {
 
   const fetchUsersByArea = async (area: string) => {
     try {
-      const areaNormalizada = convertirTexto(userArea);
-      console.log('El area normalizada es: ', areaNormalizada)
-      const url = `https://desarrollotecnologicoar.com/api3/incidencias_area?area=${encodeURIComponent(areaNormalizada)}`;
+      const q = query(collection(db, "usuarios"), where("area", "==", area));
+      const querySnapshot = await getDocs(q);
 
-      const response = await axios.get<Incidencia[]>(url);
-      const incidencias = response.data;
+      const users = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
 
-      const nombresUnicos = Array.from(
-        new Set(incidencias.map((i) => i.nombre_emisor as string))
-      );
-
-      setUsuarios(nombresUnicos);
-
+      setUsuarios(users); // Actualiza el estado con los usuarios obtenidos
     } catch (error) {
       console.error("Error al obtener usuarios por área:", error);
       message.error("Error al cargar los usuarios del área.");
