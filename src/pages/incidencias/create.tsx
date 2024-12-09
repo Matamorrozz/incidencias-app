@@ -1,13 +1,15 @@
 import { Create, useForm } from "@refinedev/antd";
-import { Form, Input, Select, DatePicker, message, Button } from "antd";
+import { Form, Input, Select, DatePicker, message, Button, Upload } from "antd";
 import dayjs from "dayjs";
 import { FormInstance } from "antd";
 import React, { useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { collection, query, where, getDocs } from "firebase/firestore";
-import { auth, db } from "../../firebaseConfig";
+import { auth, db, storage } from "../../firebaseConfig";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { UploadOutlined } from "@ant-design/icons";
+import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
 
 type FormValues = {
   persona_emisor: string;
@@ -18,7 +20,9 @@ type FormValues = {
   info_registro: string;
   status_acta: string;
   area: string;
+  downloadURL?: string; // Añadido
 };
+
 interface Incidencia {
   id: string;
   marca_temporal: string;
@@ -38,14 +42,14 @@ interface UsuarioData {
   area: string;
 }
 
-export const jefesInmediatos = [
-  { value: "Luis Jaime Martínez Arredondo", label: "Luis Jaime Martínez Arredondo - Líder de Operaciones" },
-  { value: "Carlos Antonio Rivas Martínez", label: "Carlos Antonio Rivas Martínez - Líder de Soporte Técnico Call Center / NPI" },
-  { value: "Ana Rosa Lira Ortíz", label: "Ana Rosa Lira Ortíz - Líder de Logística" },
-  { value: "Armando de la Rosa García", label: "Armando de la Rosa García - Líder de Desarrollo Tecnológico  " },
+const jefesInmediatos = [
+  { value: "Luis Jaime Martínez Arredondo", label: "Luis Jaime Martínez Arredondo - Operaciones" },
+  { value: "Carlos Antonio Rivas Martínez", label: "Carlos Antonio Rivas Martínez - Soporte Técnico Call Center / NPI" },
+  { value: "Ana Rosa Lira Ortíz", label: "Ana Rosa Lira Ortíz - Logística" },
+  { value: "Armando de la Rosa García", label: "Armando de la Rosa García - Jefe de Desarrollo Tecnológico  " },
   { value: "Ma. del Refugio Arroyo", label: "Ma. del Refugio Arroyo - Gerente Contabilidad, Finanza y RRHH" },
-  { value: "Rubén Muñoz González", label: "Rubén Muñoz González - Lider de Soporte Técnico Presencial" },
-  { value: "Laura Beatriz Arroyo Salcedo", label: "Laura Beatriz Arroyo Salcedo - Líder de Contabilidad" },
+  { value: "Rubén Muñoz González", label: "Rubén Muñoz González - Soporte Técnico Presencial" },
+  { value: "Laura Beatriz Arroyo Salcedo", label: "Laura Beatriz Arroyo Salcedo - Jefe de Contabilidad" },
   { value: "Esteban Ramírez", label: "Esteban Ramírez - Gerente General" },
   { value: "Karen Ibarra Ramírez", label: "Karen Ibarra Ramírez - Encargada Ventas de Refacciones y Servicios" },
   { value: "Biviana Tirado Burgueño", label: "Biviana Tirado Burgueño - Encargada Satisfacción al cliente" },
@@ -68,7 +72,7 @@ export const BlogPostCreate = () => {
   const { formProps, saveButtonProps, form } = useForm<FormValues>();
   const [userData, setUserData] = useState<Partial<FormValues>>({});
   const [loading, setLoading] = useState(true); // Estado para mostrar carga inicial
-  const [usuarios, setUsuarios] = useState<any[]>([]);
+  const [usuarios, setUsuarios] = useState<string[]>([]); // Lista de usuarios únicos
   const [selectedUser, setSelectedUser] = useState<string | null>(null); // Usuario seleccionado
   const [tipoRegistro, setTipoRegistro] = useState<string | undefined>(); // Estado para el tipo de registro
 
@@ -120,22 +124,26 @@ export const BlogPostCreate = () => {
 
   const fetchUsersByArea = async (area: string) => {
     try {
-      const q = query(collection(db, "usuarios"), where("area", "==", area));
-      const querySnapshot = await getDocs(q);
+      const areaNormalizada = convertirTexto(userArea);
+      console.log('El area normalizada es: ', areaNormalizada)
+      const url = `https://desarrollotecnologicoar.com/api3/incidencias_area?area=${encodeURIComponent(areaNormalizada)}`;
 
-      const users = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
+      const response = await axios.get<Incidencia[]>(url);
+      const incidencias = response.data;
 
-      setUsuarios(users); // Actualiza el estado con los usuarios obtenidos
+      const nombresUnicos = Array.from(
+        new Set(incidencias.map((i) => i.nombre_emisor as string))
+      );
+
+      setUsuarios(nombresUnicos);
+
     } catch (error) {
       console.error("Error al obtener usuarios por área:", error);
       message.error("Error al cargar los usuarios del área.");
     }
   };
 
-  const handleFinish = (values: FormValues) => {
+  const handleFinish = async (values: FormValues) => {
     if (tipoRegistro === "Otro (negativo)." || tipoRegistro === "Otro (positivo).") {
       // No proceder con el envío predeterminado del formulario
       return;
@@ -147,17 +155,27 @@ export const BlogPostCreate = () => {
 
     console.log("Datos enviados a la API:", values);
 
+    // Si hay un archivo para subir
+    if (fileToUpload) {
+      try {
+        // Subir el archivo y obtener la URL de descarga
+        const downloadURL = await handleUpload(fileToUpload, values.area, values.nombre_emisor);
+        // Añadir la URL de descarga a los valores a guardar
+        values.downloadURL = downloadURL;
+      } catch (error) {
+        console.error("Error al subir el archivo:", error);
+        message.error("Hubo un error al subir el archivo.");
+        return; // Detener el envío del formulario si falla la subida del archivo
+      }
+    }
+
     if (formProps.onFinish) {
       formProps.onFinish(values);
     }
   };
 
   const handleGenerarActa = () => {
-    form.validateFields().then((values) => {
-      navigate("/impresion_acta", { state: { ...values } });
-    }).catch((errorInfo) => {
-      console.error('Error de validación:', errorInfo);
-    });
+    setShowUploadSection(true); // Mostrar la sección de subida de archivos
   };
 
   const adjustedSaveButtonProps = {
@@ -165,8 +183,54 @@ export const BlogPostCreate = () => {
     disabled: tipoRegistro === "Otro (negativo)." || tipoRegistro === "Otro (positivo).",
   };
 
+  const handleUpload = (file: File, area: string, nombre_emisor: string): Promise<string> => {
+    return new Promise<string>((resolve, reject) => {
+      try {
+        setUploading(true);
+
+        const areaNormalized = convertirTexto(area);
+        const nombreEmisorNormalized = convertirTexto(nombre_emisor);
+
+        const storagePath = `${areaNormalized}/${nombreEmisorNormalized}/${file.name}`;
+
+        const storageRef = ref(storage, storagePath);
+        const uploadTask = uploadBytesResumable(storageRef, file);
+
+        uploadTask.on(
+          "state_changed",
+          (snapshot) => {
+            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            console.log(`Subiendo: ${progress}%`);
+          },
+          (error) => {
+            console.error("Error al subir archivo:", error);
+            message.error("Hubo un error al subir el archivo.");
+            setUploading(false);
+            reject(error);
+          },
+          async () => {
+            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+            console.log("Archivo disponible en:", downloadURL);
+            message.success("Archivo subido correctamente.");
+            setUploading(false);
+            resolve(downloadURL);
+          }
+        );
+      } catch (error) {
+        console.error("Error al subir archivo:", error);
+        message.error("Hubo un error al subir el archivo.");
+        setUploading(false);
+        reject(error);
+      }
+    });
+  };
+
   if (loading) {
-    return <div style={{ textAlign: "center", marginTop: "20%" }}>Cargando datos del usuario...</div>;
+    return (
+      <div style={{ textAlign: "center", marginTop: "20%" }}>
+        Cargando datos del usuario...
+      </div>
+    );
   }
 
   return (
@@ -214,10 +278,7 @@ export const BlogPostCreate = () => {
           name="jefe_inmediato"
           rules={[{ required: true, message: "El campo Jefe Inmediato es obligatorio" }]}
         >
-          <Select
-            placeholder="Selecciona un jefe inmediato"
-            options={jefesInmediatos}
-          />
+          <Select placeholder="Selecciona un jefe inmediato" options={jefesInmediatos} />
         </Form.Item>
 
         <Form.Item
@@ -231,17 +292,44 @@ export const BlogPostCreate = () => {
               form.setFieldsValue({ tipo_registro: value });
             }}
             options={[
-              { value: "Mala actitud", label: "Reporte de actitud (irresponsabilidad, acciones negativas, daños, etc)." },
-              { value: "Permiso de llegada tarde", label: "Permiso de llegada tarde por asuntos personales." },
-              { value: "Permiso de inasistencia a cuenta de vacaciones.", label: "Permiso de inasistencia a cuenta de vacaciones." },
+              {
+                value: "Mala actitud",
+                label: "Reporte de actitud (irresponsabilidad, acciones negativas, daños, etc).",
+              },
+              {
+                value: "Permiso de llegada tarde",
+                label: "Permiso de llegada tarde por asuntos personales.",
+              },
+              {
+                value: "Permiso de inasistencia a cuenta de vacaciones.",
+                label: "Permiso de inasistencia a cuenta de vacaciones.",
+              },
               { value: "Permiso de salida temprano.", label: "Permiso de salida temprano." },
-              { value: "Llegada tarde no justificada.", label: "Llegada tarde no justificada." },
-              { value: "Permiso de llegada tarde por cita médica (IMSS).", label: "Permiso de llegada tarde por cita médica (IMSS)." },
-              { value: "Falta justificada de acuerdo al Reglamento Interior de Trabajo.", label: "Falta justificada de acuerdo al Reglamento Interior de Trabajo." },
+              {
+                value: "Llegada tarde no justificada.",
+                label: "Llegada tarde no justificada.",
+              },
+              {
+                value: "Permiso de llegada tarde por cita médica (IMSS).",
+                label: "Permiso de llegada tarde por cita médica (IMSS).",
+              },
+              {
+                value: "Falta justificada de acuerdo al Reglamento Interior de Trabajo.",
+                label: "Falta justificada de acuerdo al Reglamento Interior de Trabajo.",
+              },
               { value: "Falta injustificada.", label: "Falta injustificada." },
-              { value: "Permiso tiempo x tiempo controlado", label: "Permiso tiempo x tiempo controlado" },
-              { value: "Falta por incapacidad del IMSS.", label: "Falta por incapacidad del IMSS." },
-              { value: "Permiso de inasistencia sin goce de sueldo.", label: "Permiso de inasistencia sin goce de sueldo." },
+              {
+                value: "Permiso tiempo x tiempo controlado",
+                label: "Permiso tiempo x tiempo controlado",
+              },
+              {
+                value: "Falta por incapacidad del IMSS.",
+                label: "Falta por incapacidad del IMSS.",
+              },
+              {
+                value: "Permiso de inasistencia sin goce de sueldo.",
+                label: "Permiso de inasistencia sin goce de sueldo.",
+              },
               { value: "Otro (negativo).", label: "Otro (negativo)." },
               { value: "Otro (positivo).", label: "Otro (positivo)." },
             ]}
@@ -262,7 +350,7 @@ export const BlogPostCreate = () => {
             label="Confirme la emisión física del Acta Administrativa:"
             name="status_acta"
             initialValue="Favor de emitir"
-            rules={[{ required: true, message: "El campo Status del Acta es obligatorio" }]}
+            rules={[{ required: false, message: "El campo Status del Acta es obligatorio" }]}
           >
             <Select
               options={[
@@ -275,11 +363,48 @@ export const BlogPostCreate = () => {
         )}
 
         {/* Mostrar botón "Generar Acta" condicionalmente */}
-        {(tipoRegistro === "Otro (negativo)." || tipoRegistro === "Otro (positivo).") && (
+        {[
+          "Reporte de actitud (irresponsabilidad, acciones negativas, daños, etc).",
+          "Permiso de llegada tarde por asuntos personales.",
+          "Permiso de inasistencia a cuenta de vacaciones.",
+          "Permiso de salida temprano.",
+          "Llegada tarde no justificada.",
+          "Permiso de llegada tarde por cita médica (IMSS).",
+          "Falta justificada de acuerdo al Reglamento Interior de Trabajo.",
+          "Falta injustificada.",
+          "Permiso tiempo x tiempo controlado",
+          "Falta por incapacidad del IMSS.",
+          "Permiso de inasistencia sin goce de sueldo.",
+          "Mala actitud",
+          "Permiso de llegada tarde",
+        ].includes(tipoRegistro || "") && (
           <Form.Item>
             <Button type="primary" onClick={handleGenerarActa}>
-              Generar Acta
+              Adjuntar Acta
             </Button>
+            <span style={{ marginLeft: "10px" }}>
+              <a
+                onClick={() => navigate("/impresion_acta")}
+                style={{ color: "#1890ff", cursor: "pointer" }}
+              >
+                ¿No cuentas con acta? Llénala aquí!
+              </a>
+            </span>
+          </Form.Item>
+        )}
+
+        {showUploadSection && (
+          <Form.Item label="Subir Acta Administrativa">
+            <Upload
+              accept=".pdf,.jpg,.png,.jpeg"
+              beforeUpload={(file) => {
+                setFileToUpload(file); // Guardar archivo en el estado
+                return false; // Prevenir la subida automática
+              }}
+              showUploadList={true}
+            >
+              <Button icon={<UploadOutlined />}>Seleccionar archivo</Button>
+            </Upload>
           </Form.Item>
         )}
       </Form>
