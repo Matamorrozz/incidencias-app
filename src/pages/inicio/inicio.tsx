@@ -64,7 +64,7 @@ const HomePage: React.FC = () => {
           const permisosArray = Array.isArray(data) ? data : [data];
           setPermisos(permisosArray);
         } else {
-          message.error("Error al obtener los permisos.");
+          message.error("Aún no has solicitado permisos.");
           setPermisos([]);
         }
       } catch (error) {
