@@ -7,6 +7,23 @@ import { onAuthStateChanged } from "firebase/auth";
 import { useNavigate } from 'react-router-dom';
 import { usuariosPermitidos } from '../../user_config';
 
+export const opciones = [
+    { value: "Desarrollo Tecnológico", label: "Desarrollo Tecnológico" },
+    { value: "Logística", label: "Logística" },
+    { value: "Producción", label: "Producción" },
+    { value: "Calidad y Procesos", label: "Calidad y Procesos" },
+    { value: "Garantías y Satisfacción al cliente", label: "Garantías y Satisfacción al cliente" },
+    { value: "Almacén", label: "Almacén" },
+    { value: "Mercadotecnia", label: "Mercadotecnia" },
+    { value: "Soporte Técnico Presencial", label: "Soporte Técnico Presencial" },
+    { value: "Crédito y Cobranza", label: "Crédito y Cobranza" },
+    { value: "Compras", label: "Compras" },
+    { value: "Ventas de refacciones y servicios", label: "Ventas de refacciones y servicios" },
+    { value: "Servicio Técnico Telefónico", label: "Servicio Técnico Telefónico" },
+    { value: "Contabilidad y Finanzas", label: "Contabilidad y Finanzas" },
+    { value: "Recursos Humanos", label: "Recursos Humanos" },
+
+] 
 const UserCreate: React.FC = () => {
     const { formProps, saveButtonProps, form } = useForm();
     const navigate = useNavigate();
@@ -15,23 +32,7 @@ const UserCreate: React.FC = () => {
     const [isUserAllowed, setIsUserAllowed] = useState(false);
     const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
 
-    const opciones = [
-        { value: "Desarrollo Tecnológico", label: "Desarrollo Tecnológico" },
-        { value: "Logística", label: "Logística" },
-        { value: "Producción", label: "Producción" },
-        { value: "Calidad y Procesos", label: "Calidad y Procesos" },
-        { value: "Garantías y Satisfacción al cliente", label: "Garantías y Satisfacción al cliente" },
-        { value: "Almacén", label: "Almacén" },
-        { value: "Mercadotecnia", label: "Mercadotecnia" },
-        { value: "Soporte Técnico Presencial", label: "Soporte Técnico Presencial" },
-        { value: "Crédito y Cobranza", label: "Crédito y Cobranza" },
-        { value: "Compras", label: "Compras" },
-        { value: "Ventas de refacciones y servicios", label: "Ventas de refacciones y servicios" },
-        { value: "Servicio Técnico Telefónico", label: "Servicio Técnico Telefónico" },
-        { value: "Contabilidad y Finanzas", label: "Contabilidad y Finanzas" },
-        { value: "Recursos Humanos", label: "Recursos Humanos" },
 
-    ]
 
     useEffect(() => {
         const unsuscribe = onAuthStateChanged(auth, (user) => {
