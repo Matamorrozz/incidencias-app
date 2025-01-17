@@ -1,14 +1,20 @@
 import { Edit, useForm } from "@refinedev/antd";
 import { Form, Input, Select } from "antd";
+import { values } from "pdf-lib";
 
 export const BlogPostEdit = () => {
   const { formProps, saveButtonProps, queryResult, formLoading } = useForm({});
 
   const blogPostsData = queryResult?.data?.data;
 
+  const handleFormSubmit = (values: any) => {
+    console.log("Formulario enviado con los valores:", values);
+    // Puedes realizar otras acciones aquí en lugar de enviar a la API
+  };
+
   return (
     <Edit saveButtonProps={saveButtonProps} isLoading={formLoading}>
-      <Form {...formProps} layout="vertical">
+      <Form {...formProps} layout="vertical" onFinish={(values) => handleFormSubmit(values)}>
         <Form.Item
           label={"Persona Emisor"}
           name={["persona_emisor"]}

@@ -191,10 +191,11 @@ export const CreatePermit = () => {
           rules={[{ required: true, message: "El campo Tipo de Permiso es obligatorio" }]}
         >
           <Select options={[
-            { value: "Vacaciones", label: "Vacaciones" },
-            { value: "Permiso Médico", label: "Permiso Médico" },
-            { value: "Día Personal", label: "Día Personal" },
+            { value: "Permiso de llegada tarde", label: "Permiso de llegada tarde" },
+            { value: "Permiso de salida temprano", label: "Permiso de salida temprano" },
+            { value: "Permiso de inasistencia ", label: "Día Personal / Inasistencia a toma de vacaciones" },
             { value: "Trabajo Remoto", label: "Trabajo Remoto" },
+            { value: "Permiso de inasistencia por salud", label: "Permiso de inasistencia por cuestiones de salud" },
           ]} />
         </Form.Item>
 

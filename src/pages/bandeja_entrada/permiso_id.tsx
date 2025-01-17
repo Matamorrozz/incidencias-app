@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Card, Button, Spin, message, Typography, Tag, Space, Modal, Form, Input, DatePicker, Select } from "antd";
+import { Card, Button, Spin, message, Typography, Tag, Space, Modal, Form, Input, DatePicker, Select, Upload } from "antd";
+import { UploadOutlined } from "@ant-design/icons";
+import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
 import axios from "axios";
 import { auth } from "../../firebaseConfig";
 import dayjs from "dayjs";
@@ -26,14 +28,16 @@ export const DetallePermiso = () => {
   const navigate = useNavigate(); // Navegar entre rutas
   const [loading, setLoading] = useState(true); // Estado de carga
   const [permiso, setPermiso] = useState<Permiso | null>(null); // Estado del permiso
+  const [tipoRegistro, setTipoRegistro] = useState<string | undefined>("");
   const [user, setUser] = useState<any>(null); // Usuario autenticado
   const [isModalVisible, setIsModalVisible] = useState(false); // Control del modal
   const [isRejectModalVisible, setIsRejectModalVisible] = useState(false);
   const [nuevoStatus, setNuevoStatus] = useState<string>(""); // Estado del nuevo status
   const [rechazoComentarios, setRechazoComentarios] = useState<string>("");
-
-
+  const [showUploadSection, setShowUploadSection] = useState(false);
+  const [fileToUpload, setFileToUpload] = useState<File | null>(null);
   const [form] = Form.useForm(); // Crear una instancia del formulario
+  const [okButtonDisabled, setOkButtonDisabled] = useState(true);
 
   // Función para obtener los datos del permiso
   const fetchPermiso = async () => {
@@ -47,6 +51,26 @@ export const DetallePermiso = () => {
       message.error("Hubo un error al cargar el permiso.");
     } finally {
       setLoading(false); // Terminamos la carga
+    }
+  };
+
+  // useEffect para cargar los datos al montar el componente
+  useEffect(() => {
+    fetchPermiso();
+  }, [id]);
+
+  const handleFormChange = async (changedValues: any) => {
+    if (changedValues.tipo_registro) {
+      setTipoRegistro(changedValues.tipo_registro)
+    }
+
+    const allFieldsValid = await form.validateFields().then(()=> true).catch(()=> false);
+
+    if (tipoRegistro && !["Otro (negativo).", "Otro (positivo)."].includes(tipoRegistro) && !fileToUpload){
+      setOkButtonDisabled(true);
+
+    } else {
+      setOkButtonDisabled(!allFieldsValid);
     }
   };
 
@@ -64,10 +88,7 @@ export const DetallePermiso = () => {
     return () => unsubscribe(); // Limpiar el listener
   }, [navigate]);
 
-  // useEffect para cargar los datos al montar el componente
-  useEffect(() => {
-    fetchPermiso();
-  }, [id]);
+
 
   const showModal = (status: string) => {
     setNuevoStatus(status); // Guardamos el nuevo status (Aprobado o Rechazado)
@@ -122,10 +143,13 @@ export const DetallePermiso = () => {
       navigate("/bandeja_entrada");
     } catch (error) {
       console.error("Error al enviar el formulario:", error);
-      message.error("Hubo un error al registrar el permiso.");
+      
     }
 
 
+  };
+  const handleGenerarActa = () => {
+    setShowUploadSection((prevState) => !prevState); // Alternar visibilidad
   };
 
   // Modal para confirmar el rechazo
@@ -171,7 +195,7 @@ export const DetallePermiso = () => {
         <Text>{permiso.fecha_solicitud}</Text>
 
         <Text><strong>Tipo de Permiso: </strong>{permiso.tipo_permiso}</Text>
-        
+
 
         <Text strong>Urgencia:</Text>
         <Tag color={permiso.urgencia ? "red" : "green"}>
@@ -211,10 +235,11 @@ export const DetallePermiso = () => {
         title="Confirmar Cambio de Permiso"
         visible={isModalVisible}
         onOk={handleOk}
+        okButtonProps={{disabled: okButtonDisabled}} 
         onCancel={handleCancel}
         width={800}
       >
-        <Form form={form} layout="vertical">
+        <Form form={form} layout="vertical" onValuesChange={handleFormChange}>
 
           <Form.Item label="Persona Emisora" name="persona_emisor">
             <Input disabled />
@@ -243,7 +268,7 @@ export const DetallePermiso = () => {
               { value: "Permiso de inasistencia sin goce de sueldo.", label: "Permiso de inasistencia sin goce de sueldo." },
               { value: "Otro (negativo).", label: "Otro (negativo)." },
               { value: "Otro (positivo).", label: "Otro (positivo)." },
-              
+
             ]} />
           </Form.Item>
 
@@ -255,7 +280,7 @@ export const DetallePermiso = () => {
             <Input.TextArea rows={5} />
           </Form.Item>
 
-          <Form.Item label="Status del Acta" name="status_acta" rules={[{ required: true, message: 'Campo requerido' }]}>
+          {/* <Form.Item label="Status del Acta" name="status_acta" rules={[{ required: true, message: 'Campo requerido' }]}>
             <Select options={[
               { value: "Favor de emitir", label: "Favor de emitir" },
               { value: "Emitida y firmada (enviada a RH)", label: "Emitida y firmada (enviada a RH)" },
@@ -263,11 +288,65 @@ export const DetallePermiso = () => {
               { value: "Emitida y en espera de recabar firmas", label: "Emitida y en espera de recabar firmas" },
 
             ]} />
-          </Form.Item>
+          </Form.Item> */}
+
 
           <Form.Item label="Área" name="area">
             <Input disabled />
           </Form.Item>
+
+          {tipoRegistro !== '' && tipoRegistro !== "Otro (negativo)." && tipoRegistro !== "Otro (positivo)." && (
+            <Form.Item
+              label="Confirme la emisión física del Acta Administrativa:"
+              name="status_acta"
+              initialValue="Favor de emitir"
+              rules={[{ required: false, message: "El campo Status del Acta es obligatorio" }]}
+            >
+              <Select
+                options={[
+                  { value: "Favor de emitir", label: "Favor de emitir" },
+                  { value: "Emitida y firmada", label: "Emitida y firmada" },
+                  { value: "Pendiente de envío", label: "Pendiente de envío" },
+                ]}
+              />
+            </Form.Item>
+          )}
+          {tipoRegistro !== '' && tipoRegistro !== "Otro (negativo)." && tipoRegistro !== "Otro (positivo)." && (
+              <>
+                <Form.Item>
+                  <Button type="primary" onClick={handleGenerarActa}>
+                    Adjuntar Acta
+                  </Button>
+                  <span style={{ marginLeft: "10px" }}>
+                    <a
+                      onClick={() => navigate("/impresion_acta")}
+                      style={{ color: "#1890ff", cursor: "pointer" }}
+                    >
+                      ¿No cuentas con acta? Llénala aquí!
+                    </a>
+                  </span>
+                </Form.Item>
+
+                <Form.Item label="Subir Acta Administrativa">
+                  <Upload
+                    accept=".pdf,.jpg,.png,.jpeg"
+                    beforeUpload={(file) => {
+                      setFileToUpload(file); // Guardar archivo en el estado
+                      return false; // Prevenir la subida automática
+                    }}
+                    showUploadList={true}
+                  >
+                    <Button icon={<UploadOutlined />}>Seleccionar archivo</Button>
+                  </Upload>
+                </Form.Item>
+              </>
+            )
+          }
+
+
+
+
+
         </Form>
       </Modal>
 
