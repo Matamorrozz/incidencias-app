@@ -145,10 +145,7 @@ export const BlogPostCreate = () => {
   };
 
   const handleFinish = async (values: FormValues) => {
-    if (tipoRegistro === "Otro (negativo)." || tipoRegistro === "Otro (positivo).") {
-      // No proceder con el envío predeterminado del formulario
-      return;
-    }
+
 
     if (values.fecha_permiso && dayjs.isDayjs(values.fecha_permiso)) {
       values.fecha_permiso = dayjs(values.fecha_permiso).format("YYYY-MM-DD");
@@ -181,7 +178,7 @@ export const BlogPostCreate = () => {
 
   const adjustedSaveButtonProps = {
     ...saveButtonProps,
-    disabled: tipoRegistro === "Otro (negativo)." || tipoRegistro === "Otro (positivo).",
+    disabled: tipoRegistro === "" || tipoRegistro === "",
   };
 
   const handleUpload = (file: File, area: string, nombre_emisor: string): Promise<string> => {
@@ -236,6 +233,16 @@ export const BlogPostCreate = () => {
 
   return (
     <Create saveButtonProps={adjustedSaveButtonProps}>
+         <Form.Item>
+            <span style={{ marginLeft: "10px" }}>
+              <a
+                onClick={() => navigate("/impresion_acta")}
+                style={{ color: "#1890ff", cursor: "pointer" }}
+              >
+                ¿No cuentas con acta? Llénala aquí!
+              </a>
+            </span>
+          </Form.Item>
       <Form<FormValues>
         {...formProps}
         form={form as unknown as FormInstance<FormValues>}
@@ -318,7 +325,9 @@ export const BlogPostCreate = () => {
                 value: "Falta justificada de acuerdo al Reglamento Interior de Trabajo.",
                 label: "Falta justificada de acuerdo al Reglamento Interior de Trabajo.",
               },
-              { value: "Falta injustificada.", label: "Falta injustificada." },
+              { value: "Falta injustificada.",
+                label: "Falta injustificada." 
+              },
               {
                 value: "Permiso tiempo x tiempo controlado",
                 label: "Permiso tiempo x tiempo controlado",
