@@ -7,6 +7,7 @@ import axios from "axios";
 import { auth } from "../../firebaseConfig";
 import dayjs from "dayjs";
 const { Text } = Typography;
+import moment from "moment";
 
 interface Permiso {
   id: string;
@@ -60,15 +61,25 @@ export const DetallePermiso = () => {
   }, [id]);
 
   const handleFormChange = async (changedValues: any) => {
+    // Obtener el valor más actualizado directamente del form
+    const currentTipoRegistro = form.getFieldValue("tipo_registro");
+    
+    // Asegúrate de actualizar el estado
     if (changedValues.tipo_registro) {
-      setTipoRegistro(changedValues.tipo_registro)
+      setTipoRegistro(changedValues.tipo_registro);
     }
+  
+    const allFieldsValid = await form
+      .validateFields()
+      .then(() => true)
+      .catch(() => false);
 
-    const allFieldsValid = await form.validateFields().then(()=> true).catch(()=> false);
-
-    if (tipoRegistro && !["Otro (negativo).", "Otro (positivo)."].includes(tipoRegistro) && !fileToUpload){
+    if (
+      currentTipoRegistro &&
+      ["Mala actitud", "Llegada tarde no justificada.","Falta injustificada."].includes(currentTipoRegistro) &&
+      !fileToUpload
+    ) {
       setOkButtonDisabled(true);
-
     } else {
       setOkButtonDisabled(!allFieldsValid);
     }
@@ -186,32 +197,32 @@ export const DetallePermiso = () => {
       style={{ width: 600, margin: "50px auto", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)" }}
     >
       <Space direction="vertical" size="large" style={{ width: "100%" }}>
-        <Text>ID:</Text>
+        <Text><strong>ID de solicitud: </strong>{permiso.id}</Text>
 
-        <Text strong>Correo:</Text>
-        <Text>{permiso.correo}</Text>
+        <Text><strong>Correo:</strong> <Text>{permiso.correo}</Text> </Text>
+        
 
-        <Text strong>Fecha de Solicitud:</Text>
-        <Text>{permiso.fecha_solicitud}</Text>
+        <Text><strong>Fecha de Solicitud: </strong><Text>{moment(permiso.fecha_solicitud).format("DD/MM/YYYY HH:MM")}</Text></Text> 
+        
 
         <Text><strong>Tipo de Permiso: </strong>{permiso.tipo_permiso}</Text>
 
 
-        <Text strong>Urgencia:</Text>
-        <Tag color={permiso.urgencia ? "red" : "green"}>
+        <Text strong>Urgencia:         <Tag color={permiso.urgencia ? "red" : "green"}>
           {permiso.urgencia ? "Urgente" : "No Urgente"}
-        </Tag>
+        </Tag></Text>
 
-        <Text strong>Comentarios:</Text>
-        <Text>{permiso.comentarios}</Text>
 
-        <Text strong>Status Actual:</Text>
-        <Tag color={
+        <Text><strong>Comentarios:        </strong> '<Text>{permiso.comentarios}</Text>'</Text>
+
+
+        <Text strong>Status Actual:         <Tag color={
           permiso.status === "Pendiente" ? "orange" :
             permiso.status === "Aprobado" ? "green" : "red"
         }>
           {permiso.status}
-        </Tag>
+        </Tag></Text>
+
 
         <Space size="middle" style={{ marginTop: "20px" }}>
           <Button
@@ -253,7 +264,7 @@ export const DetallePermiso = () => {
             <Input disabled />
           </Form.Item>
 
-          <Form.Item label="Tipo de Registro" name="tipo_registro" rules={[{ required: true, message: 'Campo requerido' }]}>
+          <Form.Item label="Tipo de Registro" name="tipo_registro" rules={[{ required: true, message: 'Campo requerido' }]} >
             <Select options={[
               { value: "Mala actitud", label: "Reporte de actitud (irresponsabilidad, acciones negativas, daños, etc)." },
               { value: "Permiso de llegada tarde", label: "Permiso de llegada tarde por asuntos personales." },
@@ -295,7 +306,7 @@ export const DetallePermiso = () => {
             <Input disabled />
           </Form.Item>
 
-          {tipoRegistro !== '' && tipoRegistro !== "Otro (negativo)." && tipoRegistro !== "Otro (positivo)." && (
+          {(tipoRegistro === "Mala actitud" || tipoRegistro === "Llegada tarde no justificada."  || tipoRegistro === "Falta injustificada.") && (
             <Form.Item
               label="Confirme la emisión física del Acta Administrativa:"
               name="status_acta"
@@ -311,7 +322,7 @@ export const DetallePermiso = () => {
               />
             </Form.Item>
           )}
-          {tipoRegistro !== '' && tipoRegistro !== "Otro (negativo)." && tipoRegistro !== "Otro (positivo)." && (
+          {(tipoRegistro === "Mala actitud" || tipoRegistro === "Llegada tarde no justificada."  || tipoRegistro === "Falta injustificada.") && (
               <>
                 <Form.Item>
                   <Button type="primary" onClick={handleGenerarActa}>

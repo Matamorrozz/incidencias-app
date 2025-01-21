@@ -6,11 +6,13 @@ import { collection, getDocs, doc, setDoc, deleteDoc, serverTimestamp } from 'fi
 import { onAuthStateChanged } from "firebase/auth";
 import { useNavigate } from 'react-router-dom';
 import { usuariosPermitidos } from '../../user_config';
+import moment from 'moment';
 
 export const opciones = [
     { value: "Desarrollo Tecnológico", label: "Desarrollo Tecnológico" },
     { value: "Logística", label: "Logística" },
-    { value: "Producción", label: "Producción" },
+    { value: "Producción CNC", label: "Producción CNC (Router)" },
+    { value: "Producción CO2", label: "Producción CO2 (Fiber)" },
     { value: "Calidad y Procesos", label: "Calidad y Procesos" },
     { value: "Garantías y Satisfacción al cliente", label: "Garantías y Satisfacción al cliente" },
     { value: "Almacén", label: "Almacén" },
@@ -22,6 +24,8 @@ export const opciones = [
     { value: "Servicio Técnico Telefónico", label: "Servicio Técnico Telefónico" },
     { value: "Contabilidad y Finanzas", label: "Contabilidad y Finanzas" },
     { value: "Recursos Humanos", label: "Recursos Humanos" },
+    {value: "Seguridad e Higiene", label: "Seguridad e Higiene"},
+    {value: "Reparaciones", label: "Reparaciones"}
 
 ] 
 const UserCreate: React.FC = () => {

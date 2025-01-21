@@ -303,7 +303,7 @@ export const PDFEditor = () => {
                             <DatePicker style={{ width: "100%" }} onChange={(date, dateString) => handleChange("fecha_suceso", dateString)} />
                         </Form.Item>
                         {/* --------------------------------------------------------------------------------------------------------------- */}
-                        <Form.Item label='Ingresa la fecha de lo ocurrido:' name='area'>
+                        <Form.Item label='Ingresa el área de quien cometió la falta:' name='area'>
                             <Select
                                 options={opciones}
                                 onChange={(value) => handleChange("area", value)} />

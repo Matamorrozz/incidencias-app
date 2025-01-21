@@ -176,11 +176,22 @@ export const BlogPostCreate = () => {
     setShowUploadSection(true); // Mostrar la sección de subida de archivos
   };
 
-  const adjustedSaveButtonProps = {
-    ...saveButtonProps,
-    disabled: tipoRegistro === "" || tipoRegistro === "",
-  };
+const adjustedSaveButtonProps = {
+  ...saveButtonProps,
+  disabled: (() => {
 
+    if (tipoRegistro === "Mala actitud" || tipoRegistro === "Llegada tarde no justificada." || tipoRegistro === "Falta injustificada.") {
+      return (
+        !fileToUpload || // Si no hay archivo, deshabilitar
+        !fileToUpload.name.endsWith(".pdf") || // Si no es PDF, deshabilitar
+        form
+          .getFieldsError()
+          .some(({ errors }) => errors.length > 0) // Si hay errores en los campos, deshabilitar
+      );
+    }
+
+  })(),
+};
   const handleUpload = (file: File, area: string, nombre_emisor: string): Promise<string> => {
     return new Promise<string>((resolve, reject) => {
       try {
@@ -355,18 +366,18 @@ export const BlogPostCreate = () => {
         </Form.Item>
 
         {/* Condicionalmente renderizar `status_acta` */}
-        {tipoRegistro !== "Otro (negativo)." && tipoRegistro !== "Otro (positivo)." && (
+        {(tipoRegistro === "Mala actitud" || tipoRegistro === "Llegada tarde no justificada." || tipoRegistro === "Falta injustificada.")&& (
           <Form.Item
             label="Confirme la emisión física del Acta Administrativa:"
             name="status_acta"
-            initialValue="Favor de emitir"
+            initialValue="Emitida y pendiente de firmar"
             rules={[{ required: false, message: "El campo Status del Acta es obligatorio" }]}
           >
             <Select
               options={[
-                { value: "Favor de emitir", label: "Favor de emitir" },
+                { value: "Emitida y pendiente de firmar", label: "Emitida y pendiente de firmar" },
+                { value: "Emitida y pendiente de envío", label: "Emitida y pendiente de envío físico" },
                 { value: "Emitida y firmada", label: "Emitida y firmada" },
-                { value: "Pendiente de envío", label: "Pendiente de envío" },
               ]}
             />
           </Form.Item>
@@ -375,18 +386,9 @@ export const BlogPostCreate = () => {
         {/* Mostrar botón "Generar Acta" condicionalmente */}
         {[
           "Reporte de actitud (irresponsabilidad, acciones negativas, daños, etc).",
-          "Permiso de llegada tarde por asuntos personales.",
-          "Permiso de inasistencia a cuenta de vacaciones.",
-          "Permiso de salida temprano.",
           "Llegada tarde no justificada.",
-          "Permiso de llegada tarde por cita médica (IMSS).",
-          "Falta justificada de acuerdo al Reglamento Interior de Trabajo.",
           "Falta injustificada.",
-          "Permiso tiempo x tiempo controlado",
-          "Falta por incapacidad del IMSS.",
-          "Permiso de inasistencia sin goce de sueldo.",
           "Mala actitud",
-          "Permiso de llegada tarde",
         ].includes(tipoRegistro || "") && (
           <Form.Item>
             <Button type="primary" onClick={handleGenerarActa}>
@@ -408,6 +410,7 @@ export const BlogPostCreate = () => {
             <Upload
               accept=".pdf,.jpg,.png,.jpeg"
               beforeUpload={(file) => {
+                
                 setFileToUpload(file); // Guardar archivo en el estado
                 return false; // Prevenir la subida automática
               }}
