@@ -348,6 +348,10 @@ const adjustedSaveButtonProps = {
                 label: "Permiso de llegada tarde por asuntos personales.",
               },
               {
+                value: "Permiso de home office",
+                label: "Permiso de home office",
+              },
+              {
                 value: "Permiso de inasistencia a cuenta de vacaciones.",
                 label: "Permiso de inasistencia a cuenta de vacaciones.",
               },
