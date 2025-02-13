@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../../firebaseConfig";
 import moment from "moment";
-import { usuariosPermitidos } from "../../user_config";
+import { usuariosPermitidos, usuariosSidebar } from "../../user_config";
 
 type Permiso = {
   id: string;
@@ -39,7 +39,7 @@ const HomePage: React.FC = () => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setUserEmail(user.email);
-        setIsUserAllowed(usuariosPermitidos.includes(user.email || ""));
+        setIsUserAllowed(usuariosSidebar.includes(user.email || ""));
       } else {
         setIsUserAllowed(false);
         message.error("No estás autenticado.");

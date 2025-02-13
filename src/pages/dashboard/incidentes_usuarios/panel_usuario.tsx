@@ -10,6 +10,7 @@ import { useContext } from "react";
 const { Title, Text } = Typography;
 const { Option } = Select;
 const { RangePicker } = DatePicker;
+import { usuariosPermitidos } from "../../../user_config";
 
 
 interface TipoIncidencias {
@@ -65,7 +66,11 @@ export const Usuario = () => {
         setUser(currentUser);
         setArea(userDoc.area);
 
-        await fetchUsuariosUnicos(userDoc.area);
+        if (usuariosPermitidos.includes(correo)) {
+          fetchUsuarios();
+        } else {
+          fetchUsuariosUnicos(userDoc.area);
+        }
       } else {
         message.error("No se encontró información del usuario.");
       }
@@ -104,6 +109,21 @@ export const Usuario = () => {
       message.error("Error al cargar los usuarios.");
     }
   };
+
+  const fetchUsuarios = async () => {
+    try{
+      const url = "https://www.desarrollotecnologicoar.com/api3/incidencias";
+      const response = await axios.get<Incidencia[]>(url);
+      const incidencias = response.data;
+      const nombresUnicos = Array.from(
+        new Set(incidencias.map((i) => i.nombre_emisor as string))
+      );
+      setUsuarios(nombresUnicos);
+    } catch (error) {
+      console.error("Error al obtener los usuarios únicos:", error);
+      message.error("Error al cargar los usuarios.");
+    }
+  }
 
   const fetchHistorial = async () => {
     if (!selectedUser) {

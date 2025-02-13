@@ -310,14 +310,14 @@ export const DetallePermiso = () => {
             <Form.Item
               label="Confirme la emisión física del Acta Administrativa:"
               name="status_acta"
-              initialValue="Favor de emitir"
+              initialValue="Emitida y pendiente de firmar"
               rules={[{ required: false, message: "El campo Status del Acta es obligatorio" }]}
             >
               <Select
                 options={[
-                  { value: "Favor de emitir", label: "Favor de emitir" },
+                  { value: "Emitida y pendiente de firmar", label: "Emitida y pendiente de firmar" },
+                  { value: "Emitida y pendiente de envío", label: "Emitida y pendiente de envío físico" },
                   { value: "Emitida y firmada", label: "Emitida y firmada" },
-                  { value: "Pendiente de envío", label: "Pendiente de envío" },
                 ]}
               />
             </Form.Item>

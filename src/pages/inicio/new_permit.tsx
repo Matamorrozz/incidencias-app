@@ -24,6 +24,7 @@ const jefesInmediatos = [
   { value: "Carlos Antonio Rivas Martínez", label: "Carlos Antonio Rivas Martínez - Soporte Técnico Call Center / NPI" },
   { value: "Ana Rosa Lira Ortíz", label: "Ana Rosa Lira Ortíz - Logística" },
   { value: "Armando de la Rosa García", label: "Armando de la Rosa García - Jefe de Desarrollo Tecnológico  " },
+  { value: "Bernardo Ramírez González", label: "Bernardo Ramírez González - Jefe de Desarrollo Tecnológico  " },
   { value: "Ma. del Refugio Arroyo", label: "Ma. del Refugio Arroyo - Gerente Contabilidad, Finanza y RRHH" },
   { value: "Rubén Muñoz González", label: "Rubén Muñoz González - Soporte Técnico Presencial" },
   { value: "Laura Beatriz Arroyo Salcedo", label: "Laura Beatriz Arroyo Salcedo - Jefe de Contabilidad" },

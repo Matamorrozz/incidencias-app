@@ -1,20 +1,116 @@
 import { Edit, useForm } from "@refinedev/antd";
-import { Form, Input, Select } from "antd";
+import { useParams, useNavigate} from "react-router-dom";
+import { useState } from "react";
+import {  message, Form, Input, DatePicker, Select, Upload, Button } from "antd";
+import axios from "axios";
 import { values } from "pdf-lib";
+import { identityMatrix } from "pdf-lib/cjs/types/matrix";
+import { collection, query, where, getDocs } from "firebase/firestore";
+import { auth, db, storage } from "../../firebaseConfig";
+import { UploadOutlined } from "@ant-design/icons";
+import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
 
 export const BlogPostEdit = () => {
   const { formProps, saveButtonProps, queryResult, formLoading } = useForm({});
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const [showUploadSection, setShowUploadSection] = useState(false);
+  const [fileToUpload, setFileToUpload] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const convertirTexto = (texto: string): string =>
+    texto
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "") // Eliminar acentos
+      .toLowerCase()
+      .replace(/\s+/g, "_"); // Espacios por guiones bajos
 
   const blogPostsData = queryResult?.data?.data;
 
-  const handleFormSubmit = (values: any) => {
+  const handleFormSubmit = async (values: any) => {
     console.log("Formulario enviado con los valores:", values);
-    // Puedes realizar otras acciones aquí en lugar de enviar a la API
+    try {
+      await axios.patch(
+        `https://desarrollotecnologicoar.com/api3/incidencias/${id}`,
+        { ...values }
+      );
+      message.success(`La incidencia ha sido actualizada correctamente.`);
+
+    } catch (error) {
+      console.error("Error al actualizar la incidencia", error);
+      message.error("Hubo un error al actualizar la incidencia.");
+    }
+
+    const handleUpload = (file: File, area: string, nombre_emisor: string): Promise<string> => {
+        return new Promise<string>((resolve, reject) => {
+          try {
+            setUploading(true);
+    
+            const areaNormalized = convertirTexto(area);
+            const nombreEmisorNormalized = convertirTexto(nombre_emisor);
+    
+            const storagePath = `${areaNormalized}/${nombreEmisorNormalized}/${file.name}`;
+    
+            const storageRef = ref(storage, storagePath);
+            const uploadTask = uploadBytesResumable(storageRef, file);
+    
+            uploadTask.on(
+              "state_changed",
+              (snapshot) => {
+                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                console.log(`Subiendo: ${progress}%`);
+              },
+              (error) => {
+                console.error("Error al subir archivo:", error);
+                message.error("Hubo un error al subir el archivo.");
+                setUploading(false);
+                reject(error);
+              },
+              async () => {
+                const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                console.log("Archivo disponible en:", downloadURL);
+                message.success("Archivo subido correctamente.");
+                setUploading(false);
+                resolve(downloadURL);
+              }
+            );
+          } catch (error) {
+            console.error("Error al subir archivo:", error);
+            message.error("Hubo un error al subir el archivo.");
+            setUploading(false);
+            reject(error);
+          }
+        });
+      };
+
+    if (fileToUpload) {
+      try{
+        const downloadURL = await handleUpload(fileToUpload, values.area, values.nombre_emisor);
+        values.downloadURL = downloadURL;
+      } catch (error) {
+        console.error("Error al subir el archivo:", error);
+        message.error("Hubo un error al subir el archivo.");
+      }
+      
+    } 
+  };
+
+  const handleGenerarActa = () => {
+    setShowUploadSection(true); // Mostrar la sección de subida de archivos
   };
 
   return (
     <Edit saveButtonProps={saveButtonProps} isLoading={formLoading}>
       <Form {...formProps} layout="vertical" onFinish={(values) => handleFormSubmit(values)}>
+
+        <Form.Item
+        label = {'Marca temporal'}
+        name={['marca_temporal']}
+        rules={[{ required: true, message: 'El campo Marca temporal es obligatorio'  }]}
+        >
+          <Input disabled = {true} placeholder="YYYY-MM-DD HH:mm:ss"/>
+        
+          
+        </Form.Item>
         <Form.Item
           label={"Persona Emisor"}
           name={["persona_emisor"]}
@@ -101,6 +197,15 @@ export const BlogPostEdit = () => {
             style={{ width: 200 }}
           />
         </Form.Item>
+
+        <Form.Item
+        label = {'Fecha en la que se concedió el permiso'}
+        name={['fecha_permiso']}
+        rules={[{ required: false, message: 'El campo Marca temporal es obligatorio' }]}>
+          <Input disabled = {true} placeholder="YYYY-MM-DD"/>
+        
+          
+        </Form.Item>
         <Form.Item
           label={"Área"}
           name={["area"]}
@@ -120,6 +225,35 @@ export const BlogPostEdit = () => {
             style={{ width: 200 }}
           />
         </Form.Item>
+
+        <Form.Item>
+            <Button type="primary" onClick={handleGenerarActa}>
+              Adjuntar Acta
+            </Button>
+            <span style={{ marginLeft: "10px" }}>
+              <a
+                onClick={() => navigate("/impresion_acta")}
+                style={{ color: "#1890ff", cursor: "pointer" }}
+              >
+                ¿No cuentas con acta? Llénala aquí!
+              </a>
+            </span>
+          </Form.Item>
+          {showUploadSection && (
+          <Form.Item label="Subir Acta Administrativa">
+            <Upload
+              accept=".pdf,.jpg,.png,.jpeg"
+              beforeUpload={(file) => {
+                
+                setFileToUpload(file); // Guardar archivo en el estado
+                return false; // Prevenir la subida automática
+              }}
+              showUploadList={true}
+            >
+              <Button icon={<UploadOutlined />}>Seleccionar archivo</Button>
+            </Upload>
+          </Form.Item>
+        )}
       </Form>
     </Edit>
   );

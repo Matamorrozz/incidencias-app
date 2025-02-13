@@ -10,6 +10,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { UploadOutlined } from "@ant-design/icons";
 import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
+import { usuariosPermitidos } from "../../user_config";
 
 type FormValues = {
   persona_emisor: string;
@@ -101,7 +102,11 @@ export const BlogPostCreate = () => {
             setUserData(userDoc);
             const nombreCompleto = `${userDoc.nombre} ${userDoc.apellido_paterno} ${userDoc.apellido_materno}`;
             const area = userDoc.area;
-            await fetchUsersByArea(area);
+            if (usuariosPermitidos.includes(user.email || "")) {
+              fetchUsers();
+            } else { 
+              fetchUsersByArea(area); 
+            }
 
             // Establecer valores iniciales en el formulario
             form.setFieldsValue({
@@ -144,7 +149,26 @@ export const BlogPostCreate = () => {
     }
   };
 
+  const fetchUsers = async () => {
+    try {
+      const q = collection(db, "usuarios");
+      const querySnapshot = await getDocs(q);
+
+      const users = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      setUsuarios(users); // Actualiza el estado con los usuarios obtenidos
+    } catch (error) {
+      console.error("Error al obtener usuarios", error);
+      message.error("Error al cargar los usuarios.");
+    }
+  };
+    
+
   const handleFinish = async (values: FormValues) => {
+    values.area = convertirTexto(values.area);
 
 
     if (values.fecha_permiso && dayjs.isDayjs(values.fecha_permiso)) {
@@ -275,11 +299,15 @@ const adjustedSaveButtonProps = {
           rules={[{ required: true, message: "El campo Nombre Emisor es obligatorio" }]}
         >
           <Select
+            showSearch
             placeholder="Selecciona un usuario"
             options={usuarios.map((user) => ({
               value: `${user.nombre} ${user.apellido_paterno} ${user.apellido_materno}`,
               label: `${user.nombre} ${user.apellido_paterno} ${user.apellido_materno}`,
           }))}
+          filterOption={(input, option) => 
+            (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+          }
           />
         </Form.Item>
 

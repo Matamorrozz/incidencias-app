@@ -9,7 +9,8 @@ export const usuariosPermitidos = [
     'esteban@asiarobotica.com',
     'luis.martinez@asiarobotica.com',
     'diana.garcia@asiarobotica.com',
-    'developer@asiarobotica.com'
+    'developer@asiarobotica.com',
+    // 'bernardo.ramirez@asiarobotica.com'
 ];
 
 export const usuariosSidebar = [
@@ -36,5 +37,6 @@ export const usuariosSidebar = [
     'luis.martinez@asiarobotica.com', // luis martinez -- supervisor general **
     'diana.garcia@asiarobotica.com', // diana garcia -- auxiliar recursos humanos **
     'jared.guerra@asiarobotica.com', // jared guerra -- reparaciones ** 
-    'citlali.coseth@asiarobotica.com' // citlali coseth -- maquilas láser 
+    'citlali.coseth@asiarobotica.com', // citlali coseth -- maquilas láser 
+    'bernardo.ramirez@asiarobotica.com' // bernardo ramirez -- analista
 ];

@@ -20,6 +20,7 @@ interface Permiso {
   comentarios: string;
   fecha_permiso: string;
   status: string;
+  area: string;
 }
 
 // Definimos las columnas de la tabla
@@ -59,6 +60,7 @@ export const TablaPermisos: React.FC = () => {
   const [data, setData] = useState<Permiso[]>([]); // Estado de los permisos
   const [loading, setLoading] = useState(true); // Estado de carga
   const [area, setArea] = useState<string>(""); // Área del usuario
+  const [user, setUser] = useState<any>(null); // Usuario autenticado
   const navigate = useNavigate(); // Hook de navegación
 
   // **1. Convertir texto (área) a formato normalizado**
@@ -77,7 +79,7 @@ export const TablaPermisos: React.FC = () => {
 
           // Verificar si el usuario está en usuariosPermitidos
           if (usuariosPermitidos.includes(correo)) {
-           //fetch a la api general
+            //fetch a la api general
             const fetchPermisosGenerales = async () => {
               try {
                 const response = await axios.get<Permiso[]>(
@@ -92,7 +94,7 @@ export const TablaPermisos: React.FC = () => {
               }
             };
             await fetchPermisosGenerales();
-          } else { 
+          } else {
             // Obtener el área del usuario para permisos específicos
             const q = query(collection(db, "usuarios"), where("correo", "==", correo));
             const querySnapshot = await getDocs(q);
@@ -101,6 +103,8 @@ export const TablaPermisos: React.FC = () => {
               const userDoc = querySnapshot.docs[0].data();
               const userArea = convertirTexto(userDoc.area) || "";
               setArea(userArea); // Guardar el área del usuario
+              setUser(userDoc.nombre_completo || '');
+              console.log(`El area de usuario es: ${userArea}, el usuario es: ${user.displayName}`);
             } else {
               message.error("No se encontró información del usuario.");
               setLoading(false);
@@ -127,9 +131,14 @@ export const TablaPermisos: React.FC = () => {
 
       try {
         const response = await axios.get<Permiso[]>(
-          `https://desarrollotecnologicoar.com/api3/permiso_por_area/${area}`
+          `https://desarrollotecnologicoar.com/api3/permisos`
         );
-        setData(response.data);
+        const filteredData = response.data.filter((permiso) => {
+          const areaMatch = permiso.area === area;
+          const userMatch = permiso.jefe_inmediato.toLowerCase().includes(user.toLowerCase());
+          return areaMatch || userMatch;
+        });
+        setData(filteredData);
       } catch (error) {
         console.error("Error al obtener permisos por área:", error);
         message.error("Hubo un error al cargar los permisos por área.");
@@ -154,9 +163,9 @@ export const TablaPermisos: React.FC = () => {
 
   return (
     <Tabs defaultActiveKey="1"
-          centered
-          tabBarGutter={20} // Espaciado entre pestañas para una mejor accesibilidad en móviles
-          tabBarStyle={{ minHeight: 48 }} >
+      centered
+      tabBarGutter={20} // Espaciado entre pestañas para una mejor accesibilidad en móviles
+      tabBarStyle={{ minHeight: 48 }} >
       <Tabs.TabPane tab="Pendientes" key="1">
         <Table
           columns={columns(navigate)}

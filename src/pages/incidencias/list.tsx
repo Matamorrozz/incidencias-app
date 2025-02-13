@@ -6,23 +6,25 @@ import {
   List,
   ShowButton,
   useTable,
+
 } from "@refinedev/antd";
 import { Space, Table, Input, Row, Col, Spin, message, Pagination } from "antd";
 import { auth, db } from "../../firebaseConfig";
 import { onAuthStateChanged } from "firebase/auth";
 import { collection, query, where, getDocs } from "firebase/firestore";
-import { usuariosPermitidos } from "../../user_config"; 
+import { usuariosPermitidos } from "../../user_config";
 import { BaseRecord } from "@refinedev/core";
+import { Button } from "antd";
 
 export const BlogPostList = () => {
   const { tableProps } = useTable({ syncWithLocation: true });
 
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [userArea, setUserArea] = useState<string | null>(null);
-  const [filteredData, setFilteredData] = useState<BaseRecord[]>([]); 
+  const [filteredData, setFilteredData] = useState<BaseRecord[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchText, setSearchText] = useState(""); 
-  const [currentPage, setCurrentPage] = useState(1); 
+  const [searchText, setSearchText] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(5); // Tamaño de la página
 
   const convertirTexto = (texto: string): string =>
@@ -105,7 +107,26 @@ export const BlogPostList = () => {
   }
 
   if (paginatedData.length === 0) {
-    return <div>No se encontraron registros.</div>;
+    return (
+      <>
+        <div>Aún no hay registro de incidencias.</div>
+        <Button
+          type="primary"
+          size="large"
+          onClick={() => {
+            window.location.href = "/incidencias/create";
+          }}
+          style={{
+            padding: "10px 40px",
+            fontSize: "18px",
+            backgroundColor: "#ff4d4f", // Color de fondo personalizado
+            borderColor: "#ff4d4f", // Borde del mismo color
+          }}
+        >
+          Crear incidencia
+        </Button>
+      </>
+    );
   }
 
   return (
@@ -121,7 +142,7 @@ export const BlogPostList = () => {
       </Row>
 
       <Table
-        dataSource={paginatedData} 
+        dataSource={paginatedData}
         rowKey="id"
         pagination={false}
         scroll={{ x: 800, y: 300 }}
