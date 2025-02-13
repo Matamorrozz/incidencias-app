@@ -197,6 +197,7 @@ export const CreatePermit = () => {
             { value: "Permiso de inasistencia ", label: "Día Personal / Inasistencia a toma de vacaciones" },
             { value: "Trabajo Remoto", label: "Trabajo Remoto" },
             { value: "Permiso de inasistencia por salud", label: "Permiso de inasistencia por cuestiones de salud" },
+            { value: "Permiso para cambio de horario temporal", label: "Permiso para cambio de horario temporal" }
           ]} />
         </Form.Item>
 
