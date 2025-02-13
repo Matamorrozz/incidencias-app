@@ -25,7 +25,8 @@ export const opciones = [
     { value: "Contabilidad y Finanzas", label: "Contabilidad y Finanzas" },
     { value: "Recursos Humanos", label: "Recursos Humanos" },
     {value: "Seguridad e Higiene", label: "Seguridad e Higiene"},
-    {value: "Reparaciones", label: "Reparaciones"}
+    {value: "Reparaciones", label: "Reparaciones"},
+    {value: "Laser Express", label: "Laser Express"}
 
 ] 
 const UserCreate: React.FC = () => {
