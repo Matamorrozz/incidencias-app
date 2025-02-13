@@ -38,5 +38,6 @@ export const usuariosSidebar = [
     'diana.garcia@asiarobotica.com', // diana garcia -- auxiliar recursos humanos **
     'jared.guerra@asiarobotica.com', // jared guerra -- reparaciones ** 
     'citlali.coseth@asiarobotica.com', // citlali coseth -- maquilas láser 
-    'bernardo.ramirez@asiarobotica.com' // bernardo ramirez -- analista
+    'bernardo.ramirez@asiarobotica.com', // bernardo ramirez -- analista
+    'maximiliano.martinez@bladecsi.com'
 ];
