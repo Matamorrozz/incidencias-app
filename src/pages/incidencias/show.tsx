@@ -2,6 +2,9 @@ import { DateField, Show, TextField } from "@refinedev/antd";
 import { useShow } from "@refinedev/core";
 import { Typography } from "antd";
 import { get } from "http";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+dayjs.extend(utc);
 
 const { Title } = Typography;
 
@@ -45,7 +48,10 @@ export const BlogPostShow = () => {
       <TextField value={record?.tipo_registro} />
       
       <Title level={5}>{"Fecha en qué se pidió el permiso:"}</Title>
-      <DateField value={record?.fecha_permiso} />
+      <DateField 
+          value={dayjs.utc(record?.fecha_permiso)}
+          format="DD/MM/YYYY"
+      />
       
       <Title level={5}>{"Comentarios adicionales del registro:"}</Title>
       <TextField value={record?.info_registro} />

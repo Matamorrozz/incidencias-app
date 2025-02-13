@@ -130,7 +130,7 @@ const PiezasTable: React.FC<PiezasTableProps> = ({ selectedArea, dates }) => {
         { title: 'Nombre Emisor', dataIndex: 'nombre_emisor', key: 'nombre_emisor' },
         { title: 'Jefe Inmediato', dataIndex: 'jefe_inmediato', key: 'jefe_inmediato' },
         { title: 'Tipo de Registro', dataIndex: 'tipo_registro', key: 'tipo_registro' },
-        { title: 'Fecha de Permiso', dataIndex: 'fecha_permiso', key: 'fecha_permiso', render: (fecha: any) => moment(fecha).format('DD/MM/YYYY') },
+        { title: 'Fecha de Permiso', dataIndex: 'fecha_permiso', key: 'fecha_permiso', render: (fecha: any) => moment.utc(fecha).format("DD/MM/YYYY") },
         { title: 'Información del Registro', dataIndex: 'info_registro', key: 'info_registro' },
         { title: 'Estatus del Acta', dataIndex: 'status_acta', key: 'status_acta' },
         { title: 'Área', dataIndex: 'area', key: 'area' },
