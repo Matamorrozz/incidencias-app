@@ -32,7 +32,7 @@ const columns = (navigate: (path: string) => void) => [
   { title: "Tipo de permiso", dataIndex: "tipo_permiso", key: "tipo_permiso" },
   { title: "Urgencia", dataIndex: "urgencia", key: "urgencia" },
   { title: "Comentarios", dataIndex: "comentarios", key: "comentarios" },
-  { title: "Fecha de permiso", dataIndex: "fecha_permiso", key: "fecha_permiso", render: (fecha: any) => moment(fecha).format("DD/MM/YYYY") },
+  { title: "Fecha de permiso", dataIndex: "fecha_permiso", key: "fecha_permiso", render: (fecha: any) => moment.utc(fecha).format("DD/MM/YYYY")},
   {
     title: "Status del permiso",
     dataIndex: "status",
