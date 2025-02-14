@@ -9,6 +9,7 @@ import { collection, query, where, getDocs } from "firebase/firestore";
 import { auth, db, storage } from "../../firebaseConfig";
 import { UploadOutlined } from "@ant-design/icons";
 import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
+import { jefesInmediatos } from "./create";
 
 export const BlogPostEdit = () => {
   const { formProps, saveButtonProps, queryResult, formLoading } = useForm({});
@@ -114,14 +115,17 @@ export const BlogPostEdit = () => {
         <Form.Item
           label={"Persona Emisor"}
           name={["persona_emisor"]}
+          
+          
           rules={[
             {
               required: true,
               message: "El campo Persona Emisor es obligatorio",
+              
             },
           ]}
         >
-          <Input />
+          <Input disabled = {true}/>
         </Form.Item>
 
         <Form.Item
@@ -134,10 +138,10 @@ export const BlogPostEdit = () => {
             },
           ]}
         >
-          <Input />
+          <Input disabled = {true}/>
         </Form.Item>
 
-        <Form.Item
+        {/* <Form.Item
           label={"Jefe Inmediato"}
           name={["jefe_inmediato"]}
           rules={[
@@ -148,9 +152,25 @@ export const BlogPostEdit = () => {
           ]}
         >
           <Input />
-        </Form.Item>
+        </Form.Item> */}
 
         <Form.Item
+          label={"Jefe Inmediato"}
+          name={["jefe_inmediato"]}
+          rules={[
+            {
+              required: false,
+              message: "El campo Status del Acta es obligatorio",
+            },
+          ]}
+        >
+          <Select
+            options={jefesInmediatos}
+            
+          />
+        </Form.Item>
+
+        {/* <Form.Item
           label={"Tipo de Registro"}
           name={["tipo_registro"]}
           rules={[
@@ -161,6 +181,69 @@ export const BlogPostEdit = () => {
           ]}
         >
           <Input />
+        </Form.Item> */}
+
+        <Form.Item
+          label={"Tipo de Registro"}
+          name={["tipo_registro"]}
+          rules={[
+            {
+              required: false,
+              message: "El campo Status del Acta es obligatorio",
+            },
+          ]}
+        >
+          <Select
+            options={[
+              {
+                value: "Mala actitud",
+                label: "Reporte de actitud (irresponsabilidad, acciones negativas, daños, etc).",
+              },
+              {
+                value: "Permiso de llegada tarde",
+                label: "Permiso de llegada tarde por asuntos personales.",
+              },
+              {
+                value: "Permiso de home office",
+                label: "Permiso de home office",
+              },
+              {
+                value: "Permiso de inasistencia a cuenta de vacaciones.",
+                label: "Permiso de inasistencia a cuenta de vacaciones.",
+              },
+              { value: "Permiso de salida temprano.", label: "Permiso de salida temprano." },
+              {
+                value: "Llegada tarde no justificada.",
+                label: "Llegada tarde no justificada.",
+              },
+              {
+                value: "Permiso de llegada tarde por cita médica (IMSS).",
+                label: "Permiso de llegada tarde por cita médica (IMSS).",
+              },
+              {
+                value: "Falta justificada de acuerdo al Reglamento Interior de Trabajo.",
+                label: "Falta justificada de acuerdo al Reglamento Interior de Trabajo.",
+              },
+              { value: "Falta injustificada.",
+                label: "Falta injustificada." 
+              },
+              {
+                value: "Permiso tiempo x tiempo controlado",
+                label: "Permiso tiempo x tiempo controlado",
+              },
+              {
+                value: "Falta por incapacidad del IMSS.",
+                label: "Falta por incapacidad del IMSS.",
+              },
+              {
+                value: "Permiso de inasistencia sin goce de sueldo.",
+                label: "Permiso de inasistencia sin goce de sueldo.",
+              },
+              { value: "Otro (negativo).", label: "Otro (negativo)." },
+              { value: "Otro (positivo).", label: "Otro (positivo)." },
+            ]}
+            
+          />
         </Form.Item>
 
         <Form.Item
@@ -194,7 +277,7 @@ export const BlogPostEdit = () => {
               { value: "Emitida y pendiente de envío", label: "Emitida y pendiente de envío físico" },
               { value: "Emitida y firmada", label: "Emitida y firmada" },
             ]}
-            style={{ width: 200 }}
+            
           />
         </Form.Item>
 
@@ -222,6 +305,7 @@ export const BlogPostEdit = () => {
               { value: "IT", label: "Tecnología de la Información" },
               { value: "Finanzas", label: "Finanzas" },
             ]}
+            disabled = {true}
             style={{ width: 200 }}
           />
         </Form.Item>

@@ -10,7 +10,7 @@ export const usuariosPermitidos = [
     'luis.martinez@asiarobotica.com',
     'diana.garcia@asiarobotica.com',
     'developer@asiarobotica.com',
-    'bernardo.ramirez@asiarobotica.com'
+    // 'bernardo.ramirez@asiarobotica.com'
 ];
 
 export const usuariosSidebar = [
