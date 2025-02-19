@@ -276,6 +276,7 @@ export const DetallePermiso = () => {
               { value: "Falta justificada de acuerdo al Reglamento Interior de Trabajo.", label: "Falta justificada de acuerdo al Reglamento Interior de Trabajo." },
               { value: "Falta injustificada.", label: "Falta injustificada." },
               { value: "Permiso tiempo x tiempo controlado", label: "Permiso tiempo x tiempo controlado" },
+              { value: "Permiso para cambio de horario temporal", label: "Permiso para cambio de horario temporal" },
               { value: "Falta por incapacidad del IMSS.", label: "Falta por incapacidad del IMSS." },
               { value: "Permiso de inasistencia sin goce de sueldo.", label: "Permiso de inasistencia sin goce de sueldo." },
               { value: "Otro (negativo).", label: "Otro (negativo)." },

@@ -126,8 +126,6 @@ export const TablaPermisos: React.FC = () => {
 
     return () => unsubscribe();
   }, []);
-
-  // -- 2) Función para pedir TODOS los permisos (endpoint /api3/permisos) --
   const fetchPermisosGenerales = async () => {
     try {
       const response = await axios.get<Permiso[]>("https://desarrollotecnologicoar.com/api3/permisos");
@@ -138,15 +136,11 @@ export const TablaPermisos: React.FC = () => {
     }
   };
 
-  // -- 3) Función para pedir permisos FILTRADOS (endpoint /api3/permisos_filtrados) --
-  //       Aquí mandamos "area" y "nombre" como query params para que el server
-  //       filtre por:  area = $1  OR  jefe_inmediato ILIKE $2
+
   const fetchPermisosFiltrados = async (userArea: string, displayName: string) => {
     try {
       console.log("Buscando permisos para el área:", userArea, "y el usuario:", displayName);
-      // Nota: en tu back, el "area" quizás ya lo guardas con acentos, revisa si
-      // necesitas normalizar. Lo mismo con userName.
-      // Supongo que tu endpoint es /api3/permisos_filtrados
+  
       const url = `https://desarrollotecnologicoar.com/api3/permisos_filtrados?area=${userArea}&nombre=${encodeURIComponent(displayName)}`;
       const response = await axios.get<Permiso[]>(url);
       setData(response.data);
