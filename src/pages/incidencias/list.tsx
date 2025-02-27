@@ -110,6 +110,17 @@ export const BlogPostList = () => {
     return (
       <>
         <div>Aún no hay registro de incidencias.</div>
+
+        <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
+          <Col span={8}>
+            <Input
+              placeholder="Buscar por Persona Emisor, Nombre o Tipo de Registro"
+              value={searchText}
+              onChange={handleSearch}
+            />
+          </Col>
+        </Row>
+
         <Button
           type="primary"
           size="large"
