@@ -17,6 +17,7 @@ type FormValues = {
   urgencia: boolean;
   comentarios: string;
   status: string;
+  correo_lider: string;
 };
 
 const jefesInmediatos = [
@@ -42,6 +43,31 @@ const jefesInmediatos = [
   { value: "Christian Mendoza Nepomuceno", label: "Christian Mendoza Nepomuceno - Jefe de Almacén" },
   { value: "Gustavo Gallegos Cortés", label: "Gustavo Gallegos Cortés - Subjefe de Soporte Técnico Presencial / Encargado de Sucursal CDMX" },
   { value: "Saúl Espinoza Silva", label: "Saúl Espinoza Silva - Encargado de Logística Internacional" },
+];
+
+const CorreosLideres = [
+  { value: 'luis.martinez@asiarobotica.com', label: "Luis Jaime Martínez Arredondo"},
+  { value: "carlos.rivas@asiarobotica.com", label: "Carlos Antonio Rivas Martínez"},
+  { value: "ana.lira@asiarobotica.com", label: "Ana Rosa Lira Ortíz"},
+  { value: 'armando.delarosa@asiarobotica.com', label: "Armando de la Rosa García"},
+  { value: 'citlali.coseth@asiarobotica.com', label: "Citlali Coseth De León"},
+  { value: 'marada@asiarobotica.com', label: "Ma. del Refugio Arroyo"},       
+  { value: "laura.arroyo@asiarobotica.com", label: "Laura Beatriz Arroyo Salcedo"},
+  { value: 'esteban@asiarobotica.com', label: "Esteban Ramírez"},
+  { value: "karen@asiarobotica.com", label: "Karen Ibarra Ramírez"},
+  { value: "lucero.avila@asiarobotica.com", label: "Lucero Ávila Cortes"},
+  { value: 'ana.sanchez@asiarobotica.com', label: "Ana Sánchez Murúa"},
+  { value: "esmeralda.ramirez@asiarobotica.com", label: "Esmeralda Ramírez Díaz"},
+  { value: "saul.sandoval@asiarobotica.com", label: "Alonso Saúl Sandoval López"},
+  { value: "sergio.garcia@asiarobotica.com", label: "Sergio Alejandro García Trejo"},
+  { value: "gerardo.reynoso@asiarobotica.com", label: "Gerardo Reynoso López"},
+  { value: "jaime.flores@asiarobotica.com", label: "Jaime Daniel Flores Hernández"},
+  { value: "paola.ayala@asiarobotica.com", label: "Paola Sarahí Ayala Camacho"},
+  { value: "pablo@asiarobotica.com", label: "Pablo Ramírez Diaque"},
+  { value: "christian.mendoza@asiarobotica.com", label: "Christian Mendoza Nepomuceno"},
+  { value: "gustavo.gallegos@asiarobotica.com", label: "Gustavo Gallegos Cortés"},
+  { value: "saul.espinoza@asiarobotica.com", label: "Saúl Espinoza Silva"},
+  {value: "ruben.munoz@asiarobotica.com", label: "Rubén Muñoz González"}
 ];
 
 
@@ -106,9 +132,11 @@ export const CreatePermit = () => {
     try {
       setLoading(true); // Mostrar estado de carga en el botón
 
+      const correo_lider = CorreosLideres.find((lider) => lider.label === values.jefe_inmediato)?.value;
+
 
       // Establecer el status como "Pendiente"
-      const dataToSend = { ...values, status: "Pendiente" };
+      const dataToSend = { ...values, status: "Pendiente", correo_lider: correo_lider };
 
       console.log("Datos enviados al servidor:", dataToSend);
 

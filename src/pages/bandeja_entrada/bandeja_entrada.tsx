@@ -21,6 +21,7 @@ interface Permiso {
   fecha_permiso: string;
   status: string;
   area: string;
+  correo_lider:string;
 }
 
 // Definimos las columnas de la tabla
@@ -108,7 +109,7 @@ export const TablaPermisos: React.FC = () => {
             // Guardamos área normalizada y el nombre
             const userArea = convertirTexto(userDoc.area) || "";
             setArea(userArea);
-            setUserName(userDoc.nombre || '');
+            setUserName(userDoc.correo || '');
 
             // Cuando ya tengamos el area y el nombre, llamamos a fetchPermisosFiltrados
             await fetchPermisosFiltrados(userArea, userDoc.nombre);
@@ -137,13 +138,15 @@ export const TablaPermisos: React.FC = () => {
   };
 
 
-  const fetchPermisosFiltrados = async (userArea: string, displayName: string) => {
+  const fetchPermisosFiltrados = async (userArea: string, correo: string) => {
     try {
-      console.log("Buscando permisos para el área:", userArea, "y el usuario:", displayName);
+      console.log("Buscando permisos para el área:", userArea, "y el correo:", correo);
   
-      const url = `https://desarrollotecnologicoar.com/api3/permisos_filtrados?area=${userArea}&nombre=${encodeURIComponent(displayName)}`;
-      const response = await axios.get<Permiso[]>(url);
-      setData(response.data);
+      const url = `https://desarrollotecnologicoar.com/api3/permisos`;
+      let response = await axios.get<Permiso[]>(url);
+      
+
+      setData(response.data.filter((permiso) => permiso.area === userArea || permiso.correo_lider === correo ));
     } catch (error) {
       console.error("Error al obtener permisos filtrados:", error);
       message.error("Hubo un error al cargar los permisos por área o jefe_inmediato.");
