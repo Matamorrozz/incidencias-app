@@ -43,6 +43,7 @@ const jefesInmediatos = [
   { value: "Christian Mendoza Nepomuceno", label: "Christian Mendoza Nepomuceno - Jefe de Almacén" },
   { value: "Gustavo Gallegos Cortés", label: "Gustavo Gallegos Cortés - Subjefe de Soporte Técnico Presencial / Encargado de Sucursal CDMX" },
   { value: "Saúl Espinoza Silva", label: "Saúl Espinoza Silva - Encargado de Logística Internacional" },
+  { value: "Jared Guerra García", label: "Jared Guerra García - Jefe de Reparaciones" },
 ];
 
 const CorreosLideres = [
@@ -67,7 +68,8 @@ const CorreosLideres = [
   { value: "christian.mendoza@asiarobotica.com", label: "Christian Mendoza Nepomuceno"},
   { value: "gustavo.gallegos@asiarobotica.com", label: "Gustavo Gallegos Cortés"},
   { value: "saul.espinoza@asiarobotica.com", label: "Saúl Espinoza Silva"},
-  {value: "ruben.munoz@asiarobotica.com", label: "Rubén Muñoz González"}
+  {value: "ruben.munoz@asiarobotica.com", label: "Rubén Muñoz González"},
+  {value: 'jared.guerra@asiarobotica.com', label: "Jared Guerra García"}
 ];
 
 

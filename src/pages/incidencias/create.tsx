@@ -66,6 +66,7 @@ export const jefesInmediatos = [
   { value: "Christian Mendoza Nepomuceno", label: "Christian Mendoza Nepomuceno - Jefe de Almacén" },
   { value: "Gustavo Gallegos Cortés", label: "Gustavo Gallegos Cortés - Subjefe de Soporte Técnico Presencial / Encargado de Sucursal CDMX" },
   { value: "Saúl Espinoza Silva", label: "Saúl Espinoza Silva - Encargado de Logística Internacional" },
+  { value: "Jared Guerra García", label: "Jared Guerra García - Jefe de Reparaciones" },
 ];
 
 export const BlogPostCreate = () => {
