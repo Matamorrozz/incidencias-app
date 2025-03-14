@@ -97,7 +97,7 @@ export const PDFEditor = () => {
     // función para incluir unicamente a los usuarios del área del jefe indmediato
     const fetchUsersByArea = async (area: string) => {
         try {
-            const q = query(collection(db, "usuarios"), where("area", "==", area));
+            const q = query(collection(db, "usuarios"));
             const querySnapshot = await getDocs(q);
 
             const users = querySnapshot.docs.map((doc) => ({
