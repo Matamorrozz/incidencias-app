@@ -27,7 +27,7 @@ const jefesInmediatos = [
   { value: "Armando de la Rosa García", label: "Armando de la Rosa García - Jefe de Desarrollo Tecnológico  " },
   { value: "Citlali Coseth De León", label: "Citlali Coseth De León - Jefe de Producción Láser" },
   { value: "Ma. del Refugio Arroyo", label: "Ma. del Refugio Arroyo - Gerente Contabilidad, Finanza y RRHH" },
-  { value: "Rubén Muñoz González", label: "Rubén Muñoz González - Soporte Técnico Presencial" },
+  { value: "Tulio Alberto Martinez Medina", label: "Tulio Alberto Martinez Medina - Soporte Técnico Presencial" },
   { value: "Laura Beatriz Arroyo Salcedo", label: "Laura Beatriz Arroyo Salcedo - Jefe de Contabilidad" },
   { value: "Esteban Ramírez", label: "Esteban Ramírez - Gerente General" },
   { value: "Karen Ibarra Ramírez", label: "Karen Ibarra Ramírez - Encargada Ventas de Refacciones y Servicios" },
@@ -36,7 +36,7 @@ const jefesInmediatos = [
   { value: "Lucero Ávila Cortes", label: "Lucero Ávila Cortes - Gerente de Mercadotecnia" },
   { value: "Alonso Saúl Sandoval López", label: "Alonso Saúl Sandoval López - Supervisor de Producción" },
   { value: "Sergio Alejandro García Trejo", label: "Sergio Alejandro García Trejo - Jefe de Procesos y Calidad" },
-  { value: "Gerardo Reynoso López", label: "Gerardo Reynoso López - Supervisor de Producción" },
+
   { value: "Jaime Daniel Flores Hernández", label: "Jaime Daniel Flores Hernández - Supervisor de Calidad" },
   { value: "Paola Sarahí Ayala Camacho", label: "Paola Sarahí Ayala Camacho - Analista de Seguridad e Higiene / Mantenimiento" },
   { value: "Pablo Ramírez Diaque", label: "Pablo Ramírez Diaque - Gerente de Ingeniería" },
@@ -61,14 +61,13 @@ const CorreosLideres = [
   { value: "esmeralda.ramirez@asiarobotica.com", label: "Esmeralda Ramírez Díaz"},
   { value: "saul.sandoval@asiarobotica.com", label: "Alonso Saúl Sandoval López"},
   { value: "sergio.garcia@asiarobotica.com", label: "Sergio Alejandro García Trejo"},
-  { value: "gerardo.reynoso@asiarobotica.com", label: "Gerardo Reynoso López"},
   { value: "jaime.flores@asiarobotica.com", label: "Jaime Daniel Flores Hernández"},
   { value: "paola.ayala@asiarobotica.com", label: "Paola Sarahí Ayala Camacho"},
   { value: "pablo@asiarobotica.com", label: "Pablo Ramírez Diaque"},
   { value: "christian.mendoza@asiarobotica.com", label: "Christian Mendoza Nepomuceno"},
   { value: "gustavo.gallegos@asiarobotica.com", label: "Gustavo Gallegos Cortés"},
   { value: "saul.espinoza@asiarobotica.com", label: "Saúl Espinoza Silva"},
-  {value: "ruben.munoz@asiarobotica.com", label: "Rubén Muñoz González"},
+  { value: "Tulio Alberto Martinez Medina", label: "Tulio Alberto Martinez Medina" },
   {value: 'jared.guerra@asiarobotica.com', label: "Jared Guerra García"}
 ];
 

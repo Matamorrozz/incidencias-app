@@ -23,8 +23,7 @@ export const usuariosSidebar = [
     "laura.arroyo@asiarobotica.com", // laura arroyo -- contabilidad **
     "karen@asiarobotica.com", // karen ibarra -- ventas partes **
     "lucero.avila@asiarobotica.com", // lucero avila -- mercadotecnia **
-    "saul.sandoval@asiarobotica.com", // saul sand -- produccion CNC **
-    "gerardo.reynoso@asiarobotica.com", // gerardo reynoso -- produccion fiber ** 
+    "saul.sandoval@asiarobotica.com", // gerardo reynoso -- produccion fiber ** 
     "jaime.flores@asiarobotica.com", // jaime flores -- calidad **
     // "paola.ayala@asiarobotica.com", // paola ayala -- S & H **
     "christian.mendoza@asiarobotica.com", // christian nepamuceno -- supervisor operaciones **
