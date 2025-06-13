@@ -6,7 +6,6 @@ import {
   List,
   ShowButton,
   useTable,
-
 } from "@refinedev/antd";
 import { Space, Table, Input, Row, Col, Spin, message, Pagination } from "antd";
 import { auth, db } from "../../firebaseConfig";
@@ -15,6 +14,7 @@ import { collection, query, where, getDocs } from "firebase/firestore";
 import { usuariosPermitidos } from "../../user_config";
 import { BaseRecord } from "@refinedev/core";
 import { Button } from "antd";
+import {FilePdfOutlined} from "@ant-design/icons";
 
 export const BlogPostList = () => {
   const { tableProps } = useTable({ syncWithLocation: true });
@@ -149,6 +149,26 @@ export const BlogPostList = () => {
             value={searchText}
             onChange={handleSearch}
           />
+        </Col>
+        <Col span={8} offset={8} style={{ textAlign: "right" }}>
+          <Button
+            type="primary"
+            size="middle"
+            onClick={() => {
+              window.location.href = "/actas";
+            }}
+            style={{
+              padding: "10px 40px",
+              fontSize: "16px",
+              backgroundColor: "#ff4d4f", // Color de fondo personalizado
+              borderColor: "#ff4d4f", // Borde del mismo color
+              width: "25%",
+              
+            }}
+          >
+            <FilePdfOutlined />
+            Ver actas
+          </Button>
         </Col>
       </Row>
 

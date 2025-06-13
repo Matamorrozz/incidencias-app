@@ -111,7 +111,7 @@ export const Usuario = () => {
   };
 
   const fetchUsuarios = async () => {
-    try{
+    try {
       const url = "https://www.desarrollotecnologicoar.com/api3/incidencias";
       const response = await axios.get<Incidencia[]>(url);
       const incidencias = response.data;
@@ -161,7 +161,7 @@ export const Usuario = () => {
 
   const CustomTooltip = ({ active, payload }: any) => {
     console.log("Tooltip activo:", active, "Payload:", payload);
-  
+
     if (active && payload && payload.length) {
       const { name, value } = payload[0].payload; // Datos del tooltip
       return (
@@ -204,17 +204,19 @@ export const Usuario = () => {
     >
       <Space direction="vertical" size="large" style={{ width: "100%" }}>
         <Select
+          showSearch
           placeholder="Selecciona un usuario"
           style={{ width: "100%" }}
           onChange={(value) => setSelectedUser(value)}
-        >
-          {usuarios.map((usuario) => (
-            <Option key={usuario} value={usuario}>
-              {usuario}
-            </Option>
-          ))}
-        </Select>
+          filterOption={(input, option) =>
+            String(option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+          }
+          options={usuarios.map((usuario)=>({
+            label: String(usuario),
+            value: usuario
+          }))}
 
+        />
         <RangePicker onChange={handleDateChange} style={{ width: "100%" }} size="large" />
 
         <Button type="primary" onClick={fetchHistorial} style={{ width: "100%" }} size="large">
@@ -223,7 +225,7 @@ export const Usuario = () => {
         {data.length > 0 ? (
           <ResponsiveContainer width="100%" height={300} >
             <BarChart data={data}>
-              <XAxis dataKey="name" tickFormatter={(value)=>truncateText(value,25)}/>
+              <XAxis dataKey="name" tickFormatter={(value) => truncateText(value, 25)} />
               <YAxis />
               <Tooltip content={<CustomTooltip />} />
               <Legend />

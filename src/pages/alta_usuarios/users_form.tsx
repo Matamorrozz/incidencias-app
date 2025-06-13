@@ -11,8 +11,7 @@ import moment from 'moment';
 export const opciones = [
     { value: "Desarrollo Tecnológico", label: "Desarrollo Tecnológico" },
     { value: "Logística", label: "Logística" },
-    { value: "Producción CNC", label: "Producción CNC (Router)" },
-    { value: "Producción CO2", label: "Producción CO2 (Fiber)" },
+    { value: "Producción CNC", label: "Producción CNC" },
     { value: "Calidad y Procesos", label: "Calidad y Procesos" },
     { value: "Garantías y Satisfacción al cliente", label: "Garantías y Satisfacción al cliente" },
     { value: "Almacén", label: "Almacén" },

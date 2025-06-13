@@ -13,12 +13,9 @@ import {
   ThemedLayoutV2,
   ThemedSiderV2,
   useNotificationProvider,
-
 } from "@refinedev/antd";
 import "@refinedev/antd/dist/reset.css";
-
 import { ColorModeContext } from "./contexts/color-mode"
-
 import routerBindings, {
   DocumentTitleHandler,
   NavigateToResource,
@@ -29,25 +26,12 @@ import { App as AntdApp } from "antd";
 import { BrowserRouter, Outlet, Route, Routes } from "react-router-dom";
 import { Header } from "./components/header";
 import { ColorModeContextProvider } from "./contexts/color-mode";
-
-
-
 import {
   BlogPostCreate,
   BlogPostEdit,
   BlogPostList,
   BlogPostShow,
 } from "./pages/incidencias";
-
-// import {
-//   personaEmiteCreate,
-//   personaEmiteEdit,
-//   personaEmiteList,
-//   personaEmiteShow,
-// } from "./pages/persona_emite_reporte";
-
-
-// Importaciones para Firebase
 import { useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./firebaseConfig"; // Asegúrate de que tu archivo firebaseConfig.js esté bien configurado
@@ -59,6 +43,7 @@ import { IncomingMessage } from "http";
 import { useUnreviewedPermitsCount } from "./hooks/conteoPermisos";
 import { DetallePermiso } from "./pages/bandeja_entrada/permiso_id";
 import { usuariosPermitidos, usuariosSidebar } from "./user_config";
+import { ListadoActas } from "./pages/incidencias/actas/listado_actas";
 
 
 function App() {
@@ -211,6 +196,7 @@ function App() {
                       <Route path="/bandeja_entrada" element={<TablaPermisos />} />
                       <Route path="/detalle_permiso/:id" element={<DetallePermiso />} />
                       <Route path="/impresion_acta" element={<PDFEditor />} />
+                      <Route path='/actas' element={<ListadoActas />} />'
 
                       <Route path="*" element={<ErrorComponent />} /> {/* Ruta para errores */}
                     </Route>

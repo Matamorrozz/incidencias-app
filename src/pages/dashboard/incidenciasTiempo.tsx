@@ -139,7 +139,7 @@ export const IncidenciasPorTiempoList: React.FC<IncidenciasGraficaProps> = ({ ag
                         <LineChart data={data}>
                             <CartesianGrid strokeDasharray="3 3" />
                             <XAxis dataKey="name" />
-                            <YAxis domain={[0, 'dataMax + 15']} tickCount={8} />
+                            <YAxis domain={[0, 'dataMax + 50']} tickCount={8} />
                             <Tooltip />
                             <Legend />
                             <Line
