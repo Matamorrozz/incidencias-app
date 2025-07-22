@@ -38,7 +38,7 @@ const jefesInmediatos = [
   { value: "Sergio Alejandro García Trejo", label: "Sergio Alejandro García Trejo - Jefe de Procesos y Calidad" },
 
   { value: "Jaime Daniel Flores Hernández", label: "Jaime Daniel Flores Hernández - Supervisor de Calidad" },
-  { value: "Paola Sarahí Ayala Camacho", label: "Paola Sarahí Ayala Camacho - Analista de Seguridad e Higiene / Mantenimiento" },
+  { value: "Jorge Antonio Lías Lopez", label: "Jorge Antonio Lías Lopez - Analista de Seguridad e Higiene / Mantenimiento" },
   { value: "Pablo Ramírez Diaque", label: "Pablo Ramírez Diaque - Gerente de Ingeniería" },
   { value: "Christian Mendoza Nepomuceno", label: "Christian Mendoza Nepomuceno - Jefe de Almacén" },
   { value: "Gustavo Gallegos Cortés", label: "Gustavo Gallegos Cortés - Subjefe de Soporte Técnico Presencial / Encargado de Sucursal CDMX" },
@@ -62,7 +62,7 @@ const CorreosLideres = [
   { value: "saul.sandoval@asiarobotica.com", label: "Alonso Saúl Sandoval López"},
   { value: "sergio.garcia@asiarobotica.com", label: "Sergio Alejandro García Trejo"},
   { value: "jaime.flores@asiarobotica.com", label: "Jaime Daniel Flores Hernández"},
-  { value: "paola.ayala@asiarobotica.com", label: "Paola Sarahí Ayala Camacho"},
+  { value: "Jorge Antonio Lías Lopez", label: "Jorge Antonio Lías Lopez"},
   { value: "pablo@asiarobotica.com", label: "Pablo Ramírez Diaque"},
   { value: "christian.mendoza@asiarobotica.com", label: "Christian Mendoza Nepomuceno"},
   { value: "gustavo.gallegos@asiarobotica.com", label: "Gustavo Gallegos Cortés"},

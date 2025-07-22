@@ -3,7 +3,6 @@ import React, { useEffect } from "react";
 export const usuariosPermitidos = [
     'pablo@asiarobotica.com',
     'ana.sanchez@asiarobotica.com',
-    // "paola.ayala@asiarobotica.com",
     'luis.martinez@asiarobotica.com',
     'marada@asiarobotica.com',
     'esteban@asiarobotica.com',
@@ -19,13 +18,11 @@ export const usuariosSidebar = [
     "sergio.garcia@asiarobotica.com", // sergio garcia -- procesos ** 
     "carlos.rivas@asiarobotica.com", // carlos rivas -- NPI **
     "ana.lira@asiarobotica.com", // rosy lira -- logística ** 
-    // "ruben.munoz@asiarobotica.com", // ruben muñoz -- ISTP **
     "laura.arroyo@asiarobotica.com", // laura arroyo -- contabilidad **
     "karen@asiarobotica.com", // karen ibarra -- ventas partes **
     "lucero.avila@asiarobotica.com", // lucero avila -- mercadotecnia **
     "saul.sandoval@asiarobotica.com", // gerardo reynoso -- produccion fiber ** 
     "jaime.flores@asiarobotica.com", // jaime flores -- calidad **
-    // "paola.ayala@asiarobotica.com", // paola ayala -- S & H **
     "christian.mendoza@asiarobotica.com", // christian nepamuceno -- supervisor operaciones **
     "gustavo.gallegos@asiarobotica.com", // gustavo gallegos -- coordinacion CDMX ** 
     "saul.espinoza@asiarobotica.com", // saul espinoza -- compras nacionales **

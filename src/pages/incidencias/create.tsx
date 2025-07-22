@@ -60,7 +60,7 @@ export const jefesInmediatos = [
   { value: "Alonso Saúl Sandoval López", label: "Alonso Saúl Sandoval López - Supervisor de Producción" },
   { value: "Sergio Alejandro García Trejo", label: "Sergio Alejandro García Trejo - Jefe de Procesos y Calidad" },
   { value: "Jaime Daniel Flores Hernández", label: "Jaime Daniel Flores Hernández - Supervisor de Calidad" },
-  { value: "Paola Sarahí Ayala Camacho", label: "Paola Sarahí Ayala Camacho - Analista de Seguridad e Higiene / Mantenimiento" },
+  { value: "Jorge Antonio Lías Lopez", label: "Jorge Antonio Lías Lopez - Analista de Seguridad e Higiene / Mantenimiento" },
   { value: "Pablo Ramírez Diaque", label: "Pablo Ramírez Diaque - Gerente de Ingeniería" },
   { value: "Christian Mendoza Nepomuceno", label: "Christian Mendoza Nepomuceno - Jefe de Almacén" },
   { value: "Gustavo Gallegos Cortés", label: "Gustavo Gallegos Cortés - Subjefe de Soporte Técnico Presencial / Encargado de Sucursal CDMX" },
