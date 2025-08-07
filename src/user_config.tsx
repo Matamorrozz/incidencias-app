@@ -38,6 +38,6 @@ export const usuariosSidebar = [
     'bernardo.ramirez@asiarobotica.com', // bernardo ramirez -- analista
     'maximiliano.martinez@bladecsi.com', 
     'armando.delarosa@asiarobotica.com',
-    'tulio.martinez@asiarobotica.com', // tulio martinez -- ISTP **
+    'omar.diaz@asiarobotica.com', // omar diaz -- ISTP **
      'jorge.lias@asiarobotica.com' // jorge lias -- seguridad e higiene
 ];

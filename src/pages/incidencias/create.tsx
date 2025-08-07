@@ -50,7 +50,7 @@ export const jefesInmediatos = [
   { value: "Armando de la Rosa García", label: "Armando de la Rosa García - Líder de Desarrollo Tecnológico  " },
   { value: "Ma. del Refugio Arroyo", label: "Ma. del Refugio Arroyo - Gerente Contabilidad, Finanza y RRHH" },
   { value: "Citlali Coseth De León", label: "Citlali Coseth De León - Jefe de Producción Láser" },
-  { value: "Tulio Alberto Martinez Medina", label: "Tulio Alberto Martinez Medina - Soporte Técnico Presencial" },
+  { value: "Omar Díaz", label: "Omar Díaz - Soporte Técnico Presencial" },
   { value: "Laura Beatriz Arroyo Salcedo", label: "Laura Beatriz Arroyo Salcedo - Líder de Contabilidad" },
   { value: "Esteban Ramírez", label: "Esteban Ramírez - Gerente General" },
   { value: "Karen Ibarra Ramírez", label: "Karen Ibarra Ramírez - Encargada Ventas de Refacciones y Servicios" },
@@ -62,10 +62,11 @@ export const jefesInmediatos = [
   { value: "Jaime Daniel Flores Hernández", label: "Jaime Daniel Flores Hernández - Supervisor de Calidad" },
   { value: "Jorge Antonio Lías Lopez", label: "Jorge Antonio Lías Lopez - Analista de Seguridad e Higiene / Mantenimiento" },
   { value: "Pablo Ramírez Diaque", label: "Pablo Ramírez Diaque - Gerente de Ingeniería" },
-  { value: "Christian Mendoza Nepomuceno", label: "Christian Mendoza Nepomuceno - Jefe de Almacén" },
+  // { value: "Christian Mendoza Nepomuceno", label: "Christian Mendoza Nepomuceno - Jefe de Almacén" },
   { value: "Gustavo Gallegos Cortés", label: "Gustavo Gallegos Cortés - Subjefe de Soporte Técnico Presencial / Encargado de Sucursal CDMX" },
   { value: "Saúl Espinoza Silva", label: "Saúl Espinoza Silva - Encargado de Logística Internacional" },
   { value: "Jared Guerra García", label: "Jared Guerra García - Jefe de Reparaciones" },
+  {value:'Francisco Javier Hernandez Castro', label: 'Francisco Javier Hernández - Jefe de Almacén'}
 ];
 
 export const BlogPostCreate = () => {
