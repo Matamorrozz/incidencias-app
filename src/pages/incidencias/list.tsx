@@ -15,6 +15,7 @@ import { usuariosPermitidos } from "../../user_config";
 import { BaseRecord } from "@refinedev/core";
 import { Button } from "antd";
 import {FilePdfOutlined} from "@ant-design/icons";
+import axios from "axios";
 
 export const BlogPostList = () => {
   const { tableProps } = useTable({ syncWithLocation: true });
@@ -26,6 +27,7 @@ export const BlogPostList = () => {
   const [searchText, setSearchText] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(5); // Tamaño de la página
+  const [usuariosPermitidos, setUsuariosPermitidos] = useState<string[]>([]);
 
   const convertirTexto = (texto: string): string =>
     texto
@@ -81,6 +83,23 @@ export const BlogPostList = () => {
 
     return () => unsubscribe();
   }, [filtrarDatos, tableProps.dataSource]);
+
+
+  useEffect(() => {
+    const fetchUsuariosPermitidos = async () => {
+      try {
+        const response = await axios.get<string[]>(
+          "https://desarrollotecnologicoar.com/api3/usuarios_permitidos/"
+        );
+        
+        setUsuariosPermitidos(response.data);
+      } catch (error) {
+        console.error("Error al obtener usuarios permitidos:", error);
+        message.error("Error al cargar los usuarios permitidos.");
+      }
+    };
+    fetchUsuariosPermitidos();
+  }, []);
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchText(event.target.value.toLowerCase());

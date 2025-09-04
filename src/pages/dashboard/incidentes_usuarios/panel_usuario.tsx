@@ -10,13 +10,15 @@ import { useContext } from "react";
 const { Title, Text } = Typography;
 const { Option } = Select;
 const { RangePicker } = DatePicker;
-import { usuariosPermitidos } from "../../../user_config";
+// import { usuariosPermitidos } from "../../../user_config";
 
 
 interface TipoIncidencias {
   name: string;
   value: number;
 }
+
+type Gerentes = string[];
 
 interface Incidencia {
   id: string;
@@ -46,7 +48,27 @@ export const Usuario = () => {
   const [loading, setLoading] = useState(true); // Estado de carga
   const [dates, setDates] = useState<[string | null, string | null]>([null, null]); // Fechas seleccionadas
   const [data, setData] = useState<TipoIncidencias[]>([]);
+  const [usuariosPermitidos, setUsuariosPermitidos] = useState<Gerentes>([]);
+  const [loadingGerentes, setLoadingGerentes] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+    useEffect(() => {  
+      const fetchGerentes = async () => {
+        try {
+          const { data } = await axios.get<Gerentes>(
+            "https://desarrollotecnologicoar.com/api3/usuarios_permitidos/"
+          );
+          setUsuariosPermitidos(data ?? []);
+        } catch (e) {
+          setError((prev) => prev ?? "Error al cargar gerentes."); // conserva el primero si ya hay
+        } finally {
+          setLoadingGerentes(false);
+        }
+      };
+      fetchGerentes();
+    }, []);
 
+  
   const convertirTexto = (texto: string): string => {
     return texto
       .normalize("NFD")

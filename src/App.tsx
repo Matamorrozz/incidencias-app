@@ -4,9 +4,9 @@ import { RefineKbar, RefineKbarProvider } from "@refinedev/kbar";
 import { Image } from "antd";
 import { useContext } from "react";
 import { Dashboard } from "./pages/dashboard/dashboard";
-import { BarChartOutlined, InboxOutlined, LineChartOutlined, UserAddOutlined , PrinterFilled, PrinterOutlined, FilePdfOutlined, FileAddFilled} from "@ant-design/icons";
+import { BarChartOutlined, InboxOutlined, LineChartOutlined, UserAddOutlined, PrinterFilled, PrinterOutlined, FilePdfOutlined, FileAddFilled } from "@ant-design/icons";
 import { Link } from "react-router-dom";
-import {PDFEditor} from "./pages/impresion_actas/formato_acta"
+import { PDFEditor } from "./pages/impresion_actas/formato_acta"
 import HomePage from "./pages/inicio/inicio";
 import {
   ErrorComponent,
@@ -42,14 +42,18 @@ import { TablaPermisos } from "./pages/bandeja_entrada/bandeja_entrada";
 import { IncomingMessage } from "http";
 import { useUnreviewedPermitsCount } from "./hooks/conteoPermisos";
 import { DetallePermiso } from "./pages/bandeja_entrada/permiso_id";
-import { usuariosPermitidos, usuariosSidebar } from "./user_config";
 import { ListadoActas } from "./pages/incidencias/actas/listado_actas";
+import { FaUserTie } from "react-icons/fa";
+import { LideresGeneral } from "./pages/alta_usuarios/lideres";
+import axios from "axios";
+
 
 
 function App() {
   const [authenticated, setAuthenticated] = useState(false); // Estado de autenticación
   const [loading, setLoading] = useState(true); // Para mostrar un estado de carga
   const [userEmail, setuserEmail] = useState<string | null>(null);
+  const [usuariosSidebar, setUsuariosSidebar] = useState<string[]>([]);
   const count = useUnreviewedPermitsCount();
   useEffect(() => {
     // Verificación de autenticación con Firebase
@@ -65,6 +69,33 @@ function App() {
     });
 
     return () => unsubscribe(); // Limpiamos el listener al desmontar
+  }, []);
+
+
+
+  const [loadingLideres, setLoadingLideres] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  type Lider = { id: number | string; nombre: string; correo: string };
+  type Gerentes = Record<string, string>;
+
+  useEffect(() => {
+    const fetchLideres = async () => {
+      try {
+        const { data } = await axios.get<Lider[]>(
+          "https://desarrollotecnologicoar.com/api3/lideres_inmediatos/"
+        );
+        const correos = (data ?? [])
+          .map(l => l.correo)
+          .filter((c): c is string => Boolean(c));
+        setUsuariosSidebar(correos); // ✅ ahora sí es string[]
+      } catch (e) {
+        setError("Error al cargar líderes inmediatos.");
+      } finally {
+        setLoadingLideres(false);
+      }
+    };
+    fetchLideres();
   }, []);
 
   // Mostrar mensaje de carga
@@ -93,8 +124,8 @@ function App() {
 
 
   const resources =
-  usuariosSidebar.includes(userEmail || "") // Verifica si el correo está en la lista
-    ? [
+    usuariosSidebar.includes(userEmail || "") // Verifica si el correo está en la lista
+      ? [
         {
           name: "tabla_permisos",
           list: "/bandeja_entrada",
@@ -149,8 +180,13 @@ function App() {
           list: "/impresion_acta",
           meta: { label: "Impresión de acta", icon: <FilePdfOutlined /> },
         },
+        {
+          name: "Lideres",
+          list: "/lideres",
+          meta: { label: "Lideres", icon: <FaUserTie /> },
+        },
       ]
-    : [];
+      : [];
   return (
     <BrowserRouter>
       <RefineKbarProvider>
@@ -197,6 +233,7 @@ function App() {
                       <Route path="/detalle_permiso/:id" element={<DetallePermiso />} />
                       <Route path="/impresion_acta" element={<PDFEditor />} />
                       <Route path='/actas' element={<ListadoActas />} />'
+                      <Route path="/lideres" element={<LideresGeneral />} />
 
                       <Route path="*" element={<ErrorComponent />} /> {/* Ruta para errores */}
                     </Route>

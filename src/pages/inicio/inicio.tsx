@@ -4,7 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../../firebaseConfig";
 import moment from "moment";
-import { usuariosPermitidos, usuariosSidebar } from "../../user_config";
+import axios from "axios";
+// import { usuariosPermitidos, usuariosSidebar } from "../../user_config";
 
 type Permiso = {
   id: string;
@@ -26,6 +27,31 @@ const HomePage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [isUserAllowed, setIsUserAllowed] = useState(false);
+  const [usuariosSidebar, setUsuariosSidebar] = useState<string[]>([]);
+  const [error, setError] = useState<string | null>(null);
+
+
+    type Lider = { id: number | string; nombre: string; correo: string };
+  type Gerentes = Record<string, string>;
+
+  useEffect(() => {
+    const fetchLideres = async () => {
+      try {
+        const { data } = await axios.get<Lider[]>(
+          "https://desarrollotecnologicoar.com/api3/lideres_inmediatos/"
+        );
+        const correos = (data ?? [])
+          .map(l => l.correo)
+          .filter((c): c is string => Boolean(c));
+        setUsuariosSidebar(correos); // ✅ ahora sí es string[]
+      } catch (e) {
+        setError("Error al cargar líderes inmediatos.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchLideres();
+  }, []);
 
   const handleNewPermitClick = () => {
     navigate("/create_permit");

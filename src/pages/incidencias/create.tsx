@@ -10,7 +10,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { UploadOutlined } from "@ant-design/icons";
 import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
-import { usuariosPermitidos } from "../../user_config";
+// import { usuariosPermitidos } from "../../user_config";
 
 type FormValues = {
   persona_emisor: string;
@@ -43,31 +43,35 @@ interface UsuarioData {
   area: string;
 }
 
-export const jefesInmediatos = [
-  { value: "Luis Jaime Martínez Arredondo", label: "Luis Jaime Martínez Arredondo - Líder de Operaciones" },
-  { value: "Carlos Antonio Rivas Martínez", label: "Carlos Antonio Rivas Martínez - Líder de Soporte Técnico Call Center / NPI" },
-  { value: "Ana Rosa Lira Ortíz", label: "Ana Rosa Lira Ortíz - Líder de Logística" },
-  { value: "Armando de la Rosa García", label: "Armando de la Rosa García - Líder de Desarrollo Tecnológico  " },
-  { value: "Ma. del Refugio Arroyo", label: "Ma. del Refugio Arroyo - Gerente Contabilidad, Finanza y RRHH" },
-  { value: "Citlali Coseth De León", label: "Citlali Coseth De León - Jefe de Producción Láser" },
-  { value: "Omar Díaz", label: "Omar Díaz - Soporte Técnico Presencial" },
-  { value: "Laura Beatriz Arroyo Salcedo", label: "Laura Beatriz Arroyo Salcedo - Líder de Contabilidad" },
-  { value: "Esteban Ramírez", label: "Esteban Ramírez - Gerente General" },
-  { value: "Karen Ibarra Ramírez", label: "Karen Ibarra Ramírez - Encargada Ventas de Refacciones y Servicios" },
-  { value: "Ana Sánchez Murúa", label: "Ana Sánchez Murúa - Generalista RRHH" },
-  { value: "Esmeralda Ramírez Díaz", label: "Esmeralda Ramírez Díaz - Jefe de Crédito y Cobranza" },
-  { value: "Lucero Ávila Cortes", label: "Lucero Ávila Cortes - Gerente de Mercadotecnia" },
-  { value: "Alonso Saúl Sandoval López", label: "Alonso Saúl Sandoval López - Supervisor de Producción" },
-  { value: "Sergio Alejandro García Trejo", label: "Sergio Alejandro García Trejo - Jefe de Procesos y Calidad" },
-  { value: "Jaime Daniel Flores Hernández", label: "Jaime Daniel Flores Hernández - Supervisor de Calidad" },
-  { value: "Jorge Antonio Lías Lopez", label: "Jorge Antonio Lías Lopez - Analista de Seguridad e Higiene / Mantenimiento" },
-  { value: "Pablo Ramírez Diaque", label: "Pablo Ramírez Diaque - Gerente de Ingeniería" },
-  // { value: "Christian Mendoza Nepomuceno", label: "Christian Mendoza Nepomuceno - Jefe de Almacén" },
-  { value: "Gustavo Gallegos Cortés", label: "Gustavo Gallegos Cortés - Subjefe de Soporte Técnico Presencial / Encargado de Sucursal CDMX" },
-  { value: "Saúl Espinoza Silva", label: "Saúl Espinoza Silva - Encargado de Logística Internacional" },
-  { value: "Jared Guerra García", label: "Jared Guerra García - Jefe de Reparaciones" },
-  {value:'Francisco Javier Hernandez Castro', label: 'Francisco Javier Hernández - Jefe de Almacén'}
-];
+type Lider = { id: number | string; nombre: string; correo: string };
+type Gerentes = string[];
+
+
+// export const jefesInmediatos = [
+//   { value: "Luis Jaime Martínez Arredondo", label: "Luis Jaime Martínez Arredondo - Líder de Operaciones" },
+//   { value: "Carlos Antonio Rivas Martínez", label: "Carlos Antonio Rivas Martínez - Líder de Soporte Técnico Call Center / NPI" },
+//   { value: "Ana Rosa Lira Ortíz", label: "Ana Rosa Lira Ortíz - Líder de Logística" },
+//   { value: "Armando de la Rosa García", label: "Armando de la Rosa García - Líder de Desarrollo Tecnológico  " },
+//   { value: "Ma. del Refugio Arroyo", label: "Ma. del Refugio Arroyo - Gerente Contabilidad, Finanza y RRHH" },
+//   { value: "Citlali Coseth De León", label: "Citlali Coseth De León - Jefe de Producción Láser" },
+//   { value: "Omar Díaz", label: "Omar Díaz - Soporte Técnico Presencial" },
+//   { value: "Laura Beatriz Arroyo Salcedo", label: "Laura Beatriz Arroyo Salcedo - Líder de Contabilidad" },
+//   { value: "Esteban Ramírez", label: "Esteban Ramírez - Gerente General" },
+//   { value: "Karen Ibarra Ramírez", label: "Karen Ibarra Ramírez - Encargada Ventas de Refacciones y Servicios" },
+//   { value: "Ana Sánchez Murúa", label: "Ana Sánchez Murúa - Generalista RRHH" },
+//   { value: "Esmeralda Ramírez Díaz", label: "Esmeralda Ramírez Díaz - Jefe de Crédito y Cobranza" },
+//   { value: "Lucero Ávila Cortes", label: "Lucero Ávila Cortes - Gerente de Mercadotecnia" },
+//   { value: "Alonso Saúl Sandoval López", label: "Alonso Saúl Sandoval López - Supervisor de Producción" },
+//   { value: "Sergio Alejandro García Trejo", label: "Sergio Alejandro García Trejo - Jefe de Procesos y Calidad" },
+//   { value: "Jaime Daniel Flores Hernández", label: "Jaime Daniel Flores Hernández - Supervisor de Calidad" },
+//   { value: "Jorge Antonio Lías Lopez", label: "Jorge Antonio Lías Lopez - Analista de Seguridad e Higiene / Mantenimiento" },
+//   { value: "Pablo Ramírez Diaque", label: "Pablo Ramírez Diaque - Gerente de Ingeniería" },
+//   // { value: "Christian Mendoza Nepomuceno", label: "Christian Mendoza Nepomuceno - Jefe de Almacén" },
+//   { value: "Gustavo Gallegos Cortés", label: "Gustavo Gallegos Cortés - Subjefe de Soporte Técnico Presencial / Encargado de Sucursal CDMX" },
+//   { value: "Saúl Espinoza Silva", label: "Saúl Espinoza Silva - Encargado de Logística Internacional" },
+//   { value: "Jared Guerra García", label: "Jared Guerra García - Jefe de Reparaciones" },
+//   { value: 'Francisco Javier Hernandez Castro', label: 'Francisco Javier Hernández - Jefe de Almacén' }
+// ];
 
 export const BlogPostCreate = () => {
   const { formProps, saveButtonProps, form } = useForm<FormValues>();
@@ -79,6 +83,44 @@ export const BlogPostCreate = () => {
   const [showUploadSection, setShowUploadSection] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [fileToUpload, setFileToUpload] = useState<File | null>(null);
+  const [jefesInmediatos, setJefesInmediatos] = useState<any[]>([]);
+  const [usuariosPermitidos, setUsuariosPermitidos] = useState<string[]>([]);
+  const [loadingGerentes, setLoadingGerentes] = useState(true);
+  const [gerentes, setGerentes] = useState<string[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [loadingLideres, setLoadingLideres] = useState(true);
+
+
+  useEffect(() => {
+    const fetchLideres = async () => {
+      try {
+        const { data } = await axios.get<Lider[]>(
+          "https://desarrollotecnologicoar.com/api3/lideres_inmediatos/"
+        );
+        setJefesInmediatos(data ?? []);
+      } catch (e) {
+        setError("Error al cargar líderes inmediatos.");
+      } finally {
+        setLoadingLideres(false);
+      }
+    };
+
+    const fetchGerentes = async () => {
+      try {
+        const { data } = await axios.get<Gerentes>(
+          "https://desarrollotecnologicoar.com/api3/usuarios_permitidos/"
+        );
+        setUsuariosPermitidos(data ?? []);
+      } catch (e) {
+        setError((prev) => prev ?? "Error al cargar gerentes."); // conserva el primero si ya hay
+      } finally {
+        setLoadingGerentes(false);
+      }
+    };
+
+    fetchLideres();
+    fetchGerentes();
+  }, []);
 
   const navigate = useNavigate();
 
@@ -104,8 +146,8 @@ export const BlogPostCreate = () => {
             const area = userDoc.area;
             if (usuariosPermitidos.includes(user.email || "")) {
               fetchUsers();
-            } else { 
-              fetchUsersByArea(area); 
+            } else {
+              fetchUsersByArea(area);
             }
 
             // Establecer valores iniciales en el formulario
@@ -165,7 +207,7 @@ export const BlogPostCreate = () => {
       message.error("Error al cargar los usuarios.");
     }
   };
-    
+
 
   const handleFinish = async (values: FormValues) => {
     values.area = convertirTexto(values.area);
@@ -200,22 +242,22 @@ export const BlogPostCreate = () => {
     setShowUploadSection(true); // Mostrar la sección de subida de archivos
   };
 
-const adjustedSaveButtonProps = {
-  ...saveButtonProps,
-  disabled: (() => {
+  const adjustedSaveButtonProps = {
+    ...saveButtonProps,
+    disabled: (() => {
 
-    if (tipoRegistro === "Mala actitud" || tipoRegistro === "Llegada tarde no justificada." || tipoRegistro === "Falta injustificada.") {
-      return (
-        !fileToUpload || // Si no hay archivo, deshabilitar
-        !fileToUpload.name.endsWith(".pdf") || // Si no es PDF, deshabilitar
-        form
-          .getFieldsError()
-          .some(({ errors }) => errors.length > 0) // Si hay errores en los campos, deshabilitar
-      );
-    }
+      if (tipoRegistro === "Mala actitud" || tipoRegistro === "Llegada tarde no justificada." || tipoRegistro === "Falta injustificada.") {
+        return (
+          !fileToUpload || // Si no hay archivo, deshabilitar
+          !fileToUpload.name.endsWith(".pdf") || // Si no es PDF, deshabilitar
+          form
+            .getFieldsError()
+            .some(({ errors }) => errors.length > 0) // Si hay errores en los campos, deshabilitar
+        );
+      }
 
-  })(),
-};
+    })(),
+  };
   const handleUpload = (file: File, area: string, nombre_emisor: string): Promise<string> => {
     return new Promise<string>((resolve, reject) => {
       try {
@@ -268,16 +310,16 @@ const adjustedSaveButtonProps = {
 
   return (
     <Create saveButtonProps={adjustedSaveButtonProps}>
-         <Form.Item>
-            <span style={{ marginLeft: "10px" }}>
-              <a
-                onClick={() => navigate("/impresion_acta")}
-                style={{ color: "#1890ff", cursor: "pointer" }}
-              >
-                ¿No cuentas con acta? Llénala aquí!
-              </a>
-            </span>
-          </Form.Item>
+      <Form.Item>
+        <span style={{ marginLeft: "10px" }}>
+          <a
+            onClick={() => navigate("/impresion_acta")}
+            style={{ color: "#1890ff", cursor: "pointer" }}
+          >
+            ¿No cuentas con acta? Llénala aquí!
+          </a>
+        </span>
+      </Form.Item>
       <Form<FormValues>
         {...formProps}
         form={form as unknown as FormInstance<FormValues>}
@@ -304,10 +346,10 @@ const adjustedSaveButtonProps = {
             options={usuarios.map((user) => ({
               value: `${user.nombre} ${user.apellido_paterno} ${user.apellido_materno}`,
               label: `${user.nombre} ${user.apellido_paterno} ${user.apellido_materno}`,
-          }))}
-          filterOption={(input, option) => 
-            (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-          }
+            }))}
+            filterOption={(input, option) =>
+              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+            }
           />
         </Form.Item>
 
@@ -368,8 +410,9 @@ const adjustedSaveButtonProps = {
                 value: "Falta justificada de acuerdo al Reglamento Interior de Trabajo.",
                 label: "Falta justificada de acuerdo al Reglamento Interior de Trabajo.",
               },
-              { value: "Falta injustificada.",
-                label: "Falta injustificada." 
+              {
+                value: "Falta injustificada.",
+                label: "Falta injustificada."
               },
               {
                 value: "Permiso tiempo x tiempo controlado",
@@ -398,7 +441,7 @@ const adjustedSaveButtonProps = {
         </Form.Item>
 
         {/* Condicionalmente renderizar `status_acta` */}
-        {(tipoRegistro === "Mala actitud" || tipoRegistro === "Llegada tarde no justificada." || tipoRegistro === "Falta injustificada.")&& (
+        {(tipoRegistro === "Mala actitud" || tipoRegistro === "Llegada tarde no justificada." || tipoRegistro === "Falta injustificada.") && (
           <Form.Item
             label="Confirme la emisión física del Acta Administrativa:"
             name="status_acta"
@@ -422,27 +465,27 @@ const adjustedSaveButtonProps = {
           "Falta injustificada.",
           "Mala actitud",
         ].includes(tipoRegistro || "") && (
-          <Form.Item>
-            <Button type="primary" onClick={handleGenerarActa}>
-              Adjuntar Acta
-            </Button>
-            <span style={{ marginLeft: "10px" }}>
-              <a
-                onClick={() => navigate("/impresion_acta")}
-                style={{ color: "#1890ff", cursor: "pointer" }}
-              >
-                ¿No cuentas con acta? Llénala aquí!
-              </a>
-            </span>
-          </Form.Item>
-        )}
+            <Form.Item>
+              <Button type="primary" onClick={handleGenerarActa}>
+                Adjuntar Acta
+              </Button>
+              <span style={{ marginLeft: "10px" }}>
+                <a
+                  onClick={() => navigate("/impresion_acta")}
+                  style={{ color: "#1890ff", cursor: "pointer" }}
+                >
+                  ¿No cuentas con acta? Llénala aquí!
+                </a>
+              </span>
+            </Form.Item>
+          )}
 
         {showUploadSection && (
           <Form.Item label="Subir Acta Administrativa">
             <Upload
               accept=".pdf,.jpg,.png,.jpeg"
               beforeUpload={(file) => {
-                
+
                 setFileToUpload(file); // Guardar archivo en el estado
                 return false; // Prevenir la subida automática
               }}
