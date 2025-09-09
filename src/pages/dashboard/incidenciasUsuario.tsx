@@ -53,6 +53,8 @@ export const IncidenciasPorUsuario: React.FC<IncidenciasPorUsuarioListProps> = (
                 setLoadingGerentes(false);
             }
         };
+
+        fetchGerentes();
     }, []);
 
     // Lista de usuarios con acceso completo

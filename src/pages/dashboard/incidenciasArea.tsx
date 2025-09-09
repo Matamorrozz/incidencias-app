@@ -5,13 +5,15 @@ import { List, Spin, message } from "@pankod/refine-antd";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth, db } from "../../firebaseConfig";
 import { collection, query, where, getDocs } from "firebase/firestore";
-import { usuariosPermitidos } from "../../user_config";
+// import { usuariosPermitidos } from "../../user_config";
 import { ColorModeContext } from "../../contexts/color-mode";
 import { useContext } from "react";
 interface AreaIncidencias {
     name: string;
     value: number;
 }
+
+type Gerentes = string[];
 
 interface Incidencia {
     id: string;
@@ -32,6 +34,9 @@ export const IncidenciasPorAreaList: React.FC<IncidenciasPorAreaListProps> = ({
     const [loading, setLoading] = useState(true);
     const [userEmail, setUserEmail] = useState<string | null>(null);
     const [area, setArea] = useState<string | null>(null);
+    const [usuariosPermitidos, setUsuariosPermitidos] = useState<string[]>([]);
+    const [loadingGerentes, setLoadingGerentes] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     // Lista de usuarios con acceso completo
     const UsuariosPermitidos = usuariosPermitidos;
@@ -47,6 +52,23 @@ export const IncidenciasPorAreaList: React.FC<IncidenciasPorAreaListProps> = ({
     // **2. Obtener las áreas únicas de las incidencias**
     const getUniqueAreas = (incidencias: Incidencia[]): string[] =>
         [...new Set(incidencias.map((i) => i.area || "Sin área"))];
+
+            useEffect(() => {
+        const fetchGerentes = async () => {
+            try {
+                const { data } = await axios.get<Gerentes>(
+                    "https://desarrollotecnologicoar.com/api3/usuarios_permitidos/"
+                );
+                setUsuariosPermitidos(data ?? []);
+            } catch (e) {
+                setError((prev) => prev ?? "Error al cargar gerentes."); // conserva el primero si ya hay
+            } finally {
+                setLoadingGerentes(false);
+            }
+        };
+
+        fetchGerentes();
+    }, []);
 
     // **3. Obtener los datos completos (sin restricciones)**
     const fetchData = async () => {

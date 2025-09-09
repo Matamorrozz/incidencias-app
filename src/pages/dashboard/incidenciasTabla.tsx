@@ -5,7 +5,7 @@ import moment from 'moment';
 import { onAuthStateChanged } from "firebase/auth";
 import { auth, db } from "../../firebaseConfig";
 import { collection, query, where, getDocs } from "firebase/firestore";
-import { usuariosPermitidos } from '../../user_config';
+// import { usuariosPermitidos } from '../../user_config';
 
 const { Search } = Input;
 
@@ -15,18 +15,42 @@ interface PiezasTableProps {
     dates: [string | null, string | null];
 }
 
+type Gerentes = string[];
+
 const PiezasTable: React.FC<PiezasTableProps> = ({ selectedArea, dates }) => {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [search, setSearch] = useState(''); 
+    const [search, setSearch] = useState('');
 
     const [userEmail, setUserEmail] = useState<string | null>(null);
     const [area, setArea] = useState<string | null>(null);
+
+    const [usuariosPermitidos, setUsuariosPermitidos] = useState<string[]>([]);
+    const [loadingGerentes, setLoadingGerentes] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    
 
     const UsuariosPermitidos = usuariosPermitidos;
 
     const convertirTexto = (texto: string): string =>
         texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/\s+/g, "_");
+
+    useEffect(() => {
+        const fetchGerentes = async () => {
+            try {
+                const { data } = await axios.get<Gerentes>(
+                    "https://desarrollotecnologicoar.com/api3/usuarios_permitidos/"
+                );
+                setUsuariosPermitidos(data ?? []);
+            } catch (e) {
+                setError((prev) => prev ?? "Error al cargar gerentes."); // conserva el primero si ya hay
+            } finally {
+                setLoadingGerentes(false);
+            }
+        };
+
+        fetchGerentes();
+    }, []);
 
     // 🔥 Actualización: Asegurar que los datos se asignan correctamente.
     const fetchData = async () => {
@@ -56,13 +80,13 @@ const PiezasTable: React.FC<PiezasTableProps> = ({ selectedArea, dates }) => {
         try {
             setLoading(true)
 
-            
+
             const areaNormalizada = convertirTexto(userArea);
             const url = `https://desarrollotecnologicoar.com/api3/incidencias_area?area=${encodeURIComponent(areaNormalizada)}`;
 
             const response = await axios.get(url);
             let filteredData = response.data;
-            
+
 
             if (dates[0] && dates[1]) {
                 const [startDate, endDate] = dates;
@@ -85,15 +109,15 @@ const PiezasTable: React.FC<PiezasTableProps> = ({ selectedArea, dates }) => {
             try {
                 const correo = currentUser.email;
                 setUserEmail(correo);
-    
+
                 const q = query(collection(db, "usuarios"), where("correo", "==", correo));
                 const querySnapshot = await getDocs(q);
-    
+
                 if (!querySnapshot.empty) {
                     const userDoc = querySnapshot.docs[0].data();
                     const userArea = convertirTexto(userDoc.area);
                     setArea(userArea); // Guardamos el área en el estado
-    
+
                     if (UsuariosPermitidos.includes(correo)) {
                         await fetchData(); // Acceso completo
                     } else {

@@ -6,7 +6,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import moment from "moment";
-import { usuariosPermitidos } from "../../user_config";
+// import { usuariosPermitidos } from "../../user_config";
 
 // Definimos la interfaz para los permisos
 interface Permiso {
@@ -21,16 +21,16 @@ interface Permiso {
   fecha_permiso: string;
   status: string;
   area: string;
-  correo_lider:string;
+  correo_lider: string;
 }
 
 // Definimos las columnas de la tabla
 const columns = (navigate: (path: string) => void) => [
-  { 
-    title: "Fecha de solicitud", 
-    dataIndex: "fecha_solicitud", 
-    key: "fecha_solicitud", 
-    render: (fecha: string) => moment(fecha).format("DD/MM/YYYY HH:mm") 
+  {
+    title: "Fecha de solicitud",
+    dataIndex: "fecha_solicitud",
+    key: "fecha_solicitud",
+    render: (fecha: string) => moment(fecha).format("DD/MM/YYYY HH:mm")
   },
   { title: "Nombre", dataIndex: "nombre_completo", key: "nombre_completo" },
   { title: "Area", dataIndex: "area", key: "area" },
@@ -38,11 +38,11 @@ const columns = (navigate: (path: string) => void) => [
   { title: "Tipo de permiso", dataIndex: "tipo_permiso", key: "tipo_permiso" },
   { title: "Urgencia", dataIndex: "urgencia", key: "urgencia" },
   { title: "Comentarios", dataIndex: "comentarios", key: "comentarios" },
-  { 
-    title: "Fecha de permiso", 
-    dataIndex: "fecha_permiso", 
-    key: "fecha_permiso", 
-    render: (fecha: string) => moment.utc(fecha).format("DD/MM/YYYY") 
+  {
+    title: "Fecha de permiso",
+    dataIndex: "fecha_permiso",
+    key: "fecha_permiso",
+    render: (fecha: string) => moment.utc(fecha).format("DD/MM/YYYY")
   },
   {
     title: "Status del permiso",
@@ -51,7 +51,7 @@ const columns = (navigate: (path: string) => void) => [
     render: (status: string, record: Permiso) => {
       const color =
         status === "Aprobado" ? "green" :
-        status === "Pendiente" ? "orange" : "red";
+          status === "Pendiente" ? "orange" : "red";
       const isDisabled = status === "Aprobado" || status === "Rechazado";
 
       return (
@@ -73,6 +73,10 @@ export const TablaPermisos: React.FC = () => {
   const [area, setArea] = useState<string>("");
   const [userName, setUserName] = useState<string>("");
   const navigate = useNavigate();
+  const [usuariosPermitidos, setUsuariosPermitidos] = useState<string[]>([]);
+  const [loadingGerentes, setLoadingGerentes] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  type Gerentes = string[];
 
   // -- Función para normalizar un texto (por si lo necesitas para "area") --
   const convertirTexto = (texto: string): string =>
@@ -82,6 +86,23 @@ export const TablaPermisos: React.FC = () => {
       .toLowerCase()
       .replace(/\s+/g, "_"); // Espacios por guiones bajos
 
+
+  useEffect(() => {
+    const fetchGerentes = async () => {
+      try {
+        const { data } = await axios.get<Gerentes>(
+          "https://desarrollotecnologicoar.com/api3/usuarios_permitidos/"
+        );
+        setUsuariosPermitidos(data ?? []);
+      } catch (e) {
+        setError((prev) => prev ?? "Error al cargar gerentes."); // conserva el primero si ya hay
+      } finally {
+        setLoadingGerentes(false);
+      }
+    };
+
+    fetchGerentes();
+  }, []);
   // -- 1) Detectar si el usuario está en "usuariosPermitidos" o no --
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -141,12 +162,12 @@ export const TablaPermisos: React.FC = () => {
   const fetchPermisosFiltrados = async (userArea: string, correo: string) => {
     try {
       console.log("Buscando permisos para el área:", userArea, "y el correo:", correo);
-  
+
       const url = `https://desarrollotecnologicoar.com/api3/permisos`;
       let response = await axios.get<Permiso[]>(url);
-      
 
-      setData(response.data.filter((permiso) => permiso.area === userArea || permiso.correo_lider === correo ));
+
+      setData(response.data.filter((permiso) => permiso.area === userArea || permiso.correo_lider === correo));
     } catch (error) {
       console.error("Error al obtener permisos filtrados:", error);
       message.error("Hubo un error al cargar los permisos por área o jefe_inmediato.");

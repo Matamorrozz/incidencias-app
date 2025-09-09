@@ -5,7 +5,8 @@ import { auth, db } from '../../firebaseConfig';
 import { collection, getDocs, doc, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { onAuthStateChanged } from "firebase/auth";
 import { useNavigate } from 'react-router-dom';
-import { usuariosPermitidos } from '../../user_config';
+// import { usuariosPermitidos } from '../../user_config';
+import axios from 'axios';
 import moment from 'moment';
 
 export const opciones = [
@@ -23,11 +24,18 @@ export const opciones = [
     { value: "Servicio Técnico Telefónico", label: "Servicio Técnico Telefónico" },
     { value: "Contabilidad y Finanzas", label: "Contabilidad y Finanzas" },
     { value: "Recursos Humanos", label: "Recursos Humanos" },
-    {value: "Seguridad e Higiene", label: "Seguridad e Higiene"},
-    {value: "Reparaciones", label: "Reparaciones"},
-    {value: "Laser Express", label: "Laser Express"}
+    { value: "Seguridad e Higiene", label: "Seguridad e Higiene" },
+    { value: "Reparaciones", label: "Reparaciones" },
+    { value: "Laser Express", label: "Laser Express" }
+]
 
-] 
+
+const jerarquias = [
+    { value: "Empleado", label: "Empleado" },
+    { value: "Lider", label: "Líder Inmediato" },
+    { value: "Gerente", label: "Gerente" },
+]
+
 const UserCreate: React.FC = () => {
     const { formProps, saveButtonProps, form } = useForm();
     const navigate = useNavigate();
@@ -35,21 +43,42 @@ const UserCreate: React.FC = () => {
     const [selectedArea, setSelectedArea] = useState<string | null>(null);
     const [isUserAllowed, setIsUserAllowed] = useState(false);
     const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
+    const [usuariosPermitidos, setUsuariosPermitidos] = useState<string[]>([]);
+    const [loadingGerentes, setLoadingGerentes] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    type Gerentes = string[];
 
+    useEffect(() => {
+        const fetchGerentes = async () => {
+            try {
+                const { data } = await axios.get<Gerentes>(
+                    "https://desarrollotecnologicoar.com/api3/usuarios_permitidos/"
+                );
+                setUsuariosPermitidos(data ?? []);
+            } catch (e) {
+                setError((prev) => prev ?? "Error al cargar gerentes."); // conserva el primero si ya hay
+            } finally {
+                setLoadingGerentes(false);
+            }
+        };
 
+        fetchGerentes();
+    }, []);
 
     useEffect(() => {
         const unsuscribe = onAuthStateChanged(auth, (user) => {
             if (user) {
                 setCurrentUserEmail(user.email || null);
-                setIsUserAllowed(usuariosPermitidos.includes(user.email || ""))
+                // ojo: aquí usuariosPermitidos puede estar vacío si aún no llega
+                setIsUserAllowed(usuariosPermitidos.includes(user.email || ""));
             } else {
                 setIsUserAllowed(false);
                 setCurrentUserEmail(null);
             }
         });
         return () => unsuscribe();
-    }, []);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [usuariosPermitidos]); // <— depende de usuariosPermitidos
 
     const onFinish = async (values: any) => {
         try {
@@ -73,6 +102,23 @@ const UserCreate: React.FC = () => {
                 throw new Error(errorData.error.message || `Error al registrar el usuario`);
             }
 
+            if (values.puestOcupante != "Empleado") {
+                try {
+                    await axios.post('https://desarrollotecnologicoar.com/api3/lideres_incidencias/', {
+                        nombre: values.nombreCompleto + " " + values.apellidoPaterno + " " + values.apellidoMaterno,
+                        area: values.areaTrabajo,
+                        ativo: 'true',
+                        correo: values.correo,
+                        jerarquia: values.jerarquia
+                    }
+                    )
+                } catch (error) {
+                    console.error('Error al registrar líder en la API externa:', error);
+                    message.error('Error al registrar líder en la API externa.');
+                }
+            }
+
+
             const { localId } = await response.json(); // Obtener el UID del usuario
 
             // Guardar en Firestore
@@ -83,7 +129,7 @@ const UserCreate: React.FC = () => {
                 area: values.areaTrabajo,
                 correo: values.correo,
                 fecha_creado: serverTimestamp(),
-                numero_empleado:  values.numeroEmpleado
+                numero_empleado: values.numeroEmpleado
             });
 
             message.success('Usuario registrado exitosamente.');
@@ -222,27 +268,40 @@ const UserCreate: React.FC = () => {
                 <Form.Item
                     label="Numero de empleado"
                     name="numeroEmpleado"
-                    rules={[{ required: true, message: 'Por favor, ingresa el anumero de empleadoo' }]}
+                    rules={[{ required: true, message: 'Por favor, ingresa el anumero de empleado' }]}
                 >
                     <Input placeholder="# de empleado" />
                 </Form.Item>
 
+                <Form.Item
+                    label="Jerarquía"
+                    name="jerarquia"
+                    rules={[{ required: true, message: "Selecciona la jerarquía" }]}
+                >
+                    <Select
+                        options={[
+                            { value: "Empleado", label: "Empleado" },
+                            { value: "Lider", label: "Líder Inmediato" },
+                            { value: "Gerente", label: "Gerente" },
+                        ]}
+                    />
+                </Form.Item>
 
                 <Form.Item>
                     <Button type="primary" htmlType="submit" disabled={!isUserAllowed}>
                         Registrar Usuario
                     </Button>
                 </Form.Item>
-                
-        
+
+
             </Form>
             <Select
-                    placeholder="Filtrar por área"
-                    style={{ marginBottom: 16, width: 200 }}
-                    onChange={(value) => setSelectedArea(value)}
-                    allowClear
-                    options = {opciones}
-                >
+                placeholder="Filtrar por área"
+                style={{ marginBottom: 16, width: 200 }}
+                onChange={(value) => setSelectedArea(value)}
+                allowClear
+                options={opciones}
+            >
             </Select>
 
             <Table dataSource={filteredUsuarios} columns={columns} rowKey="id" pagination={{ pageSize: 5 }} scroll={{ x: 800, y: 300 }} />
