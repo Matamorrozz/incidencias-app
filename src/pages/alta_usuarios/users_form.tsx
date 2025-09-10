@@ -138,18 +138,19 @@ const UserCreate: React.FC = () => {
         : usuarios;
 
     const columns = [
-        { title: 'Correo', dataIndex: 'correo', key: 'correo' },
-        { title: 'Nombre Completo', dataIndex: 'nombre', key: 'nombre' },
-        { title: 'Apellido Paterno', dataIndex: 'apellido_paterno', key: 'apellido_paterno' },
-        { title: 'Apellido Materno', dataIndex: 'apellido_materno', key: 'apellido_materno' },
-        { title: 'Área de Trabajo', dataIndex: 'area', key: 'area' },
+        { title: 'Correo', dataIndex: 'correo', key: 'correo',  sorter: (a: any, b: any) => a.correo.localeCompare(b.correo) },
+        { title: 'Nombre Completo', dataIndex: 'nombre', key: 'nombre', sorter: (a: any, b: any) => a.nombre.localeCompare(b.nombre),},
+        { title: 'Apellido Paterno', dataIndex: 'apellido_paterno', key: 'apellido_paterno',sorter: (a: any, b: any) => a.apellido_paterno.localeCompare(b.apellido_paterno) },
+        { title: 'Apellido Materno', dataIndex: 'apellido_materno', key: 'apellido_materno', sorter: (a: any, b: any) => a.apellido_materno.localeCompare(b.apellido_materno), },
+        { title: 'Área de Trabajo', dataIndex: 'area', key: 'area', sorter: (a: any, b: any) => a.area.localeCompare(b.area), },
         {
             title: 'Fecha Creado',
             dataIndex: 'fecha_creado',
             key: 'fecha_creado',
             render: (text: any) => text?.toDate().toLocaleString(),
+            sorter: (a: any, b: any) => a.fecha_creado?.toDate() - b.fecha_creado?.toDate(),
         },
-        { title: 'Numero de empleado', dataIndex: 'numero_empleado', key: 'numero_empleado' },
+        { title: 'Numero de empleado', dataIndex: 'numero_empleado', key: 'numero_empleado', sorter: (a: any, b: any) => a.numero_empleado - b.numero_empleado, },
         {
             title: 'Acciones',
             key: 'acciones',
