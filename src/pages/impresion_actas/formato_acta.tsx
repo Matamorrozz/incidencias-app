@@ -295,6 +295,10 @@ export const PDFEditor = () => {
                                     label: `${user.nombre} ${user.apellido_paterno} ${user.apellido_materno}`,
                                 }))}
                                 onChange={(value) => handleChange("empleado", value)}
+                                showSearch
+                                filterOption={(input, option) =>
+                                    (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                                }
 
                             />
                         </Form.Item>

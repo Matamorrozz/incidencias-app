@@ -5,7 +5,7 @@ import { List, Spin, Table, Row, Col, message } from "@pankod/refine-antd";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth, db } from "../../firebaseConfig";
 import { collection, query, where, getDocs } from "firebase/firestore";
-import { usuariosPermitidos } from "../../user_config"; // Importar lista global de usuarios permitidos
+// import { usuariosPermitidos } from "../../user_config"; // Importar lista global de usuarios permitidos
 import moment from "moment";
 import { ColorModeContext } from "../../contexts/color-mode";
 import { useContext } from "react";
@@ -20,11 +20,34 @@ interface TiempoIncidencias {
     value: number;
 }
 
+type Gerentes = string[];
+
 export const IncidenciasPorTiempoList: React.FC<IncidenciasGraficaProps> = ({ agrupacion, dates }) => {
     const [data, setData] = useState<TiempoIncidencias[]>([]);
     const [loading, setLoading] = useState(true);
     const [userEmail, setUserEmail] = useState<string | null>(null);
     const [area, setArea] = useState<string | null>(null);
+    const [usuariosPermitidos, setUsuariosPermitidos] = useState<string[]>([]);
+    const [loadingGerentes, setLoadingGerentes] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+
+        useEffect(() => {
+        const fetchGerentes = async () => {
+            try {
+                const { data } = await axios.get<Gerentes>(
+                    "https://desarrollotecnologicoar.com/api3/usuarios_permitidos/"
+                );
+                setUsuariosPermitidos(data ?? []);
+            } catch (e) {
+                setError((prev) => prev ?? "Error al cargar gerentes."); // conserva el primero si ya hay
+            } finally {
+                setLoadingGerentes(false);
+            }
+        };
+
+        fetchGerentes();
+    }, []);
 
     const convertirTexto = (texto: string): string =>
         texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/\s+/g, "_");
@@ -139,7 +162,7 @@ export const IncidenciasPorTiempoList: React.FC<IncidenciasGraficaProps> = ({ ag
                         <LineChart data={data}>
                             <CartesianGrid strokeDasharray="3 3" />
                             <XAxis dataKey="name" />
-                            <YAxis domain={[0, 'dataMax + 15']} tickCount={8} />
+                            <YAxis domain={[0, 'dataMax + 50']} tickCount={8} />
                             <Tooltip />
                             <Legend />
                             <Line

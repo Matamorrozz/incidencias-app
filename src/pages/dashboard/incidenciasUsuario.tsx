@@ -5,7 +5,7 @@ import { List, Spin, message } from "@pankod/refine-antd";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth, db } from "../../firebaseConfig";
 import { collection, query, where, getDocs } from "firebase/firestore";
-import { usuariosPermitidos } from "../../user_config";
+// import { usuariosPermitidos } from "../../user_config";
 import { ColorModeContext } from "../../contexts/color-mode";
 import { useContext } from "react";
 
@@ -25,6 +25,9 @@ interface IncidenciasPorUsuarioListProps {
     dates: [string | null, string | null]; // Rango de fechas recibido desde el componente padre
 }
 
+type Lider = { id: number | string; nombre: string; correo: string };
+type Gerentes = string[];
+
 export const IncidenciasPorUsuario: React.FC<IncidenciasPorUsuarioListProps> = ({
     onSelectPersona,
     dates,
@@ -33,6 +36,26 @@ export const IncidenciasPorUsuario: React.FC<IncidenciasPorUsuarioListProps> = (
     const [loading, setLoading] = useState(true);
     const [userEmail, setUserEmail] = useState<string | null>(null);
     const [area, setArea] = useState<string | null>(null);
+    const [usuariosPermitidos, setUsuariosPermitidos] = useState<string[]>([]);
+    const [loadingGerentes, setLoadingGerentes] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchGerentes = async () => {
+            try {
+                const { data } = await axios.get<Gerentes>(
+                    "https://desarrollotecnologicoar.com/api3/usuarios_permitidos/"
+                );
+                setUsuariosPermitidos(data ?? []);
+            } catch (e) {
+                setError((prev) => prev ?? "Error al cargar gerentes."); // conserva el primero si ya hay
+            } finally {
+                setLoadingGerentes(false);
+            }
+        };
+
+        fetchGerentes();
+    }, []);
 
     // Lista de usuarios con acceso completo
     const UsuariosPermitidos = usuariosPermitidos;
@@ -164,7 +187,7 @@ export const IncidenciasPorUsuario: React.FC<IncidenciasPorUsuarioListProps> = (
 
     if (loading) return <Spin size="large" />;
     const { mode } = useContext(ColorModeContext);
-    const modeImage = mode === "dark" ? "#0fad03" : "#020675"; 
+    const modeImage = mode === "dark" ? "#0fad03" : "#020675";
 
     return (
         <List title="Incidencias por Usuario">

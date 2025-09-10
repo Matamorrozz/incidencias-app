@@ -6,7 +6,6 @@ import {
   List,
   ShowButton,
   useTable,
-
 } from "@refinedev/antd";
 import { Space, Table, Input, Row, Col, Spin, message, Pagination } from "antd";
 import { auth, db } from "../../firebaseConfig";
@@ -15,6 +14,8 @@ import { collection, query, where, getDocs } from "firebase/firestore";
 import { usuariosPermitidos } from "../../user_config";
 import { BaseRecord } from "@refinedev/core";
 import { Button } from "antd";
+import {FilePdfOutlined} from "@ant-design/icons";
+import axios from "axios";
 
 export const BlogPostList = () => {
   const { tableProps } = useTable({ syncWithLocation: true });
@@ -26,6 +27,7 @@ export const BlogPostList = () => {
   const [searchText, setSearchText] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(5); // Tamaño de la página
+  const [usuariosPermitidos, setUsuariosPermitidos] = useState<string[]>([]);
 
   const convertirTexto = (texto: string): string =>
     texto
@@ -81,6 +83,23 @@ export const BlogPostList = () => {
 
     return () => unsubscribe();
   }, [filtrarDatos, tableProps.dataSource]);
+
+
+  useEffect(() => {
+    const fetchUsuariosPermitidos = async () => {
+      try {
+        const response = await axios.get<string[]>(
+          "https://desarrollotecnologicoar.com/api3/usuarios_permitidos/"
+        );
+        
+        setUsuariosPermitidos(response.data);
+      } catch (error) {
+        console.error("Error al obtener usuarios permitidos:", error);
+        message.error("Error al cargar los usuarios permitidos.");
+      }
+    };
+    fetchUsuariosPermitidos();
+  }, []);
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchText(event.target.value.toLowerCase());
@@ -149,6 +168,26 @@ export const BlogPostList = () => {
             value={searchText}
             onChange={handleSearch}
           />
+        </Col>
+        <Col span={8} offset={8} style={{ textAlign: "right" }}>
+          <Button
+            type="primary"
+            size="middle"
+            onClick={() => {
+              window.location.href = "/actas";
+            }}
+            style={{
+              padding: "10px 40px",
+              fontSize: "16px",
+              backgroundColor: "#ff4d4f", // Color de fondo personalizado
+              borderColor: "#ff4d4f", // Borde del mismo color
+              width: "25%",
+              
+            }}
+          >
+            <FilePdfOutlined />
+            Ver actas
+          </Button>
         </Col>
       </Row>
 
