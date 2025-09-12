@@ -46,19 +46,65 @@ export const IncidenciasPorUsuario: React.FC<IncidenciasPorUsuarioListProps> = (
                 const { data } = await axios.get<Gerentes>(
                     "https://desarrollotecnologicoar.com/api3/usuarios_permitidos/"
                 );
-                setUsuariosPermitidos(data ?? []);
+                setUsuariosPermitidos(data);
+                console.log("Correos de gerentes:", data);
             } catch (e) {
-                setError((prev) => prev ?? "Error al cargar gerentes."); // conserva el primero si ya hay
+                setError((prev) => prev ?? "Error al cargar gerentes.");
             } finally {
                 setLoadingGerentes(false);
             }
         };
 
         fetchGerentes();
-    }, []);
+    }, []); // Solo al montar, no depende de dates
 
-    // Lista de usuarios con acceso completo
-    const UsuariosPermitidos = usuariosPermitidos;
+    useEffect(() => {
+        if (loadingGerentes) return; // Espera a los gerentes
+
+        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+            if (!currentUser) {
+                message.error("Usuario no autenticado.");
+                setLoading(false); // Asegúrate de cerrar aquí
+                return;
+            }
+
+            const fetchUserData = async () => {
+                try {
+                    const correo = currentUser.email || "";
+                    setUserEmail(correo);
+
+                    const q = query(collection(db, "usuarios"), where("correo", "==", correo));
+                    const querySnapshot = await getDocs(q);
+
+                    if (querySnapshot.empty) {
+                        message.error("No se encontró información del usuario.");
+                        return;
+                    }
+
+                    const userDoc = querySnapshot.docs[0].data();
+                    setArea(userDoc.area);
+
+                    const normalizados = usuariosPermitidos.map((c) => c.toLowerCase());
+                    if (normalizados.includes(correo.toLowerCase())) {
+                        await fetchData();
+                    } else {
+                        await fetchUsuariosUnicos(userDoc.area);
+                    }
+                } catch (err) {
+                    console.error(err);
+                    message.error("Error al cargar datos.");
+                } finally {
+                    setLoading(false); // Muy importante
+                }
+            };
+
+            fetchUserData();
+        });
+
+        return () => unsubscribe();
+    }, [loadingGerentes, usuariosPermitidos, dates]);
+
+
 
     // Convertir texto (área) a formato normalizado
     const convertirTexto = (texto: string): string =>
@@ -92,6 +138,7 @@ export const IncidenciasPorUsuario: React.FC<IncidenciasPorUsuarioListProps> = (
             }));
 
             setData(incidenciasPorNombre);
+            console.log("Usuario permitido para gráfico por personas, todos los usuarios");
         } catch (error) {
             console.error("Error al obtener los datos:", error);
             message.error("Error al cargar los datos.");
@@ -120,6 +167,7 @@ export const IncidenciasPorUsuario: React.FC<IncidenciasPorUsuarioListProps> = (
             }));
 
             setData(incidenciasPorNombre);
+            console.log("Usuario no permitido para gráfico por personas, usuarios del área:", names);
         } catch (error) {
             console.error("Error al obtener usuarios únicos:", error);
             message.error("Error al cargar los usuarios.");
@@ -128,45 +176,7 @@ export const IncidenciasPorUsuario: React.FC<IncidenciasPorUsuarioListProps> = (
         }
     };
 
-    // Obtener datos del usuario autenticado y decidir qué función llamar
-    useEffect(() => {
-        const fetchUserData = async (currentUser: any) => {
-            try {
-                const correo = currentUser.email;
-                setUserEmail(correo);
 
-                const q = query(collection(db, "usuarios"), where("correo", "==", correo));
-                const querySnapshot = await getDocs(q);
-
-                if (!querySnapshot.empty) {
-                    const userDoc = querySnapshot.docs[0].data();
-                    setArea(userDoc.area);
-
-                    if (UsuariosPermitidos.includes(correo)) {
-                        await fetchData(); // Acceso completo
-                    } else {
-                        await fetchUsuariosUnicos(userDoc.area); // Datos filtrados
-                    }
-                } else {
-                    message.error("No se encontró información del usuario.");
-                }
-            } catch (error) {
-                console.error("Error al obtener datos del usuario:", error);
-                message.error("Error al cargar los datos del usuario.");
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        onAuthStateChanged(auth, (currentUser) => {
-            if (currentUser) {
-                fetchUserData(currentUser);
-            } else {
-                message.error("Usuario no autenticado.");
-                setLoading(false);
-            }
-        });
-    }, [dates]); // Ejecutar cuando cambien las fechas
 
     const handleBarClick = (data: NombreIncidencias) => {
         onSelectPersona(data.name);

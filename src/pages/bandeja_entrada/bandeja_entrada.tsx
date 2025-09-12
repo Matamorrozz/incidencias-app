@@ -105,6 +105,7 @@ export const TablaPermisos: React.FC = () => {
   }, []);
   // -- 1) Detectar si el usuario está en "usuariosPermitidos" o no --
   useEffect(() => {
+    if (loadingGerentes) return; // Esperar a que se carguen los gerentes
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (!user) {
         message.error("El usuario no está autenticado.");
@@ -147,7 +148,7 @@ export const TablaPermisos: React.FC = () => {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [loadingGerentes, usuariosPermitidos]);
   const fetchPermisosGenerales = async () => {
     try {
       const response = await axios.get<Permiso[]>("https://desarrollotecnologicoar.com/api3/permisos");

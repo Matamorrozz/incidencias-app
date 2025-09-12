@@ -6,7 +6,8 @@ import { useEffect, useState, useRef } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { auth, db } from "../../firebaseConfig";
-import { jefesInmediatos } from "../incidencias";
+// import { jefesInmediatos } from "../incidencias";
+import axios from "axios";
 
 
 type FormValues = {
@@ -22,31 +23,33 @@ type FormValues = {
 };
 
 
-const CorreosLideres = [
-  { value: 'luis.martinez@asiarobotica.com', label: "Luis Jaime Martínez Arredondo"},
-  { value: "carlos.rivas@asiarobotica.com", label: "Carlos Antonio Rivas Martínez"},
-  { value: "ana.lira@asiarobotica.com", label: "Ana Rosa Lira Ortíz"},
-  { value: 'armando.delarosa@asiarobotica.com', label: "Armando de la Rosa García"},
-  { value: 'citlali.coseth@asiarobotica.com', label: "Citlali Coseth De León"},
-  { value: 'marada@asiarobotica.com', label: "Ma. del Refugio Arroyo"},       
-  { value: "laura.arroyo@asiarobotica.com", label: "Laura Beatriz Arroyo Salcedo"},
-  { value: 'esteban@asiarobotica.com', label: "Esteban Ramírez"},
-  { value: "karen@asiarobotica.com", label: "Karen Ibarra Ramírez"},
-  { value: "lucero.avila@asiarobotica.com", label: "Lucero Ávila Cortes"},
-  { value: 'ana.sanchez@asiarobotica.com', label: "Ana Sánchez Murúa"},
-  { value: "esmeralda.ramirez@asiarobotica.com", label: "Esmeralda Ramírez Díaz"},
-  { value: "saul.sandoval@asiarobotica.com", label: "Alonso Saúl Sandoval López"},
-  { value: "sergio.garcia@asiarobotica.com", label: "Sergio Alejandro García Trejo"},
-  { value: "jaime.flores@asiarobotica.com", label: "Jaime Daniel Flores Hernández"},
-  { value: "Jorge Antonio Lías Lopez", label: "Jorge Antonio Lías Lopez"},
-  { value: "pablo@asiarobotica.com", label: "Pablo Ramírez Diaque"},
-  // { value: "christian.mendoza@asiarobotica.com", label: "Christian Mendoza Nepomuceno"},
-  { value: "gustavo.gallegos@asiarobotica.com", label: "Gustavo Gallegos Cortés"},
-  { value: "saul.espinoza@asiarobotica.com", label: "Saúl Espinoza Silva"},
-  {value: 'jared.guerra@asiarobotica.com', label: "Jared Guerra García"},
-  {value: 'francisco.hernandez@asiarobotica.com', label: "Francisco Javier Hernandez Castro"},
-  {value: 'omar.diaz@asiarobotica.com', label: "Omar Díaz"}
-];
+// const CorreosLideres = [
+//   { value: 'luis.martinez@asiarobotica.com', label: "Luis Jaime Martínez Arredondo"},
+//   { value: "carlos.rivas@asiarobotica.com", label: "Carlos Antonio Rivas Martínez"},
+//   { value: "ana.lira@asiarobotica.com", label: "Ana Rosa Lira Ortíz"},
+//   { value: 'armando.delarosa@asiarobotica.com', label: "Armando de la Rosa García"},
+//   { value: 'citlali.coseth@asiarobotica.com', label: "Citlali Coseth De León"},
+//   { value: 'marada@asiarobotica.com', label: "Ma. del Refugio Arroyo"},       
+//   { value: "laura.arroyo@asiarobotica.com", label: "Laura Beatriz Arroyo Salcedo"},
+//   { value: 'esteban@asiarobotica.com', label: "Esteban Ramírez"},
+//   { value: "karen@asiarobotica.com", label: "Karen Ibarra Ramírez"},
+//   { value: "lucero.avila@asiarobotica.com", label: "Lucero Ávila Cortes"},
+//   { value: 'ana.sanchez@asiarobotica.com', label: "Ana Sánchez Murúa"},
+//   { value: "esmeralda.ramirez@asiarobotica.com", label: "Esmeralda Ramírez Díaz"},
+//   { value: "saul.sandoval@asiarobotica.com", label: "Alonso Saúl Sandoval López"},
+//   { value: "sergio.garcia@asiarobotica.com", label: "Sergio Alejandro García Trejo"},
+//   { value: "jaime.flores@asiarobotica.com", label: "Jaime Daniel Flores Hernández"},
+//   { value: "Jorge Antonio Lías Lopez", label: "Jorge Antonio Lías Lopez"},
+//   { value: "pablo@asiarobotica.com", label: "Pablo Ramírez Diaque"},
+//   // { value: "christian.mendoza@asiarobotica.com", label: "Christian Mendoza Nepomuceno"},
+//   { value: "gustavo.gallegos@asiarobotica.com", label: "Gustavo Gallegos Cortés"},
+//   { value: "saul.espinoza@asiarobotica.com", label: "Saúl Espinoza Silva"},
+//   {value: 'jared.guerra@asiarobotica.com', label: "Jared Guerra García"},
+//   {value: 'francisco.hernandez@asiarobotica.com', label: "Francisco Javier Hernandez Castro"},
+//   {value: 'omar.diaz@asiarobotica.com', label: "Omar Díaz"}
+// ];
+type Lider = { id: number | string; nombre: string; correo: string; area: string};
+type Gerentes = string[];
 
 
 
@@ -57,7 +60,13 @@ export const CreatePermit = () => {
   const [loading, setLoading] = useState(false); // Estado para deshabilitar el botón de envío
   const isSubmitting = useRef(false); // Flag para evitar múltiples envíos
   const [user, setUser] = useState('')
-  
+  const [jefesInmediatos, setJefesInmediatos] = useState<{ value: string; label: string }[]>([]);
+  const [loadingLideres, setLoadingLideres] = useState(true);
+  const [loadingGerentes, setLoadingGerentes] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [usuariosSidebar, setUsuariosSidebar] = useState<Lider[]>([]);
+  const [usuariosPermitidos, setUsuariosPermitidos] = useState<Gerentes>([]);
+
   const convertirTexto = (texto: string): string => {
     return texto
       .normalize("NFD")                    // Descompone caracteres Unicode (Ej: á -> a + ́)
@@ -65,7 +74,46 @@ export const CreatePermit = () => {
       .toLowerCase()                       // Convierte a minúsculas
       .replace(/\s+/g, '_');               // Reemplaza espacios por guiones bajos
   };
-  
+
+  useEffect(() => {
+    const fetchLideres = async () => {
+      try {
+        const { data } = await axios.get<Lider[]>(
+          "https://desarrollotecnologicoar.com/api3/lideres_inmediatos/"
+        );
+        setUsuariosSidebar(data ?? []);
+        setJefesInmediatos(
+          (data ?? []).map((lider) => ({
+            value: lider.nombre,
+            label: `${lider.nombre} -- ${lider.area}`,
+          }))
+        );
+        console.log("Líderes inmediatos obtenidos:", data);
+      } catch (e) {
+        setError("Error al cargar líderes inmediatos.");
+      } finally {
+        setLoadingLideres(false);
+      }
+    };
+    const fetchGerentes = async () => {
+      try {
+        const { data } = await axios.get<Gerentes>(
+          "https://desarrollotecnologicoar.com/api3/usuarios_permitidos/"
+        );
+        setUsuariosPermitidos(data ?? []);
+        console.log("Gerentes obtenidos:", data);
+      } catch (e) {
+        setError((prev) => prev ?? "Error al cargar gerentes."); // conserva el primero si ya hay
+      } finally {
+        setLoadingGerentes(false);
+      }
+    };
+    fetchLideres();
+    fetchGerentes();
+  }, []);
+
+
+
   // Escucha los cambios de autenticación y busca los datos del usuario en Firestore
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -110,7 +158,7 @@ export const CreatePermit = () => {
     try {
       setLoading(true); // Mostrar estado de carga en el botón
 
-      const correo_lider = CorreosLideres.find((lider) => lider.label === values.jefe_inmediato)?.value;
+      const correo_lider = usuariosSidebar.find((lider) => lider.nombre === values.jefe_inmediato)?.correo;
 
 
       // Establecer el status como "Pendiente"
@@ -130,7 +178,7 @@ export const CreatePermit = () => {
       if (response.ok) {
         message.success("Permiso registrado con éxito");
         form.resetFields();
-        
+
       } else {
         const errorData = await response.json();
         message.error(`Error: ${errorData.message}`);

@@ -30,7 +30,6 @@ const PiezasTable: React.FC<PiezasTableProps> = ({ selectedArea, dates }) => {
     const [error, setError] = useState<string | null>(null);
     
 
-    const UsuariosPermitidos = usuariosPermitidos;
 
     const convertirTexto = (texto: string): string =>
         texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/\s+/g, "_");
@@ -51,6 +50,47 @@ const PiezasTable: React.FC<PiezasTableProps> = ({ selectedArea, dates }) => {
 
         fetchGerentes();
     }, []);
+
+        useEffect(() => {
+        if (loadingGerentes) return; // Espera a los gerentes
+        const fetchUserData = async (currentUser: any) => {
+            try {
+                const correo = currentUser.email;
+                setUserEmail(correo);
+
+                const q = query(collection(db, "usuarios"), where("correo", "==", correo));
+                const querySnapshot = await getDocs(q);
+
+                if (!querySnapshot.empty) {
+                    const userDoc = querySnapshot.docs[0].data();
+                    const userArea = convertirTexto(userDoc.area);
+                    setArea(userArea); // Guardamos el área en el estado
+
+                    if (usuariosPermitidos.includes(correo)) {
+                        await fetchData(); // Acceso completo
+                        console.log("Acceso completo para:", correo, "en la tabla de incidencias");
+                    } else {
+                        await fetchUsuariosUnicos(userArea); // Filtrar por área del usuario
+                        console.log("Acceso restringido por área para:", correo, "en la tabla de incidencias");
+                    }
+                } else {
+                    message.error("No se encontró información del usuario.");
+                }
+            } catch (error) {
+                console.error("Error al obtener datos del usuario:", error);
+                message.error("Error al cargar los datos del usuario.");
+            }
+        };
+
+        onAuthStateChanged(auth, (currentUser) => {
+            if (currentUser) {
+                fetchUserData(currentUser);
+            } else {
+                message.error("Usuario no autenticado.");
+                setLoading(false);
+            }
+        });
+    }, [loadingGerentes, dates, selectedArea]);
 
     // 🔥 Actualización: Asegurar que los datos se asignan correctamente.
     const fetchData = async () => {
@@ -79,8 +119,6 @@ const PiezasTable: React.FC<PiezasTableProps> = ({ selectedArea, dates }) => {
     const fetchUsuariosUnicos = async (userArea: string) => {
         try {
             setLoading(true)
-
-
             const areaNormalizada = convertirTexto(userArea);
             const url = `https://desarrollotecnologicoar.com/api3/incidencias_area?area=${encodeURIComponent(areaNormalizada)}`;
 
@@ -104,43 +142,7 @@ const PiezasTable: React.FC<PiezasTableProps> = ({ selectedArea, dates }) => {
         }
     };
 
-    useEffect(() => {
-        const fetchUserData = async (currentUser: any) => {
-            try {
-                const correo = currentUser.email;
-                setUserEmail(correo);
 
-                const q = query(collection(db, "usuarios"), where("correo", "==", correo));
-                const querySnapshot = await getDocs(q);
-
-                if (!querySnapshot.empty) {
-                    const userDoc = querySnapshot.docs[0].data();
-                    const userArea = convertirTexto(userDoc.area);
-                    setArea(userArea); // Guardamos el área en el estado
-
-                    if (UsuariosPermitidos.includes(correo)) {
-                        await fetchData(); // Acceso completo
-                    } else {
-                        await fetchUsuariosUnicos(userArea); // Filtrar por área del usuario
-                    }
-                } else {
-                    message.error("No se encontró información del usuario.");
-                }
-            } catch (error) {
-                console.error("Error al obtener datos del usuario:", error);
-                message.error("Error al cargar los datos del usuario.");
-            }
-        };
-
-        onAuthStateChanged(auth, (currentUser) => {
-            if (currentUser) {
-                fetchUserData(currentUser);
-            } else {
-                message.error("Usuario no autenticado.");
-                setLoading(false);
-            }
-        });
-    }, [dates, selectedArea]);
 
     const searchedData = data.filter((pieza: any) =>
         pieza.persona_emisor?.toLowerCase().includes(search.toLowerCase()) ||

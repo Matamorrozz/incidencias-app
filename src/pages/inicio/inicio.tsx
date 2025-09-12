@@ -29,9 +29,11 @@ const HomePage: React.FC = () => {
   const [isUserAllowed, setIsUserAllowed] = useState(false);
   const [usuariosSidebar, setUsuariosSidebar] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [usuariosPermitidos, setUsuariosPermitidos] = useState<Record<string, string>>({});
+  const [loadingGerentes, setLoadingGerentes] = useState(true);
 
 
-    type Lider = { id: number | string; nombre: string; correo: string };
+  type Lider = { id: number | string; nombre: string; correo: string };
   type Gerentes = Record<string, string>;
 
   useEffect(() => {
@@ -43,6 +45,8 @@ const HomePage: React.FC = () => {
         const correos = (data ?? [])
           .map(l => l.correo)
           .filter((c): c is string => Boolean(c));
+
+        console.log("Correos de líderes inmediatos:", correos);
         setUsuariosSidebar(correos); // ✅ ahora sí es string[]
       } catch (e) {
         setError("Error al cargar líderes inmediatos.");
@@ -53,6 +57,8 @@ const HomePage: React.FC = () => {
     fetchLideres();
   }, []);
 
+
+
   const handleNewPermitClick = () => {
     navigate("/create_permit");
   };
@@ -62,6 +68,7 @@ const HomePage: React.FC = () => {
   };
 
   useEffect(() => {
+    if (loading) return;
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setUserEmail(user.email);
@@ -74,7 +81,7 @@ const HomePage: React.FC = () => {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [loading]);
 
   useEffect(() => {
     const fetchPermisos = async () => {

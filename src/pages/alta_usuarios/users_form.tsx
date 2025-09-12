@@ -64,6 +64,12 @@ const UserCreate: React.FC = () => {
 
         fetchGerentes();
     }, []);
+    const convertirTexto = (texto: string): string =>
+        texto
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "") // Eliminar acentos
+            .toLowerCase()
+            .replace(/\s+/g, "_"); // Espacios por guiones bajos
 
     useEffect(() => {
         const unsuscribe = onAuthStateChanged(auth, (user) => {
@@ -102,11 +108,18 @@ const UserCreate: React.FC = () => {
                 throw new Error(errorData.error.message || `Error al registrar el usuario`);
             }
 
-            if (values.puestOcupante != "Empleado") {
+            if (values.jerarquia != "Empleado") {
                 try {
+                    console.log('Registrando líder en la API externa:', {
+                        nombre: values.nombreCompleto + " " + values.apellidoPaterno + " " + values.apellidoMaterno,
+                        area: convertirTexto(values.areaTrabajo),
+                        ativo: 'true',
+                        correo: values.correo,
+                        jerarquia: values.jerarquia
+                    });
                     await axios.post('https://desarrollotecnologicoar.com/api3/lideres_incidencias/', {
                         nombre: values.nombreCompleto + " " + values.apellidoPaterno + " " + values.apellidoMaterno,
-                        area: values.areaTrabajo,
+                        area: convertirTexto(values.areaTrabajo),
                         ativo: 'true',
                         correo: values.correo,
                         jerarquia: values.jerarquia
@@ -183,9 +196,9 @@ const UserCreate: React.FC = () => {
         : usuarios;
 
     const columns = [
-        { title: 'Correo', dataIndex: 'correo', key: 'correo',  sorter: (a: any, b: any) => a.correo.localeCompare(b.correo) },
-        { title: 'Nombre Completo', dataIndex: 'nombre', key: 'nombre', sorter: (a: any, b: any) => a.nombre.localeCompare(b.nombre),},
-        { title: 'Apellido Paterno', dataIndex: 'apellido_paterno', key: 'apellido_paterno',sorter: (a: any, b: any) => a.apellido_paterno.localeCompare(b.apellido_paterno) },
+        { title: 'Correo', dataIndex: 'correo', key: 'correo', sorter: (a: any, b: any) => a.correo.localeCompare(b.correo) },
+        { title: 'Nombre Completo', dataIndex: 'nombre', key: 'nombre', sorter: (a: any, b: any) => a.nombre.localeCompare(b.nombre), },
+        { title: 'Apellido Paterno', dataIndex: 'apellido_paterno', key: 'apellido_paterno', sorter: (a: any, b: any) => a.apellido_paterno.localeCompare(b.apellido_paterno) },
         { title: 'Apellido Materno', dataIndex: 'apellido_materno', key: 'apellido_materno', sorter: (a: any, b: any) => a.apellido_materno.localeCompare(b.apellido_materno), },
         { title: 'Área de Trabajo', dataIndex: 'area', key: 'area', sorter: (a: any, b: any) => a.area.localeCompare(b.area), },
         {
@@ -269,7 +282,7 @@ const UserCreate: React.FC = () => {
                 <Form.Item
                     label="Numero de empleado"
                     name="numeroEmpleado"
-                    rules={[{ required: true, message: 'Por favor, ingresa el anumero de empleado' }]}
+                    rules={[{ required: true, message: 'Por favor, ingresa el número de empleado' }]}
                 >
                     <Input placeholder="# de empleado" />
                 </Form.Item>

@@ -6,10 +6,11 @@ import { Form, Card, Avatar, Typography, Spin, message, List, Space, Select, Dat
 import { onAuthStateChanged } from "firebase/auth";
 import { auth, db } from "../../firebaseConfig";
 import { collection, query, where, getDocs } from "firebase/firestore";
-import { jefesInmediatos } from '../incidencias';
+// import { jefesInmediatos } from '../incidencias';
 import { opciones } from '../alta_usuarios/users_form';
 import warning from 'antd/es/_util/warning';
 import { cedeConfigurations } from './pdf_config';
+import axios from 'axios';
 
 // valores del acta
 type ActaValues = {
@@ -49,10 +50,36 @@ export const PDFEditor = () => {
     const [userData, setUserData] = useState<any>(null);
     const [areaUsers, setAreaUsers] = useState<any[]>([]);
     const [Cede, setCede] = useState("")
+    const [loadingLideres, setLoadingLideres] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [jefesInmediatos, setJefesInmediatos] = useState<Lider[]>([]);
+    type Lider = {
+        id: number;
+        nombre: string;
+        area: string;
+    };
+
+
+    useEffect(() => {
+        const fetchLideres = async () => {
+            try {
+                const { data } = await axios.get<Lider[]>(
+                    "https://desarrollotecnologicoar.com/api3/lideres_inmediatos/"
+                );
+                setJefesInmediatos(data ?? []);
+            } catch (e) {
+                setError("Error al cargar líderes inmediatos.");
+            } finally {
+                setLoadingLideres(false);
+            }
+        };
+        fetchLideres();
+    }, []);
 
     const jefesInmediatosOptions = jefesInmediatos.map((jefe) => ({
-        value: jefe.label, // El `label` completo será el `value` en este caso
-        label: jefe.label,
+        value: jefe.nombre, // El `label` completo será el `value` en este caso
+        label: `${jefe.nombre} - ${jefe.area}`, // Mostrar "Nombre - Área" en el desplegable
+        area: jefe.area, // Puedes incluir el área si es necesario para otros propósitos
     }));
 
     // Inicializar actaValues con los datos recibidos
@@ -112,7 +139,7 @@ export const PDFEditor = () => {
         }
     };
 
-     
+
     const drawFields = async (pdfDoc: PDFDocument, actaValues: ActaValues, cede: string) => {
         const config = cedeConfigurations[cede];
         if (!config) {
@@ -124,18 +151,14 @@ export const PDFEditor = () => {
         const helveticaFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
         const fieldsToDraw = {
-            fecha: actaValues.fecha.slice(0, 10),
-            hora: actaValues.fecha.slice(10, 16),
+            fecha: actaValues.fecha?.slice(0, 10) || "",
+            hora: actaValues.fecha?.slice(10, 16) || "",
             asunto: actaValues.asunto,
-            lider_recortado: actaValues.lider_inmediato.includes('-')
-                ? actaValues.lider_inmediato.slice(0, actaValues.lider_inmediato.indexOf('-'))
-                : actaValues.lider_inmediato,
-            caracter_recortado: actaValues.lider_inmediato.includes('-')
-                ? actaValues.lider_inmediato.slice(actaValues.lider_inmediato.indexOf('-') + 1)
-                : actaValues.lider_inmediato,
+            lider_recortado: actaValues.lider_inmediato, // solo el nombre del líder
+            lider_area: actaValues.area_lider,        // área del líder
             empleado: actaValues.empleado,
             fecha_suceso: actaValues.fecha_suceso,
-            area: actaValues.area,
+            area: actaValues.area,           // área del empleado
         };
 
         Object.entries(fieldsToDraw).forEach(([field, value]) => {
@@ -284,8 +307,14 @@ export const PDFEditor = () => {
                             ]} onChange={(value) => handleChange("asunto", value)} />
                         </Form.Item>
                         {/* --------------------------------------------------------------------------------------------------------------- */}
-                        <Form.Item label='Nombre del lider inmediato del afectado: ' name='lider_inmediato'>
-                            <Select options={jefesInmediatosOptions} onChange={(label) => handleChange("lider_inmediato", label)} />
+                        <Form.Item label='Nombre del líder inmediato del afectado:' name='lider_inmediato'>
+                            <Select
+                                options={jefesInmediatosOptions}
+                                onSelect={(value, option,) => {
+                                    handleChange("lider_inmediato", value);  // solo el nombre
+                                    handleChange("area_lider", option.area); // guarda área por separado
+                                }}
+                            />
                         </Form.Item>
                         {/* --------------------------------------------------------------------------------------------------------------- */}
                         <Form.Item label='Selecciona a quién se le aplicará el acta: ' name='empleado'>

@@ -32,7 +32,7 @@ export const IncidenciasPorTiempoList: React.FC<IncidenciasGraficaProps> = ({ ag
     const [error, setError] = useState<string | null>(null);
 
 
-        useEffect(() => {
+    useEffect(() => {
         const fetchGerentes = async () => {
             try {
                 const { data } = await axios.get<Gerentes>(
@@ -49,46 +49,9 @@ export const IncidenciasPorTiempoList: React.FC<IncidenciasGraficaProps> = ({ ag
         fetchGerentes();
     }, []);
 
-    const convertirTexto = (texto: string): string =>
-        texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/\s+/g, "_");
-
-    // **Función para obtener incidencias con o sin filtro de área**
-    const fetchData = async (areaUsuario?: string) => {
-        try {
-            setLoading(true);
-            let url = `https://www.desarrollotecnologicoar.com/api3/incidencias_fechas_area?agrupacion=${agrupacion}`;
-
-            const [startDate, endDate] = dates;
-            if (startDate && endDate) {
-                url += `&startDate=${startDate}&endDate=${endDate}`;
-            }
-
-            // Si el usuario no tiene acceso completo, añadir área como filtro
-            if (areaUsuario) {
-                url += `&area=${encodeURIComponent(areaUsuario)}`;
-            }
-
-            const response = await axios.get(url);
-            const incidencias = response.data.map((item: any) => ({
-                name: item.fecha 
-                    ? item.fecha.slice(0,10)
-                    : item.semana 
-                    ? `Semana ${item.semana}` 
-                    : item.mes || "Sin agrupar",
-                value: item.total_incidencias,
-            }));
-
-            setData(incidencias);
-        } catch (error) {
-            console.error("Error al obtener los datos:", error);
-            message.error("Error al cargar los datos.");
-        } finally {
-            setLoading(false);
-        }
-    };
-
     // **Función para obtener datos del usuario autenticado**
     useEffect(() => {
+        if (loadingGerentes) return; // Espera a los gerentes
         const fetchUserData = async (currentUser: any) => {
             try {
                 const correo = currentUser.email;
@@ -128,7 +91,47 @@ export const IncidenciasPorTiempoList: React.FC<IncidenciasGraficaProps> = ({ ag
                 setLoading(false);
             }
         });
-    }, [agrupacion, dates]); // Actualiza cuando cambia la agrupación o fechas
+    }, [agrupacion, dates, loadingGerentes]); // Actualiza cuando cambia la agrupación o fechas
+
+    const convertirTexto = (texto: string): string =>
+        texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/\s+/g, "_");
+
+    // **Función para obtener incidencias con o sin filtro de área**
+    const fetchData = async (areaUsuario?: string) => {
+        try {
+            setLoading(true);
+            let url = `https://www.desarrollotecnologicoar.com/api3/incidencias_fechas_area?agrupacion=${agrupacion}`;
+
+            const [startDate, endDate] = dates;
+            if (startDate && endDate) {
+                url += `&startDate=${startDate}&endDate=${endDate}`;
+            }
+
+            // Si el usuario no tiene acceso completo, añadir área como filtro
+            if (areaUsuario) {
+                url += `&area=${encodeURIComponent(areaUsuario)}`;
+            }
+
+            const response = await axios.get(url);
+            const incidencias = response.data.map((item: any) => ({
+                name: item.fecha
+                    ? item.fecha.slice(0, 10)
+                    : item.semana
+                        ? `Semana ${item.semana}`
+                        : item.mes || "Sin agrupar",
+                value: item.total_incidencias,
+            }));
+
+            setData(incidencias);
+        } catch (error) {
+            console.error("Error al obtener los datos:", error);
+            message.error("Error al cargar los datos.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+
 
     // Configuración de columnas de la tabla
     const columns = [
@@ -146,7 +149,7 @@ export const IncidenciasPorTiempoList: React.FC<IncidenciasGraficaProps> = ({ ag
         },
     ];
     const { mode } = useContext(ColorModeContext);
-    const modeImage = mode === "dark" ? "#0fad03" : "#020675"; 
+    const modeImage = mode === "dark" ? "#0fad03" : "#020675";
 
 
 
@@ -168,7 +171,7 @@ export const IncidenciasPorTiempoList: React.FC<IncidenciasGraficaProps> = ({ ag
                             <Line
                                 type="monotone"
                                 dataKey="value"
-                                stroke= {modeImage}
+                                stroke={modeImage}
                                 strokeWidth={3}
                                 activeDot={{ r: 8 }}
                             />

@@ -51,24 +51,36 @@ export const Usuario = () => {
   const [usuariosPermitidos, setUsuariosPermitidos] = useState<Gerentes>([]);
   const [loadingGerentes, setLoadingGerentes] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
-    useEffect(() => {  
-      const fetchGerentes = async () => {
-        try {
-          const { data } = await axios.get<Gerentes>(
-            "https://desarrollotecnologicoar.com/api3/usuarios_permitidos/"
-          );
-          setUsuariosPermitidos(data ?? []);
-        } catch (e) {
-          setError((prev) => prev ?? "Error al cargar gerentes."); // conserva el primero si ya hay
-        } finally {
-          setLoadingGerentes(false);
-        }
-      };
-      fetchGerentes();
-    }, []);
 
-  
+  useEffect(() => {
+    const fetchGerentes = async () => {
+      try {
+        const { data } = await axios.get<Gerentes>(
+          "https://desarrollotecnologicoar.com/api3/usuarios_permitidos/"
+        );
+        setUsuariosPermitidos(data ?? []);
+      } catch (e) {
+        setError((prev) => prev ?? "Error al cargar gerentes."); // conserva el primero si ya hay
+      } finally {
+        setLoadingGerentes(false);
+      }
+    };
+    fetchGerentes();
+  }, []);
+
+  useEffect(() => {
+    if (loadingGerentes) return; // Espera a los gerentes
+    const unsubscribe = auth.onAuthStateChanged((currentUser) => {
+      if (currentUser) {
+        fetchUserData(currentUser);
+      } else {
+        message.error("Usuario no autenticado.");
+      }
+    });
+    return () => unsubscribe();
+  }, [loadingGerentes]);
+
+
   const convertirTexto = (texto: string): string => {
     return texto
       .normalize("NFD")
@@ -123,6 +135,7 @@ export const Usuario = () => {
       );
       // Contar incidencias por tipo
       setUsuarios(nombresUnicos);
+      console.log("Usuario no permitido, trayendo solo los usuarios del área:", userArea);
 
       // Convertir el conteo a un array para el gráfico
 
@@ -141,6 +154,7 @@ export const Usuario = () => {
         new Set(incidencias.map((i) => i.nombre_emisor as string))
       );
       setUsuarios(nombresUnicos);
+      console.log("Usuario permitido, todos los usuarios");
     } catch (error) {
       console.error("Error al obtener los usuarios únicos:", error);
       message.error("Error al cargar los usuarios.");
@@ -196,16 +210,6 @@ export const Usuario = () => {
     return null;
   };
 
-  useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((currentUser) => {
-      if (currentUser) {
-        fetchUserData(currentUser);
-      } else {
-        message.error("Usuario no autenticado.");
-      }
-    });
-    return () => unsubscribe();
-  }, []);
 
   const handleDateChange = (dates: any, dateStrings: [string, string]) => {
     setDates(dateStrings);
@@ -233,7 +237,7 @@ export const Usuario = () => {
           filterOption={(input, option) =>
             String(option?.label ?? '').toLowerCase().includes(input.toLowerCase())
           }
-          options={usuarios.map((usuario)=>({
+          options={usuarios.map((usuario) => ({
             label: String(usuario),
             value: usuario
           }))}

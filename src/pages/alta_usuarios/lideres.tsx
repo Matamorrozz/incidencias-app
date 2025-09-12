@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useContext } from "react";
 import axios from "axios";
 import {
   Alert,
@@ -30,21 +30,22 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import GroupsIcon from "@mui/icons-material/Groups";
 import SupervisorAccountIcon from "@mui/icons-material/SupervisorAccount";
 import SearchIcon from "@mui/icons-material/Search";
+import { ColorModeContext } from "../../contexts/color-mode";
 
 type Lider = { id: number | string; nombre: string; correo: string };
 type Gerentes = string[];
 
-// Helpers
-const stringToColor = (str: string) => {
+// Paletas dinámicas para modo claro/oscuro
+const dynamicColor = (str: string, isDark: boolean) => {
+  const paletteLight = ["#1976d2", "#0288d1", "#2e7d32", "#f57c00", "#6a1b9a"];
+  const paletteDark = ["#90caf9", "#80deea", "#a5d6a7", "#ffcc80", "#ce93d8"];
+  const palette = isDark ? paletteDark : paletteLight;
   let hash = 0;
-  for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
-  let color = "#";
-  for (let i = 0; i < 3; i++) color += ("00" + ((hash >> (i * 8)) & 0xff).toString(16)).slice(-2);
-  return color;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return palette[Math.abs(hash) % palette.length];
 };
-
-
-
 
 const getInitials = (name: string = "") =>
   name
@@ -54,11 +55,16 @@ const getInitials = (name: string = "") =>
     .map((n) => n[0]?.toUpperCase())
     .join("");
 
+const getChipColor = (count: number) => {
+  if (count > 20) return "success";
+  if (count > 10) return "primary";
+  return "default";
+};
+
 export const LideresGeneral: React.FC = () => {
+  const { mode } = useContext(ColorModeContext);
   const [loadingLideres, setLoadingLideres] = useState(true);
   const [loadingGerentes, setLoadingGerentes] = useState(true);
-  // const [lideres, setLideres] = useState<Lider[]>([]);
-  // const [gerentes, setGerentes] = useState<Gerentes>([]);
   const [error, setError] = useState<string | null>(null);
   const [queryLideres, setQueryLideres] = useState("");
   const [queryGerentes, setQueryGerentes] = useState("");
@@ -85,7 +91,7 @@ export const LideresGeneral: React.FC = () => {
         );
         setUsuariosPermitidos(data ?? []);
       } catch (e) {
-        setError((prev) => prev ?? "Error al cargar gerentes."); // conserva el primero si ya hay
+        setError((prev) => prev ?? "Error al cargar gerentes.");
       } finally {
         setLoadingGerentes(false);
       }
@@ -93,6 +99,7 @@ export const LideresGeneral: React.FC = () => {
     fetchLideres();
     fetchGerentes();
   }, []);
+
   const filteredGerentes = useMemo(() => {
     const q = queryGerentes.trim().toLowerCase();
     if (!q) return usuariosPermitidos;
@@ -113,7 +120,7 @@ export const LideresGeneral: React.FC = () => {
     try {
       await navigator.clipboard.writeText(text);
     } catch {
-      // opcional: fallback
+      // fallback opcional
     }
   };
 
@@ -123,9 +130,15 @@ export const LideresGeneral: React.FC = () => {
         <Chip
           icon={<SupervisorAccountIcon />}
           label={`Gerentes: ${usuariosPermitidos.length}`}
-          variant="outlined"
+          color= "warning"
+          variant="filled"
         />
-        <Chip icon={<GroupsIcon />} label={`Líderes: ${usuariosSidebar.length}`} variant="outlined" />
+        <Chip
+          icon={<GroupsIcon />}
+          label={`Líderes: ${usuariosSidebar.length}`}
+          color={getChipColor(usuariosSidebar.length)}
+          variant="filled"
+        />
       </Stack>
 
       {error && (
@@ -137,12 +150,12 @@ export const LideresGeneral: React.FC = () => {
       <Grid container spacing={2}>
         {/* GERENTES */}
         <Grid item xs={12} md={5}>
-          <Card elevation={2} sx={{ borderRadius: 3, overflow: "hidden" }}>
+          <Card elevation={2} sx={{ borderRadius: 3, overflow: "hidden", bgcolor: "#dbdbdbff" }}>
             <CardHeader
               title="Listado de Gerentes"
               subheader="Usuarios con acceso administrativo"
             />
-            {(loadingGerentes) && <LinearProgress />}
+            {loadingGerentes && <LinearProgress />}
 
             <CardContent>
               <TextField
@@ -211,12 +224,12 @@ export const LideresGeneral: React.FC = () => {
 
         {/* LÍDERES */}
         <Grid item xs={12} md={7}>
-          <Card elevation={2} sx={{ borderRadius: 3, overflow: "hidden" }}>
+          <Card elevation={2} sx={{ borderRadius: 3, overflow: "hidden", bgcolor: "#dbdbdbff" }}>
             <CardHeader
               title="Líderes Inmediatos"
               subheader="Responsables por área / equipo"
             />
-            {(loadingLideres) && <LinearProgress />}
+            {loadingLideres && <LinearProgress />}
 
             <CardContent>
               <TextField
@@ -258,39 +271,47 @@ export const LideresGeneral: React.FC = () => {
                             </TableCell>
                           </TableRow>
                         ))
-                      : filteredLideres.map((lider) => (
-                          <TableRow key={lider.id} hover>
-                            <TableCell>
-                              <Stack direction="row" spacing={1} alignItems="center">
-                                <Avatar
-                                  sx={{
-                                    width: 28,
-                                    height: 28,
-                                    bgcolor: stringToColor(lider.nombre || lider.correo),
-                                  }}
-                                >
-                                  {getInitials(lider.nombre || lider.correo)}
-                                </Avatar>
-                                <Typography>{lider.nombre}</Typography>
-                              </Stack>
-                            </TableCell>
-                            <TableCell>
-                              <Stack direction="row" spacing={1} alignItems="center">
-                                <Typography sx={{ fontFamily: "monospace" }}>
-                                  {lider.correo}
-                                </Typography>
-                                <Tooltip title="Copiar correo">
-                                  <IconButton
-                                    size="small"
-                                    onClick={() => copy(lider.correo)}
+                      : filteredLideres.map((lider) => {
+                          const bg1 = dynamicColor(lider.nombre || lider.correo, mode === "dark");
+                          const bg2 = dynamicColor(lider.correo, mode !== "dark");
+                          return (
+                            <TableRow key={lider.id} hover>
+                              <TableCell>
+                                <Stack direction="row" spacing={1} alignItems="center">
+                                  <Avatar
+                                    sx={{
+                                      width: 28,
+                                      height: 28,
+                                      background: `linear-gradient(135deg, ${bg1}, ${bg2})`,
+                                      color: "#fff",
+                                      fontWeight: "bold",
+                                      transition: "transform 0.2s, box-shadow 0.2s",
+                                      "&:hover": {
+                                        transform: "scale(1.15)",
+                                        boxShadow: 3,
+                                      },
+                                    }}
                                   >
-                                    <ContentCopyIcon fontSize="small" />
-                                  </IconButton>
-                                </Tooltip>
-                              </Stack>
-                            </TableCell>
-                          </TableRow>
-                        ))}
+                                    {getInitials(lider.nombre || lider.correo)}
+                                  </Avatar>
+                                  <Typography>{lider.nombre}</Typography>
+                                </Stack>
+                              </TableCell>
+                              <TableCell>
+                                <Stack direction="row" spacing={1} alignItems="center">
+                                  <Typography sx={{ fontFamily: "monospace" }}>
+                                    {lider.correo}
+                                  </Typography>
+                                  <Tooltip title="Copiar correo">
+                                    <IconButton size="small" onClick={() => copy(lider.correo)}>
+                                      <ContentCopyIcon fontSize="small" />
+                                    </IconButton>
+                                  </Tooltip>
+                                </Stack>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
                     {!loadingLideres && filteredLideres.length === 0 && (
                       <TableRow>
                         <TableCell colSpan={2}>
