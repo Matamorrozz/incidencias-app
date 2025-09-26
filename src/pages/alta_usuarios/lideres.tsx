@@ -31,6 +31,7 @@ import GroupsIcon from "@mui/icons-material/Groups";
 import SupervisorAccountIcon from "@mui/icons-material/SupervisorAccount";
 import SearchIcon from "@mui/icons-material/Search";
 import { ColorModeContext } from "../../contexts/color-mode";
+import { FaRegTrashCan } from 'react-icons/fa6';
 
 type Lider = { id: number | string; nombre: string; correo: string };
 type Gerentes = string[];
@@ -121,6 +122,15 @@ export const LideresGeneral: React.FC = () => {
       await navigator.clipboard.writeText(text);
     } catch {
       // fallback opcional
+    }
+  };
+  const handleDelete = async (id: number | string) => {
+    if (!window.confirm("¿Seguro que deseas eliminar este líder?")) return;
+    try {
+      await axios.delete(`https://desarrollotecnologicoar.com/api3/lideres_incidencias/${id}/`);
+      setUsuariosSidebar((prev) => prev.filter((l) => l.id !== id));
+    } catch {
+      alert("Error al eliminar el líder. Intenta nuevamente.");
     }
   };
 
@@ -305,6 +315,16 @@ export const LideresGeneral: React.FC = () => {
                                   <Tooltip title="Copiar correo">
                                     <IconButton size="small" onClick={() => copy(lider.correo)}>
                                       <ContentCopyIcon fontSize="small" />
+                                    </IconButton>
+                                  </Tooltip>
+                                  <Tooltip title="Borrar líder">
+                                    <IconButton
+                                      size="small"
+                                      color="error"
+                                      
+                                      onClick={() => handleDelete(lider.id)}
+                                    > 
+                                      <FaRegTrashCan />
                                     </IconButton>
                                   </Tooltip>
                                 </Stack>

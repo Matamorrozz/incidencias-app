@@ -14,7 +14,7 @@ import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
 
 type FormValues = {
   persona_emisor: string;
-  nombre_emisor: string;
+  nombre_emisor: string | { value: string; label: string };
   jefe_inmediato: string;
   tipo_registro: string;
   fecha_permiso: any;
@@ -47,31 +47,31 @@ type Lider = { id: number | string; nombre: string; correo: string };
 type Gerentes = string[];
 
 
-export const jefesInmediatos = [
-  { value: "Luis Jaime Martínez Arredondo", label: "Luis Jaime Martínez Arredondo - Líder de Operaciones" },
-  { value: "Carlos Antonio Rivas Martínez", label: "Carlos Antonio Rivas Martínez - Líder de Soporte Técnico Call Center / NPI" },
-  { value: "Ana Rosa Lira Ortíz", label: "Ana Rosa Lira Ortíz - Líder de Logística" },
-  { value: "Armando de la Rosa García", label: "Armando de la Rosa García - Líder de Desarrollo Tecnológico  " },
-  { value: "Ma. del Refugio Arroyo", label: "Ma. del Refugio Arroyo - Gerente Contabilidad, Finanza y RRHH" },
-  { value: "Citlali Coseth De León", label: "Citlali Coseth De León - Jefe de Producción Láser" },
-  { value: "Omar Díaz", label: "Omar Díaz - Soporte Técnico Presencial" },
-  { value: "Laura Beatriz Arroyo Salcedo", label: "Laura Beatriz Arroyo Salcedo - Líder de Contabilidad" },
-  { value: "Esteban Ramírez", label: "Esteban Ramírez - Gerente General" },
-  { value: "Karen Ibarra Ramírez", label: "Karen Ibarra Ramírez - Encargada Ventas de Refacciones y Servicios" },
-  { value: "Ana Sánchez Murúa", label: "Ana Sánchez Murúa - Generalista RRHH" },
-  { value: "Esmeralda Ramírez Díaz", label: "Esmeralda Ramírez Díaz - Jefe de Crédito y Cobranza" },
-  { value: "Lucero Ávila Cortes", label: "Lucero Ávila Cortes - Gerente de Mercadotecnia" },
-  { value: "Alonso Saúl Sandoval López", label: "Alonso Saúl Sandoval López - Supervisor de Producción" },
-  { value: "Sergio Alejandro García Trejo", label: "Sergio Alejandro García Trejo - Jefe de Procesos y Calidad" },
-  { value: "Jaime Daniel Flores Hernández", label: "Jaime Daniel Flores Hernández - Supervisor de Calidad" },
-  { value: "Jorge Antonio Lías Lopez", label: "Jorge Antonio Lías Lopez - Analista de Seguridad e Higiene / Mantenimiento" },
-  { value: "Pablo Ramírez Diaque", label: "Pablo Ramírez Diaque - Gerente de Ingeniería" },
-  // { value: "Christian Mendoza Nepomuceno", label: "Christian Mendoza Nepomuceno - Jefe de Almacén" },
-  { value: "Gustavo Gallegos Cortés", label: "Gustavo Gallegos Cortés - Subjefe de Soporte Técnico Presencial / Encargado de Sucursal CDMX" },
-  { value: "Saúl Espinoza Silva", label: "Saúl Espinoza Silva - Encargado de Logística Internacional" },
-  { value: "Jared Guerra García", label: "Jared Guerra García - Jefe de Reparaciones" },
-  { value: 'Francisco Javier Hernandez Castro', label: 'Francisco Javier Hernández - Jefe de Almacén' }
-];
+// export const jefesInmediatos = [
+//   { value: "Luis Jaime Martínez Arredondo", label: "Luis Jaime Martínez Arredondo - Líder de Operaciones" },
+//   { value: "Carlos Antonio Rivas Martínez", label: "Carlos Antonio Rivas Martínez - Líder de Soporte Técnico Call Center / NPI" },
+//   { value: "Ana Rosa Lira Ortíz", label: "Ana Rosa Lira Ortíz - Líder de Logística" },
+//   { value: "Armando de la Rosa García", label: "Armando de la Rosa García - Líder de Desarrollo Tecnológico  " },
+//   { value: "Ma. del Refugio Arroyo", label: "Ma. del Refugio Arroyo - Gerente Contabilidad, Finanza y RRHH" },
+//   { value: "Citlali Coseth De León", label: "Citlali Coseth De León - Jefe de Producción Láser" },
+//   { value: "Omar Díaz", label: "Omar Díaz - Soporte Técnico Presencial" },
+//   { value: "Laura Beatriz Arroyo Salcedo", label: "Laura Beatriz Arroyo Salcedo - Líder de Contabilidad" },
+//   { value: "Esteban Ramírez", label: "Esteban Ramírez - Gerente General" },
+//   { value: "Karen Ibarra Ramírez", label: "Karen Ibarra Ramírez - Encargada Ventas de Refacciones y Servicios" },
+//   { value: "Ana Sánchez Murúa", label: "Ana Sánchez Murúa - Generalista RRHH" },
+//   { value: "Esmeralda Ramírez Díaz", label: "Esmeralda Ramírez Díaz - Jefe de Crédito y Cobranza" },
+//   { value: "Lucero Ávila Cortes", label: "Lucero Ávila Cortes - Gerente de Mercadotecnia" },
+//   { value: "Alonso Saúl Sandoval López", label: "Alonso Saúl Sandoval López - Supervisor de Producción" },
+//   { value: "Sergio Alejandro García Trejo", label: "Sergio Alejandro García Trejo - Jefe de Procesos y Calidad" },
+//   { value: "Jaime Daniel Flores Hernández", label: "Jaime Daniel Flores Hernández - Supervisor de Calidad" },
+//   { value: "Jorge Antonio Lías Lopez", label: "Jorge Antonio Lías Lopez - Analista de Seguridad e Higiene / Mantenimiento" },
+//   { value: "Pablo Ramírez Diaque", label: "Pablo Ramírez Diaque - Gerente de Ingeniería" },
+//   // { value: "Christian Mendoza Nepomuceno", label: "Christian Mendoza Nepomuceno - Jefe de Almacén" },
+//   { value: "Gustavo Gallegos Cortés", label: "Gustavo Gallegos Cortés - Subjefe de Soporte Técnico Presencial / Encargado de Sucursal CDMX" },
+//   { value: "Saúl Espinoza Silva", label: "Saúl Espinoza Silva - Encargado de Logística Internacional" },
+//   { value: "Jared Guerra García", label: "Jared Guerra García - Jefe de Reparaciones" },
+//   { value: 'Francisco Javier Hernandez Castro', label: 'Francisco Javier Hernández - Jefe de Almacén' }
+// ];
 
 export const BlogPostCreate = () => {
   const { formProps, saveButtonProps, form } = useForm<FormValues>();
@@ -97,7 +97,12 @@ export const BlogPostCreate = () => {
         const { data } = await axios.get<Lider[]>(
           "https://desarrollotecnologicoar.com/api3/lideres_inmediatos/"
         );
-        setJefesInmediatos(data ?? []);
+        // Mapear los datos al formato que espera el Select
+        const mapped = (data ?? []).map((lider) => ({
+          value: lider.nombre,
+          label: `${lider.nombre} - ${lider.correo}`
+        }));
+        setJefesInmediatos(mapped);
       } catch (e) {
         setError("Error al cargar líderes inmediatos.");
       } finally {
@@ -132,6 +137,7 @@ export const BlogPostCreate = () => {
       .replace(/\s+/g, "_"); // Espacios por guiones bajos
 
   useEffect(() => {
+    if (loadingLideres) return;
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         try {
@@ -168,11 +174,7 @@ export const BlogPostCreate = () => {
     });
 
     return () => unsubscribe();
-  }, [form]);
-
-  var nombreCompleto
-
-
+  }, [form, loadingLideres, usuariosPermitidos]); // Agrega usuariosPermitidos como dependencia
 
   const fetchUsersByArea = async (area: string) => {
     try {
@@ -212,26 +214,38 @@ export const BlogPostCreate = () => {
   const handleFinish = async (values: FormValues) => {
     values.area = convertirTexto(values.area);
 
-
     if (values.fecha_permiso && dayjs.isDayjs(values.fecha_permiso)) {
       values.fecha_permiso = dayjs(values.fecha_permiso).format("YYYY-MM-DD");
     }
 
-    console.log("Datos enviados a la API:", values);
+    // Normalizar nombre_emisor
+    let nombreEmisorTexto: string;
+    let nombreEmisorId: string | undefined;
 
-    // Si hay un archivo para subir
+    if (typeof values.nombre_emisor === "object" && values.nombre_emisor !== null) {
+      nombreEmisorTexto = values.nombre_emisor.label;
+      nombreEmisorId = values.nombre_emisor.value;
+    } else {
+      nombreEmisorTexto = values.nombre_emisor as string;
+    }
+
+    // Si tu backend quiere ambos:
+    (values as any).nombre_emisor_id = nombreEmisorId;
+    values.nombre_emisor = nombreEmisorTexto;
+
+    // Subida de archivo usa el texto legible
     if (fileToUpload) {
       try {
-        // Subir el archivo y obtener la URL de descarga
-        const downloadURL = await handleUpload(fileToUpload, values.area, values.nombre_emisor);
-        // Añadir la URL de descarga a los valores a guardar
+        const downloadURL = await handleUpload(fileToUpload, values.area, nombreEmisorTexto);
         values.downloadURL = downloadURL;
       } catch (error) {
         console.error("Error al subir el archivo:", error);
         message.error("Hubo un error al subir el archivo.");
-        return; // Detener el envío del formulario si falla la subida del archivo
+        return;
       }
     }
+
+    console.log("Datos enviados a la API:", values);
 
     if (formProps.onFinish) {
       formProps.onFinish(values);
@@ -342,13 +356,15 @@ export const BlogPostCreate = () => {
         >
           <Select
             showSearch
+            labelInValue
             placeholder="Selecciona un usuario"
             options={usuarios.map((user) => ({
-              value: `${user.nombre} ${user.apellido_paterno} ${user.apellido_materno}`,
-              label: `${user.nombre} ${user.apellido_paterno} ${user.apellido_materno}`,
+              value: String(user.id),
+              label: `${user.nombre} ${user.apellido_paterno} ${user.apellido_materno}`.trim(),
             }))}
+            optionFilterProp="label"
             filterOption={(input, option) =>
-              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+              (option?.label ?? "").toLowerCase().includes(input.toLowerCase())
             }
           />
         </Form.Item>
@@ -366,8 +382,15 @@ export const BlogPostCreate = () => {
           label="Jefe inmediato del empleado"
           name="jefe_inmediato"
           rules={[{ required: true, message: "El campo Jefe Inmediato es obligatorio" }]}
+
         >
-          <Select placeholder="Selecciona un jefe inmediato" options={jefesInmediatos} />
+          <Select
+            placeholder="Selecciona un jefe inmediato"
+            showSearch
+            options={jefesInmediatos}
+            filterOption={(input, option) =>
+              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+            } />
         </Form.Item>
 
         <Form.Item

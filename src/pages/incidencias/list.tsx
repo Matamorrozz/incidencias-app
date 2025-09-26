@@ -11,13 +11,14 @@ import { Space, Table, Input, Row, Col, Spin, message, Pagination } from "antd";
 import { auth, db } from "../../firebaseConfig";
 import { onAuthStateChanged } from "firebase/auth";
 import { collection, query, where, getDocs } from "firebase/firestore";
-import { usuariosPermitidos } from "../../user_config";
+// import { usuariosPermitidos } from "../../user_config";
 import { BaseRecord } from "@refinedev/core";
 import { Button } from "antd";
-import {FilePdfOutlined} from "@ant-design/icons";
+import { FilePdfOutlined } from "@ant-design/icons";
 import axios from "axios";
 
 export const BlogPostList = () => {
+  type Gerentes= string[] 
   const { tableProps } = useTable({ syncWithLocation: true });
 
   const [userEmail, setUserEmail] = useState<string | null>(null);
@@ -28,6 +29,24 @@ export const BlogPostList = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(5); // Tamaño de la página
   const [usuariosPermitidos, setUsuariosPermitidos] = useState<string[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [loadingGerentes, setLoadingGerentes] = useState(true);
+
+  useEffect(() => {
+    const fetchGerentes = async () => {
+      try {
+        const { data } = await axios.get<Gerentes>(
+          "https://desarrollotecnologicoar.com/api3/usuarios_permitidos/"
+        );
+        setUsuariosPermitidos(data ?? []);
+      } catch (e) {
+        setError((prev) => prev ?? "Error al cargar gerentes."); // conserva el primero si ya hay
+      } finally {
+        setLoadingGerentes(false);
+      }
+    };
+    fetchGerentes();
+  }, []);
 
   const convertirTexto = (texto: string): string =>
     texto
@@ -54,6 +73,7 @@ export const BlogPostList = () => {
   );
 
   useEffect(() => {
+    if (loadingGerentes) return;
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         setUserEmail(user.email);
@@ -82,24 +102,10 @@ export const BlogPostList = () => {
     });
 
     return () => unsubscribe();
-  }, [filtrarDatos, tableProps.dataSource]);
+  }, [filtrarDatos, tableProps.dataSource, loadingGerentes]);
 
 
-  useEffect(() => {
-    const fetchUsuariosPermitidos = async () => {
-      try {
-        const response = await axios.get<string[]>(
-          "https://desarrollotecnologicoar.com/api3/usuarios_permitidos/"
-        );
-        
-        setUsuariosPermitidos(response.data);
-      } catch (error) {
-        console.error("Error al obtener usuarios permitidos:", error);
-        message.error("Error al cargar los usuarios permitidos.");
-      }
-    };
-    fetchUsuariosPermitidos();
-  }, []);
+
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchText(event.target.value.toLowerCase());
@@ -182,7 +188,7 @@ export const BlogPostList = () => {
               backgroundColor: "#ff4d4f", // Color de fondo personalizado
               borderColor: "#ff4d4f", // Borde del mismo color
               width: "25%",
-              
+
             }}
           >
             <FilePdfOutlined />
