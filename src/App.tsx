@@ -241,7 +241,6 @@ function App() {
 
                   <RefineKbar />
                   <UnsavedChangesNotifier />
-                  <DocumentTitleHandler />
                 </Refine>
               ) : (
                 // Si no está autenticado, redirige al Login

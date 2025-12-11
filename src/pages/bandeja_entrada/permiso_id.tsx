@@ -271,6 +271,7 @@ export const DetallePermiso = () => {
               { value: "Permiso de inasistencia a cuenta de vacaciones.", label: "Permiso de inasistencia a cuenta de vacaciones." },
               { value: "Permiso de salida temprano.", label: "Permiso de salida temprano." },
               {value: "Permiso de home office",label: "Permiso de home office"},
+              {value: "Retardo", label: "Retardo"},
               { value: "Llegada tarde no justificada.", label: "Llegada tarde no justificada." },
               { value: "Permiso de llegada tarde por cita médica (IMSS).", label: "Permiso de llegada tarde por cita médica (IMSS)." },
               { value: "Falta justificada de acuerdo al Reglamento Interior de Trabajo.", label: "Falta justificada de acuerdo al Reglamento Interior de Trabajo." },

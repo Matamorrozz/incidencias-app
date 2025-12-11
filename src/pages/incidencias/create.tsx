@@ -421,6 +421,7 @@ export const BlogPostCreate = () => {
                 label: "Permiso de inasistencia a cuenta de vacaciones.",
               },
               { value: "Permiso de salida temprano.", label: "Permiso de salida temprano." },
+              { value: "Retardo", label: "Retardo" },
               {
                 value: "Llegada tarde no justificada.",
                 label: "Llegada tarde no justificada.",
