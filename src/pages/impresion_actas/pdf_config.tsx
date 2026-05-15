@@ -1,7 +1,7 @@
 const height = 792
 
 export const cedeConfigurations: Record<string, { [key: string]: { x: number; y: number; size?: number } }> = {
-    "luis_molina": {
+    "juan_manuel": {
         fecha: { x: 320, y:  117, size: 12 },
         hora: { x: 160, y: 170, size: 12 },
         asunto: { x: 240, y: 140, size: 11 },

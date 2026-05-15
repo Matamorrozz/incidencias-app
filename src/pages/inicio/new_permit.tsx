@@ -48,7 +48,7 @@ type FormValues = {
 //   {value: 'francisco.hernandez@asiarobotica.com', label: "Francisco Javier Hernandez Castro"},
 //   {value: 'omar.diaz@asiarobotica.com', label: "Omar Díaz"}
 // ];
-type Lider = { id: number | string; nombre: string; correo: string; area: string};
+type Lider = { id: number | string; nombre: string; correo: string; area: string; telefono: string };
 type Gerentes = string[];
 
 
@@ -66,6 +66,7 @@ export const CreatePermit = () => {
   const [error, setError] = useState<string | null>(null);
   const [usuariosSidebar, setUsuariosSidebar] = useState<Lider[]>([]);
   const [usuariosPermitidos, setUsuariosPermitidos] = useState<Gerentes>([]);
+  const [data, setData] = useState<Lider[]>([]);  
 
   const convertirTexto = (texto: string): string => {
     return texto
@@ -88,6 +89,7 @@ export const CreatePermit = () => {
             label: `${lider.nombre} -- ${lider.area}`,
           }))
         );
+        setData(data ?? []);
         console.log("Líderes inmediatos obtenidos:", data);
       } catch (e) {
         setError("Error al cargar líderes inmediatos.");
@@ -111,6 +113,36 @@ export const CreatePermit = () => {
     fetchLideres();
     fetchGerentes();
   }, []);
+
+
+const enviarTemplate = async (variables: any, telefono: string) => {
+    try {
+        const response = await fetch(
+            "https://desarrollotecnologicoar.com/api12/almacen/send-whatsapp-template",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+                    telefono: '+52' + telefono,
+
+                    contentSid:
+                        "HX32587ae923cf6e80aca016b0a2ea749e",
+
+                    variables: variables
+                })
+            }
+        );
+
+        const data = await response.json();
+        console.log(data);
+
+    } catch (error) {
+        console.error(error);
+    }
+};
 
 
 
@@ -158,8 +190,10 @@ export const CreatePermit = () => {
     try {
       setLoading(true); // Mostrar estado de carga en el botón
 
-      const correo_lider = usuariosSidebar.find((lider) => lider.nombre === values.jefe_inmediato)?.correo;
-
+      // Buscar los datos del líder inmediato (correo y teléfono)
+      const lider = usuariosSidebar.find((lider) => lider.nombre === values.jefe_inmediato);
+      const correo_lider = lider?.correo;
+      const telefono_lider = lider?.telefono;
 
       // Establecer el status como "Pendiente"
       const dataToSend = { ...values, status: "Pendiente", correo_lider: correo_lider };
@@ -177,6 +211,15 @@ export const CreatePermit = () => {
 
       if (response.ok) {
         message.success("Permiso registrado con éxito");
+        const variables = {
+          '1': values.jefe_inmediato,
+          '2': values.nombre_completo,
+          '3': values.tipo_permiso
+        }
+        
+        // Enviar mensaje de WhatsApp al jefe inmediato
+        await enviarTemplate(variables, telefono_lider || "telefono_no_encontrado");
+        
         form.resetFields();
 
       } else {

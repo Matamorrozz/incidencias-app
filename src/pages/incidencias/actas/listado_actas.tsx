@@ -1,11 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { getDownloadURL, listAll, ref } from 'firebase/storage';
 import { storage } from '../../../firebaseConfig';
-import { Button, Row, Col } from 'antd';
-import { Typography } from 'antd/lib';
+import { Button, Row, Col, Card, List, Spin, Empty, Typography } from 'antd';
 import { ColorModeContext } from '../../../contexts/color-mode';
 import { useContext } from "react";
-import { EyeOutlined } from '@ant-design/icons';
+import {
+    EyeOutlined,
+    TeamOutlined,
+    FilePdfOutlined,
+    ArrowRightOutlined,
+    ReloadOutlined,
+} from '@ant-design/icons';
+import './listado_actas.css';
 
 export const ListadoActas: React.FC = () => {
     const [areas, setAreas] = useState<string[]>([]);
@@ -66,93 +72,123 @@ export const ListadoActas: React.FC = () => {
         setLoading(false);
     };
     const { mode } = useContext(ColorModeContext);
-    const modeImage = mode === "dark" ? "white"  : "black";
-    const modeImageButton = mode === "dark" ? "#abebc6" : "#81d4fa";
-    const modeText = mode === "dark" ? "black"  : "white";
+    const isDark = mode === 'dark';
 
     return (
-        <div style={{ padding: '1rem' }}>
-            <Typography.Title level={2} style={{ color: modeImage }}> {areaSeleccionada ? "Filtrar otra área" : "Selecciona el área a visualizar:"}</Typography.Title>
+        <div className={`actas-page ${isDark ? 'dark' : 'light'}`}>
+            <div className="actas-hero">
+                <Typography.Title level={2} className="actas-title">
+                    {areaSeleccionada ? 'Filtrar otra area' : 'Explorador de actas'}
+                </Typography.Title>
+                <Typography.Text className="actas-subtitle">
+                    Selecciona un area, despues un colaborador, y abre los PDF disponibles en segundos.
+                </Typography.Text>
+            </div>
 
-
-            <Row gutter={[16, 16]} justify={areaSeleccionada ? 'start' : 'center'} style={{ marginBottom: '1rem' }}>
-                {areas.map((area) => (
-                    <Col
-                        key={area}
-                        xs={24}
-                        sm={areaSeleccionada ? 8 : 12}
-                        md={areaSeleccionada ? 6 : 8}
-                        lg={areaSeleccionada ? 4 : 6}
-                        style={{
-                            display: 'flex',
-                            justifyContent: 'center',
-
-
-                        }}
-
-                    >
+            <Card className="actas-card" bordered={false}>
+                <div className="section-header">
+                    <Typography.Title level={4} className="section-title">
+                        Areas disponibles
+                    </Typography.Title>
+                    {areaSeleccionada && (
                         <Button
-                            type="primary"
-                            onClick={() => cargarColaboradores(area)}
-                            style={{
-                                width: areaSeleccionada ? '100%' : '100%',
-                                height: areaSeleccionada ? 'auto' : '100px',
-                                fontSize: areaSeleccionada ? '0.8rem' : '1.2rem',
-                                backgroundColor: modeImageButton,
-                                color: modeText,
-
+                            icon={<ReloadOutlined />}
+                            onClick={() => {
+                                setAreaSeleccionada(null);
+                                setColaboradorSeleccionado(null);
+                                setColaboradores([]);
+                                setActas([]);
                             }}
-                            icon={areaSeleccionada ? undefined : <EyeOutlined />}
-
-                            size="large"
                         >
-                            {area.toLocaleUpperCase().replace(/_/g, ' ')}
+                            Reiniciar filtro
                         </Button>
-                    </Col>
-                ))}
-            </Row>
+                    )}
+                </div>
 
-
-
+                <Row gutter={[14, 14]} justify={areaSeleccionada ? 'start' : 'center'}>
+                    {areas.map((area) => (
+                        <Col key={area} xs={24} sm={12} md={8} lg={6} xl={4}>
+                            <Button
+                                type={areaSeleccionada === area ? 'default' : 'primary'}
+                                onClick={() => cargarColaboradores(area)}
+                                className={`area-button ${areaSeleccionada === area ? 'selected' : ''}`}
+                                icon={<EyeOutlined />}
+                                size="large"
+                            >
+                                {area.toLocaleUpperCase().replace(/_/g, ' ')}
+                            </Button>
+                        </Col>
+                    ))}
+                </Row>
+            </Card>
 
             {areaSeleccionada && (
-                <>
-                    <h3>👤 Colaboradores en {areaSeleccionada.toUpperCase().replace(/_/g, ' ')}</h3>
-                    <ul>
-                        {colaboradores.map((colaborador) => (
-                            <li key={colaborador}>
-                                <Typography.Link
-                                    onClick={() => cargarArchivos(areaSeleccionada, colaborador)}
-                                    style={{ cursor: 'pointer', color: 'blue' }}
-                                >
-                                    {colaborador.toLocaleUpperCase().replace(/_/g, ' ')}
-                                </Typography.Link>
+                <Card className="actas-card" bordered={false}>
+                    <Typography.Title level={4} className="section-title">
+                        <TeamOutlined /> Colaboradores en {areaSeleccionada.toUpperCase().replace(/_/g, ' ')}
+                    </Typography.Title>
 
-                            </li>
-                        ))}
-                    </ul>
-                </>
+                    {loading ? (
+                        <div className="loading-box">
+                            <Spin size="large" />
+                        </div>
+                    ) : colaboradores.length === 0 ? (
+                        <Empty description="No hay colaboradores en esta area" />
+                    ) : (
+                        <List
+                            dataSource={colaboradores}
+                            className="list-grid"
+                            renderItem={(colaborador) => (
+                                <List.Item>
+                                    <Button
+                                        type={colaboradorSeleccionado === colaborador ? 'primary' : 'default'}
+                                        className="collaborator-button"
+                                        icon={<ArrowRightOutlined />}
+                                        onClick={() => cargarArchivos(areaSeleccionada, colaborador)}
+                                    >
+                                        {colaborador.toLocaleUpperCase().replace(/_/g, ' ')}
+                                    </Button>
+                                </List.Item>
+                            )}
+                        />
+                    )}
+                </Card>
             )}
 
             {colaboradorSeleccionado && (
-                <>
-                    <h3>📄 Actas de {colaboradorSeleccionado}</h3>
+                <Card className="actas-card" bordered={false}>
+                    <Typography.Title level={4} className="section-title">
+                        <FilePdfOutlined /> Actas de {colaboradorSeleccionado.toUpperCase().replace(/_/g, ' ')}
+                    </Typography.Title>
+
                     {loading ? (
-                        <p>Cargando archivos...</p>
+                        <div className="loading-box">
+                            <Spin size="large" />
+                        </div>
                     ) : actas.length === 0 ? (
-                        <p>No se encontraron archivos PDF.</p>
+                        <Empty description="No se encontraron archivos PDF" />
                     ) : (
-                        <ul>
-                            {actas.map((acta) => (
-                                <li key={acta.name}>
-                                    <a href={acta.url} target="_blank" rel="noopener noreferrer">
-                                        {acta.name}
-                                    </a>
-                                </li>
-                            ))}
-                        </ul>
+                        <List
+                            itemLayout="horizontal"
+                            dataSource={actas}
+                            renderItem={(acta) => (
+                                <List.Item
+                                    actions={[
+                                        <a key={acta.name} href={acta.url} target="_blank" rel="noopener noreferrer">
+                                            Ver PDF
+                                        </a>,
+                                    ]}
+                                >
+                                    <List.Item.Meta
+                                        avatar={<FilePdfOutlined className="pdf-icon" />}
+                                        title={acta.name}
+                                        description="Documento disponible en almacenamiento"
+                                    />
+                                </List.Item>
+                            )}
+                        />
                     )}
-                </>
+                </Card>
             )}
         </div>
     );

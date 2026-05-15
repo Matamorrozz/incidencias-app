@@ -28,7 +28,7 @@ type ActaValues = {
     area: string;
 };
 const initialActaValues: ActaValues = {
-    cede: 'luis_molina',
+    cede: 'españoles',
     fecha: '',
     hora: '',
     asunto: '',
@@ -260,12 +260,12 @@ export const PDFEditor = () => {
 
     const cede = () => {
         switch (actaValues.cede) {
-            case "luis_molina": return "/acta_lm.pdf";
             case "8_de_julio": return "/acta_8julio.pdf";
             case "españoles": return "/acta_españoles.pdf";
             case "cdmx": return "/acta_cdmx.pdf";
             case "mty": return "/acta_mty.pdf";
             case "ocotlan": return "/acta_ocotlan.pdf";
+            case "juan_manuel": return "/acta_jm.pdf";
             default: return null; // Asegúrate de manejar un valor por defecto correctamente
         }
     };
@@ -276,9 +276,9 @@ export const PDFEditor = () => {
                 <Card title="GENERAR ACTA" bordered={false} style={{ borderRadius: "12px", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)", margin: "auto", textAlign: 'center' }} >
                     <h3>Llena los siguientes datos para imprimir el acta prellenada. (opcional)</h3>
                     <Form>
-                        <Form.Item label='Selecciona la cede del acta: ' name='cede' initialValue={"luis_molina"}>
+                        <Form.Item label='Selecciona la cede del acta: ' name='cede' initialValue={"españoles"}>
                             <Select options={[
-                                { value: "luis_molina", label: "Luis Molina No. 2505 Col. Echeverría, Guadalajara Jal" },
+                                { value: "juan_manuel", label: "Juan Manuel 1401, Col Americana, Villaseñor, 44600 Guadalajara, Jal." },
                                 { value: "8_de_julio", label: "Av. 8 de Julio 1626, Morelos Guadalajara Jal." },
                                 { value: "españoles", label: "Españoles 91 la Duraznera, San Pedro Tlaquepaque Jal" },
                                 { value: "cdmx", label: "Hacienda Escolástica #131, Hacienda del Rosario, Azcapotzalco CDMX" },

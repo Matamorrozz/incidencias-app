@@ -26,7 +26,8 @@ export const opciones = [
     { value: "Recursos Humanos", label: "Recursos Humanos" },
     { value: "Seguridad e Higiene", label: "Seguridad e Higiene" },
     { value: "Reparaciones", label: "Reparaciones" },
-    { value: "Laser Express", label: "Laser Express" }
+    { value: "Laser Express", label: "Laser Express" },
+    { value: "Demostraciones", label: "Demostraciones" },
 ]
 
 
@@ -41,6 +42,7 @@ const UserCreate: React.FC = () => {
     const navigate = useNavigate();
     const [usuarios, setUsuarios] = useState<any[]>([]);
     const [selectedArea, setSelectedArea] = useState<string | null>(null);
+    const [searchNombre, setSearchNombre] = useState('');
     const [isUserAllowed, setIsUserAllowed] = useState(false);
     const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
     const [usuariosPermitidos, setUsuariosPermitidos] = useState<string[]>([]);
@@ -70,6 +72,13 @@ const UserCreate: React.FC = () => {
             .replace(/[\u0300-\u036f]/g, "") // Eliminar acentos
             .toLowerCase()
             .replace(/\s+/g, "_"); // Espacios por guiones bajos
+
+    const normalizarTextoBusqueda = (texto: string): string =>
+        texto
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toLowerCase()
+            .trim();
 
     useEffect(() => {
         const unsuscribe = onAuthStateChanged(auth, (user) => {
@@ -191,9 +200,27 @@ const UserCreate: React.FC = () => {
         form.resetFields();
     }, [form]);
 
-    const filteredUsuarios = selectedArea ?
-        usuarios.filter(user => user.area === selectedArea)
-        : usuarios;
+    const textoBusqueda = normalizarTextoBusqueda(searchNombre);
+    const filteredUsuarios = usuarios.filter((user) => {
+        const coincideArea = selectedArea ? user.area === selectedArea : true;
+
+        if (!textoBusqueda) {
+            return coincideArea;
+        }
+
+        const nombre = normalizarTextoBusqueda(user.nombre || '');
+        const apellidoPaterno = normalizarTextoBusqueda(user.apellido_paterno || '');
+        const apellidoMaterno = normalizarTextoBusqueda(user.apellido_materno || '');
+        const nombreCompleto = `${nombre} ${apellidoPaterno} ${apellidoMaterno}`.trim();
+
+        const coincideNombre =
+            nombre.includes(textoBusqueda) ||
+            apellidoPaterno.includes(textoBusqueda) ||
+            apellidoMaterno.includes(textoBusqueda) ||
+            nombreCompleto.includes(textoBusqueda);
+
+        return coincideArea && coincideNombre;
+    });
 
     const columns = [
         { title: 'Correo', dataIndex: 'correo', key: 'correo', sorter: (a: any, b: any) => a.correo.localeCompare(b.correo) },
@@ -309,14 +336,23 @@ const UserCreate: React.FC = () => {
 
 
             </Form>
-            <Select
-                placeholder="Filtrar por área"
-                style={{ marginBottom: 16, width: 200 }}
-                onChange={(value) => setSelectedArea(value)}
-                allowClear
-                options={opciones}
-            >
-            </Select>
+            <div style={{ display: 'flex', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
+                <Select
+                    placeholder="Filtrar por área"
+                    style={{ width: 240 }}
+                    onChange={(value) => setSelectedArea(value ?? null)}
+                    allowClear
+                    options={opciones}
+                />
+
+                <Input
+                    placeholder="Buscar por nombre o apellidos"
+                    style={{ width: 320, maxWidth: '100%' }}
+                    value={searchNombre}
+                    onChange={(e) => setSearchNombre(e.target.value)}
+                    allowClear
+                />
+            </div>
 
             <Table dataSource={filteredUsuarios} columns={columns} rowKey="id" pagination={{ pageSize: 5 }} scroll={{ x: 800, y: 300 }} />
         </Create>

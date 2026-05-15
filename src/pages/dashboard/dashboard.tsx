@@ -63,7 +63,7 @@ export const Dashboard: React.FC = () => {
                     <div style={{ marginBottom: 16 }}>
                         <RangePicker onChange={onDateChange} />
                     </div>
-                    <div style={{ marginTop: 16 }}>
+                    <div style={{ marginTop: 16, marginBottom: 16 }}>
                         <Button type="primary" onClick={handleReset}>
                             Restablecer
                         </Button>
