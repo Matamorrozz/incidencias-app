@@ -90,7 +90,6 @@ export const CreatePermit = () => {
           }))
         );
         setData(data ?? []);
-        console.log("Líderes inmediatos obtenidos:", data);
       } catch (e) {
         setError("Error al cargar líderes inmediatos.");
       } finally {
@@ -103,7 +102,6 @@ export const CreatePermit = () => {
           "https://desarrollotecnologicoar.com/api3/usuarios_permitidos/"
         );
         setUsuariosPermitidos(data ?? []);
-        console.log("Gerentes obtenidos:", data);
       } catch (e) {
         setError((prev) => prev ?? "Error al cargar gerentes."); // conserva el primero si ya hay
       } finally {
@@ -137,7 +135,6 @@ const enviarTemplate = async (variables: any, telefono: string) => {
         );
 
         const data = await response.json();
-        console.log(data);
 
     } catch (error) {
         console.error(error);
@@ -198,7 +195,7 @@ const enviarTemplate = async (variables: any, telefono: string) => {
       // Establecer el status como "Pendiente"
       const dataToSend = { ...values, status: "Pendiente", correo_lider: correo_lider };
 
-      console.log("Datos enviados al servidor:", dataToSend);
+      // console.log("Datos enviados al servidor:", dataToSend);
 
       const response = await fetch(
         "https://www.desarrollotecnologicoar.com/api3/crear_permiso",
@@ -208,13 +205,16 @@ const enviarTemplate = async (variables: any, telefono: string) => {
           body: JSON.stringify(dataToSend),
         }
       );
-
       if (response.ok) {
+        const responseData = await response.json();
+        const permisoId = responseData.id || responseData.permiso_id || '';
+        
         message.success("Permiso registrado con éxito");
         const variables = {
           '1': values.jefe_inmediato,
           '2': values.nombre_completo,
-          '3': values.tipo_permiso
+          '3': values.tipo_permiso,
+          '4': permisoId
         }
         
         // Enviar mensaje de WhatsApp al jefe inmediato
